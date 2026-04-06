@@ -1,9 +1,7 @@
-
 import 'package:flutter/material.dart';
 import 'package:flutter_stripe/flutter_stripe.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:geolocator/geolocator.dart';
-
 
 import '../utils/utils.dart';
 import '../view_models/pricing_plans_view_model/pricing_plans_view_model.dart';
@@ -37,11 +35,11 @@ Future<String> getCountryCode() async {
 }
 
 Future<void> startSubscriptionFlow(
-    BuildContext context,
-    String userId,
-    int planId,
-    PricingPlansViewModel provider,
-    ) async {
+  BuildContext context,
+  String userId,
+  int planId,
+  PricingPlansViewModel provider,
+) async {
   try {
     debugPrint("🚀 STEP 1: SetupIntent API");
 
@@ -101,15 +99,9 @@ Future<void> startSubscriptionFlow(
     // 4️⃣ Retrieve PaymentMethod
     debugPrint("🚀 STEP 4: Retrieve SetupIntent");
 
-    final setupIntent =
-    await Stripe.instance.retrieveSetupIntent(clientSecret);
+    final setupIntent = await Stripe.instance.retrieveSetupIntent(clientSecret);
 
     final paymentMethodId = setupIntent.paymentMethodId;
-
-    if (paymentMethodId == null) {
-      Utils.toastMessage("Payment method not found");
-      return;
-    }
 
     debugPrint("💳 PaymentMethodId: $paymentMethodId");
 
@@ -153,7 +145,6 @@ Future<void> startSubscriptionFlow(
     });
 
     debugPrint("✅ FLOW COMPLETED SUCCESSFULLY");
-
   } catch (e, s) {
     debugPrint("❌ FINAL ERROR: $e\n$s");
     Utils.toastMessage("Something went wrong");
@@ -232,18 +223,17 @@ Future<void> startSubscriptionFlow(
 // }
 
 Future<void> saveSubscriptionFlow(
-    BuildContext context,
-    int userId,
-    int planId,
-    int? couponId,
-    PricingPlansViewModel provider,
-    ) async {
+  BuildContext context,
+  int userId,
+  int planId,
+  int? couponId,
+  PricingPlansViewModel provider,
+) async {
   try {
     debugPrint("🚀 STEP 1: Calling SetupIntent API");
-    debugPrint("📤 SetupIntent Payload: ${{
-      "user_id": userId,
-      "plan_id": planId,
-    }}");
+    debugPrint(
+      "📤 SetupIntent Payload: ${{"user_id": userId, "plan_id": planId}}",
+    );
     // 1️⃣ SetupIntent API
     final setupResponse = await provider.createSetupIntentApi({
       "user_id": userId,
@@ -302,15 +292,9 @@ Future<void> saveSubscriptionFlow(
     // 4️⃣ Retrieve SetupIntent
     debugPrint("🚀 STEP 4: Retrieve SetupIntent");
 
-    final setupIntent =
-    await Stripe.instance.retrieveSetupIntent(clientSecret);
+    final setupIntent = await Stripe.instance.retrieveSetupIntent(clientSecret);
 
     final paymentMethodId = setupIntent.paymentMethodId;
-
-    if (paymentMethodId == null) {
-      Utils.toastMessage("Payment method not found");
-      return;
-    }
 
     debugPrint("💳 PaymentMethodId: $paymentMethodId");
 
@@ -354,13 +338,9 @@ Future<void> saveSubscriptionFlow(
     });
 
     debugPrint("✅ saveSubscriptionApi called");
-
   } catch (e, s) {
     debugPrint("❌ FINAL ERROR: $e");
     debugPrint("$s");
     Utils.toastMessage("Something went wrong during subscription");
   }
 }
-
-
-

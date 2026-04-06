@@ -50,7 +50,9 @@ class _IncrementDecrementInputFieldKmWidgetState
   }
 
   @override
-  void didUpdateWidget(covariant IncrementDecrementInputFieldKmWidget oldWidget) {
+  void didUpdateWidget(
+    covariant IncrementDecrementInputFieldKmWidget oldWidget,
+  ) {
     super.didUpdateWidget(oldWidget);
     if (_doubleChanged(widget.initialValue, oldWidget.initialValue) &&
         _doubleChanged(widget.initialValue, _currentValue)) {

@@ -5,9 +5,9 @@ import 'package:storatax/utils/app_colors.dart';
 import 'package:storatax/view_models/quebec_view_model/quebec_view_model.dart';
 
 import '../../../../../../../res/app_assets.dart';
+import '../../../../../../models/quebec_model/quebec_model.dart';
 import '../../../../../../res/components/app_localization.dart';
 import '../../../../../../utils/utils.dart';
-import '../../../../../../models/quebec_model/quebec_model.dart';
 import '../uber_quebec_widgets/static_name_year_input_field.dart';
 import '../uber_quebec_widgets/static_values_widget.dart';
 
@@ -42,23 +42,17 @@ class _ViewPotentialDeductionScreenState
     km1 = widget.quebecModel.onTripMileage ?? 0.0;
     km2 = widget.quebecModel.onlineMileage ?? 0.0;
 
-    if (widget.quebecModel.periodFrom != null) {
-      _periodFrom = DateTime.tryParse(widget.quebecModel.periodFrom);
-      if (_periodFrom != null) {
-        _periodFromController.text = Utils.formatDate(_periodFrom!);
-      }
+    _periodFrom = DateTime.tryParse(widget.quebecModel.periodFrom);
+    if (_periodFrom != null) {
+      _periodFromController.text = Utils.formatDate(_periodFrom!);
     }
-    if (widget.quebecModel.periodTo != null) {
-      _periodTo = DateTime.tryParse(widget.quebecModel.periodTo);
-      if (_periodTo != null) {
-        _periodToController.text = Utils.formatDate(_periodTo!);
-      }
+    _periodTo = DateTime.tryParse(widget.quebecModel.periodTo);
+    if (_periodTo != null) {
+      _periodToController.text = Utils.formatDate(_periodTo!);
     }
-    if (widget.quebecModel.dueDate != null) {
-      _dueDate = DateTime.tryParse(widget.quebecModel.dueDate);
-      if (_dueDate != null) {
-        _dueDateController.text = Utils.formatDate(_dueDate!);
-      }
+    _dueDate = DateTime.tryParse(widget.quebecModel.dueDate);
+    if (_dueDate != null) {
+      _dueDateController.text = Utils.formatDate(_dueDate!);
     }
   }
 
@@ -131,7 +125,10 @@ class _ViewPotentialDeductionScreenState
                       ),
                       const SizedBox(height: 8),
                       Text(
-                        AppLocalizations.of(context)!.translate("potentialDedText") ?? '',
+                        AppLocalizations.of(
+                              context,
+                            )!.translate("potentialDedText") ??
+                            '',
                         style: GoogleFonts.poppins(
                           fontWeight: FontWeight.w400,
                           fontSize: 20,
@@ -141,14 +138,17 @@ class _ViewPotentialDeductionScreenState
                       const SizedBox(height: 10),
 
                       _valuesViewsWidget(
-                        AppLocalizations.of(context)!.translate("tripMileageText") ?? '',
+                        AppLocalizations.of(
+                              context,
+                            )!.translate("tripMileageText") ??
+                            '',
                         widget.quebecModel.onTripMileage,
                       ),
                       const SizedBox(height: 10),
                       _valuesViewsWidget(
                         AppLocalizations.of(
-                          context,
-                        )!.translate("onlineMileageText") ??
+                              context,
+                            )!.translate("onlineMileageText") ??
                             '',
                         widget.quebecModel.onlineMileage,
                       ),

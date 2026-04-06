@@ -78,8 +78,12 @@ class _RentalIncomeTypeScreenState extends State<RentalIncomeTypeScreen> {
   void dispose() {
     nameController.dispose();
     emailController.dispose();
-    firstNameControllers.forEach((c) => c.dispose());
-    lastNameControllers.forEach((c) => c.dispose());
+    for (var c in firstNameControllers) {
+      c.dispose();
+    }
+    for (var c in lastNameControllers) {
+      c.dispose();
+    }
     super.dispose();
   }
 
@@ -89,11 +93,9 @@ class _RentalIncomeTypeScreenState extends State<RentalIncomeTypeScreen> {
       builder: (context, rentalProperty, _) {
         return Scaffold(
           appBar: CustomAppBar(
-            text1:AppLocalizations.of(context)!.translate("rIncomeText") ??
-                '',
-            text2: AppLocalizations.of(
-              context,
-            )!.translate("manageIncomeText") ??
+            text1: AppLocalizations.of(context)!.translate("rIncomeText") ?? '',
+            text2:
+                AppLocalizations.of(context)!.translate("manageIncomeText") ??
                 '',
             showBackButton: true,
             onBackTap: () {
@@ -102,7 +104,8 @@ class _RentalIncomeTypeScreenState extends State<RentalIncomeTypeScreen> {
                 MaterialPageRoute(
                   builder: (context) => RentalPropertyTabScreen(),
                 ),
-              );            },
+              );
+            },
           ),
           body: Stack(
             children: [
@@ -211,7 +214,11 @@ class _RentalIncomeTypeScreenState extends State<RentalIncomeTypeScreen> {
                           }),
                           SizedBox(height: 20),
                           AppButton(
-                            btnText: AppLocalizations.of(context)!.translate("saveText") ?? '',
+                            btnText:
+                                AppLocalizations.of(
+                                  context,
+                                )!.translate("saveText") ??
+                                '',
                             isLoading: rentalProperty.otherLoading,
                             onPressed: () {
                               // Validate Name

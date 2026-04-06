@@ -1,4 +1,5 @@
 import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:google_mlkit_document_scanner/google_mlkit_document_scanner.dart';
@@ -363,7 +364,7 @@ class _ScanQuebecScreenState extends State<ScanQuebecScreen> {
                                             width: double.infinity,
                                             height:
                                                 Utils.setHeight(context) * 0.35,
-                                            color: Colors.black.withOpacity(
+                                            color: Colors.black.withValues(alpha:
                                               0.5,
                                             ),
                                             child: const Center(

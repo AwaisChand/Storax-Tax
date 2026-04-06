@@ -1,14 +1,15 @@
 import 'dart:convert';
 import 'dart:io';
+
 import 'package:flutter/cupertino.dart';
 import 'package:http/http.dart' as http;
+import 'package:http_parser/http_parser.dart';
+import 'package:path/path.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
 import '../../models/login_model/login_model.dart';
 import '../app_exception.dart';
 import 'base_api_service.dart';
-import 'package:path/path.dart';
-import 'package:http_parser/http_parser.dart';
-
 
 class NetworkApiService extends BaseApiServices {
   @override
@@ -38,9 +39,7 @@ class NetworkApiService extends BaseApiServices {
     try {
       final response = await http.get(
         Uri.parse(url),
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: {'Content-Type': 'application/json'},
       );
       responseJson = returnResponse(response);
       debugPrint("Raw response body: ${response.body}");
@@ -56,13 +55,13 @@ class NetworkApiService extends BaseApiServices {
       String? token = await NetworkApiService().getToken();
       final response = await http
           .post(
-        Uri.parse(url),
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-          'Authorization': 'Bearer $token',
-        },
-      )
+            Uri.parse(url),
+            headers: {
+              'Content-Type': 'application/json',
+              'Accept': 'application/json',
+              'Authorization': 'Bearer $token',
+            },
+          )
           .timeout(const Duration(seconds: 30));
 
       debugPrint("Url === $url");
@@ -88,13 +87,13 @@ class NetworkApiService extends BaseApiServices {
       String? token = await NetworkApiService().getToken();
       final response = await http
           .delete(
-        Uri.parse(url),
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-          'Authorization': 'Bearer $token',
-        },
-      )
+            Uri.parse(url),
+            headers: {
+              'Content-Type': 'application/json',
+              'Accept': 'application/json',
+              'Authorization': 'Bearer $token',
+            },
+          )
           .timeout(const Duration(seconds: 30));
 
       debugPrint("Url === $url");
@@ -114,20 +113,19 @@ class NetworkApiService extends BaseApiServices {
     }
   }
 
-
   @override
   Future<dynamic> postLoginRequest(String url, dynamic data) async {
     try {
       final response = await http
           .post(
-        Uri.parse(url),
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-          'User-Agent': 'FlutterApp/1.0',
-        },
-        body: jsonEncode(data),
-      )
+            Uri.parse(url),
+            headers: {
+              'Content-Type': 'application/json',
+              'Accept': 'application/json',
+              'User-Agent': 'FlutterApp/1.0',
+            },
+            body: jsonEncode(data),
+          )
           .timeout(const Duration(seconds: 30));
 
       debugPrint("login url === $url");
@@ -176,14 +174,16 @@ class NetworkApiService extends BaseApiServices {
     try {
       final Map<String, String> formData = Map<String, String>.from(data);
 
-      final response = await http.post(
-        Uri.parse(url),
-        headers: {
-          'Content-Type': 'application/x-www-form-urlencoded',
-          'Accept': 'application/json',
-        },
-        body: formData,
-      ).timeout(const Duration(seconds: 30));
+      final response = await http
+          .post(
+            Uri.parse(url),
+            headers: {
+              'Content-Type': 'application/x-www-form-urlencoded',
+              'Accept': 'application/json',
+            },
+            body: formData,
+          )
+          .timeout(const Duration(seconds: 30));
 
       debugPrint("POST URL: $url");
       debugPrint("POST Body: $formData");
@@ -206,14 +206,14 @@ class NetworkApiService extends BaseApiServices {
       String? token = await NetworkApiService().getToken();
       final response = await http
           .post(
-        Uri.parse(url),
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-          'Authorization': 'Bearer $token',
-        },
-        body: jsonEncode(data),
-      )
+            Uri.parse(url),
+            headers: {
+              'Content-Type': 'application/json',
+              'Accept': 'application/json',
+              'Authorization': 'Bearer $token',
+            },
+            body: jsonEncode(data),
+          )
           .timeout(const Duration(seconds: 30));
 
       debugPrint("Url === $url");
@@ -236,14 +236,14 @@ class NetworkApiService extends BaseApiServices {
       String? token = await NetworkApiService().getToken();
       final response = await http
           .put(
-        Uri.parse(url),
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-          'Authorization': 'Bearer $token',
-        },
-        body: jsonEncode(data),
-      )
+            Uri.parse(url),
+            headers: {
+              'Content-Type': 'application/json',
+              'Accept': 'application/json',
+              'Authorization': 'Bearer $token',
+            },
+            body: jsonEncode(data),
+          )
           .timeout(const Duration(seconds: 30));
 
       debugPrint("Url === $url");
@@ -262,10 +262,10 @@ class NetworkApiService extends BaseApiServices {
 
   @override
   Future<dynamic> multipartPostRequest(
-      String url, {
-        Map<String, dynamic>? fields,
-        Map<String, File>? files,
-      }) async {
+    String url, {
+    Map<String, dynamic>? fields,
+    Map<String, File>? files,
+  }) async {
     try {
       String? token = await getToken();
       final uri = Uri.parse(url);
@@ -323,7 +323,9 @@ class NetworkApiService extends BaseApiServices {
           );
 
           request.files.add(multipartFile);
-          debugPrint("Added file field='$name' filename='$filename' contentType='$contentType'");
+          debugPrint(
+            "Added file field='$name' filename='$filename' contentType='$contentType'",
+          );
         }
       }
 
@@ -347,10 +349,10 @@ class NetworkApiService extends BaseApiServices {
 
   @override
   Future<dynamic> multipartPutRequest(
-      String url, {
-        Map<String, dynamic>? fields,
-        Map<String, File>? files,
-      }) async {
+    String url, {
+    Map<String, dynamic>? fields,
+    Map<String, File>? files,
+  }) async {
     try {
       String? token = await getToken();
       final uri = Uri.parse(url);
@@ -408,7 +410,9 @@ class NetworkApiService extends BaseApiServices {
           );
 
           request.files.add(multipartFile);
-          debugPrint("Added file field='$name' filename='$filename' contentType='$contentType'");
+          debugPrint(
+            "Added file field='$name' filename='$filename' contentType='$contentType'",
+          );
         }
       }
 
@@ -437,7 +441,7 @@ class NetworkApiService extends BaseApiServices {
       switch (status) {
         case 200:
         case 201:
-        // Try parsing JSON, fallback to plain text
+          // Try parsing JSON, fallback to plain text
           try {
             return jsonDecode(response.body);
           } catch (_) {
@@ -464,51 +468,64 @@ class NetworkApiService extends BaseApiServices {
 
         case 401:
           throw FetchDataException(
-              "Unauthorized access. Please login again to continue.");
+            "Unauthorized access. Please login again to continue.",
+          );
 
         case 403:
           throw FetchDataException(
-              "Forbidden. You do not have permission to access this resource.");
+            "Forbidden. You do not have permission to access this resource.",
+          );
 
         case 404:
           throw FetchDataException(
-              "The requested resource was not found on the server.");
+            "The requested resource was not found on the server.",
+          );
 
         case 422:
-        // Handle Laravel-style validation errors
+          // Handle Laravel-style validation errors
           try {
             final decoded = jsonDecode(response.body);
             if (decoded is Map<String, dynamic>) {
               if (decoded.containsKey('errors')) {
                 final errors = decoded['errors'] as Map<String, dynamic>;
-                final messages = errors.entries.map((entry) {
-                  final field = entry.key;
-                  final fieldErrors = (entry.value as List).join(', ');
-                  return "$field: $fieldErrors";
-                }).join('\n');
+                final messages = errors.entries
+                    .map((entry) {
+                      final field = entry.key;
+                      final fieldErrors = (entry.value as List).join(', ');
+                      return "$field: $fieldErrors";
+                    })
+                    .join('\n');
                 throw FetchDataException("Validation Error:\n$messages");
               } else if (decoded.containsKey('message')) {
-                throw FetchDataException("Validation Error: ${decoded['message']}");
+                throw FetchDataException(
+                  "Validation Error: ${decoded['message']}",
+                );
               }
             }
             throw FetchDataException(
-                "Validation failed, but no detailed message provided.");
+              "Validation failed, but no detailed message provided.",
+            );
           } catch (e) {
             throw FetchDataException(
-                "Validation error occurred. Could not parse response: $e");
+              "Validation error occurred. Could not parse response: $e",
+            );
           }
 
         case 500:
           throw FetchDataException(
-              "Server error occurred. Please try again later.");
+            "Server error occurred. Please try again later.",
+          );
 
         default:
           throw FetchDataException(
-              "Unexpected error occurred. Status code: $status\nResponse: ${response.body}");
+            "Unexpected error occurred. Status code: $status\nResponse: ${response.body}",
+          );
       }
     } catch (e) {
       // Catch anything unexpected
-      throw FetchDataException("An error occurred while processing the response: $e");
+      throw FetchDataException(
+        "An error occurred while processing the response: $e",
+      );
     }
   }
 
@@ -524,12 +541,10 @@ class NetworkApiService extends BaseApiServices {
     return token;
   }
 
-
   Future<void> clearToken() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove("token");
   }
-
 }
 
 /// Optional helper to capitalize first letter

@@ -233,15 +233,19 @@ class _UpdateGasolineDataScreenState extends State<UpdateGasolineDataScreen> {
                                 const SizedBox(height: 6),
                                 Consumer<GasolineViewModel>(
                                   builder: (context, gasolineVM, _) {
-                                    final authVM = context.read<AuthViewModel>();
+                                    final authVM =
+                                        context.read<AuthViewModel>();
 
                                     return Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
                                       children: [
                                         GestureDetector(
                                           onTap: () async {
                                             // Pick image
-                                            final image = await authVM.pickImageFromGallery();
+                                            final image =
+                                                await authVM
+                                                    .pickImageFromGallery();
                                             if (image == null) return;
 
                                             setState(() {
@@ -250,27 +254,52 @@ class _UpdateGasolineDataScreenState extends State<UpdateGasolineDataScreen> {
 
                                             // Automatically start scanning
                                             try {
-                                              final result = await gasolineVM.scanFileApi(image);
+                                              final result = await gasolineVM
+                                                  .scanFileApi(image);
 
-                                              if (result != null && result["status"].toString() == "1") {
+                                              if (result != null &&
+                                                  result["status"].toString() ==
+                                                      "1") {
                                                 final data = result["data"];
 
                                                 setState(() {
                                                   // Merchant (remove address if included)
-                                                  String trader = data['trader'] ?? '';
-                                                  merchantController.text = trader.split(',').first;
+                                                  String trader =
+                                                      data['trader'] ?? '';
+                                                  merchantController.text =
+                                                      trader.split(',').first;
 
                                                   // Invoice
-                                                  referenceController.text = data['invoice_no'] ?? '';
+                                                  referenceController.text =
+                                                      data['invoice_no'] ?? '';
 
                                                   // Total
-                                                  totalAmount = double.tryParse(data['total'].toString()) ?? 0;
-                                                  totalAmountController.text = totalAmount.toStringAsFixed(2);
+                                                  totalAmount =
+                                                      double.tryParse(
+                                                        data['total']
+                                                            .toString(),
+                                                      ) ??
+                                                      0;
+                                                  totalAmountController
+                                                      .text = totalAmount
+                                                      .toStringAsFixed(2);
 
                                                   // Taxes
-                                                  gst = double.tryParse(data['gst'].toString()) ?? 0;
-                                                  pst = double.tryParse(data['pst'].toString()) ?? 0;
-                                                  hst = double.tryParse(data['hst'].toString()) ?? 0;
+                                                  gst =
+                                                      double.tryParse(
+                                                        data['gst'].toString(),
+                                                      ) ??
+                                                      0;
+                                                  pst =
+                                                      double.tryParse(
+                                                        data['pst'].toString(),
+                                                      ) ??
+                                                      0;
+                                                  hst =
+                                                      double.tryParse(
+                                                        data['hst'].toString(),
+                                                      ) ??
+                                                      0;
 
                                                   // Actual values
                                                   gstActual = gst;
@@ -279,19 +308,34 @@ class _UpdateGasolineDataScreenState extends State<UpdateGasolineDataScreen> {
 
                                                   // Before tax
                                                   beforeTaxAmount =
-                                                      double.tryParse(data['before_tax_amount'].toString()) ?? 0;
-                                                  beforeTaxController.text =
-                                                      beforeTaxAmount.toStringAsFixed(2);
+                                                      double.tryParse(
+                                                        data['before_tax_amount']
+                                                            .toString(),
+                                                      ) ??
+                                                      0;
+                                                  beforeTaxController
+                                                      .text = beforeTaxAmount
+                                                      .toStringAsFixed(2);
 
                                                   // Total tax
-                                                  totalTaxesValue = double.tryParse(data['tax'].toString()) ?? 0;
+                                                  totalTaxesValue =
+                                                      double.tryParse(
+                                                        data['tax'].toString(),
+                                                      ) ??
+                                                      0;
 
                                                   // Date
                                                   if (data['date'] != null) {
-                                                    selectedDate = DateTime.tryParse(data['date']);
+                                                    selectedDate =
+                                                        DateTime.tryParse(
+                                                          data['date'],
+                                                        );
                                                     if (selectedDate != null) {
                                                       dateController.text =
-                                                          displayDateFormat.format(selectedDate!);
+                                                          displayDateFormat
+                                                              .format(
+                                                                selectedDate!,
+                                                              );
                                                     }
                                                   }
 
@@ -299,7 +343,9 @@ class _UpdateGasolineDataScreenState extends State<UpdateGasolineDataScreen> {
                                                   recalculateTaxes();
                                                 });
                                               } else {
-                                                Utils.toastMessage("Scan failed");
+                                                Utils.toastMessage(
+                                                  "Scan failed",
+                                                );
                                               }
                                             } catch (e) {
                                               debugPrint("Scan API error: $e");
@@ -309,40 +355,65 @@ class _UpdateGasolineDataScreenState extends State<UpdateGasolineDataScreen> {
                                           child: Container(
                                             height: 45,
                                             decoration: BoxDecoration(
-                                              border: Border.all(color: Colors.grey.shade400),
-                                              borderRadius: BorderRadius.circular(6),
+                                              border: Border.all(
+                                                color: Colors.grey.shade400,
+                                              ),
+                                              borderRadius:
+                                                  BorderRadius.circular(6),
                                               color: Colors.grey.shade100,
                                             ),
                                             child: Row(
                                               children: [
                                                 Container(
-                                                  padding: const EdgeInsets.symmetric(horizontal: 14),
+                                                  padding:
+                                                      const EdgeInsets.symmetric(
+                                                        horizontal: 14,
+                                                      ),
                                                   decoration: BoxDecoration(
                                                     color: Colors.white,
                                                     border: Border(
-                                                      right: BorderSide(color: Colors.grey.shade400),
+                                                      right: BorderSide(
+                                                        color:
+                                                            Colors
+                                                                .grey
+                                                                .shade400,
+                                                      ),
                                                     ),
                                                   ),
                                                   child: Center(
                                                     child: Text(
                                                       "Choose File",
                                                       style: TextStyle(
-                                                        color: Colors.blue.shade700,
-                                                        fontWeight: FontWeight.w500,
+                                                        color:
+                                                            Colors
+                                                                .blue
+                                                                .shade700,
+                                                        fontWeight:
+                                                            FontWeight.w500,
                                                       ),
                                                     ),
                                                   ),
                                                 ),
                                                 Expanded(
                                                   child: Padding(
-                                                    padding: const EdgeInsets.only(left: 8),
+                                                    padding:
+                                                        const EdgeInsets.only(
+                                                          left: 8,
+                                                        ),
                                                     child: Text(
-                                                      pickedReceipt?.path.split('/').last ?? "No file chosen",
+                                                      pickedReceipt?.path
+                                                              .split('/')
+                                                              .last ??
+                                                          "No file chosen",
                                                       style: TextStyle(
                                                         fontSize: 14,
-                                                        color: pickedReceipt != null
-                                                            ? Colors.grey.shade600
-                                                            : Colors.grey,
+                                                        color:
+                                                            pickedReceipt !=
+                                                                    null
+                                                                ? Colors
+                                                                    .grey
+                                                                    .shade600
+                                                                : Colors.grey,
                                                       ),
                                                     ),
                                                   ),
@@ -360,7 +431,8 @@ class _UpdateGasolineDataScreenState extends State<UpdateGasolineDataScreen> {
                                             alignment: Alignment.center,
                                             children: [
                                               ClipRRect(
-                                                borderRadius: BorderRadius.circular(8),
+                                                borderRadius:
+                                                    BorderRadius.circular(8),
                                                 child: Image.file(
                                                   File(pickedReceipt!.path),
                                                   width: double.infinity,
@@ -373,14 +445,19 @@ class _UpdateGasolineDataScreenState extends State<UpdateGasolineDataScreen> {
                                                   width: double.infinity,
                                                   height: 200,
                                                   decoration: BoxDecoration(
-                                                    color: Colors.black.withOpacity(0.3),
-                                                    borderRadius: BorderRadius.circular(8),
+                                                    color: Colors.black
+                                                        .withValues(alpha: 0.3),
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                          8,
+                                                        ),
                                                   ),
                                                   child: const Center(
-                                                    child: CircularProgressIndicator(
-                                                      strokeWidth: 2,
-                                                      color: Colors.orange,
-                                                    ),
+                                                    child:
+                                                        CircularProgressIndicator(
+                                                          strokeWidth: 2,
+                                                          color: Colors.orange,
+                                                        ),
                                                   ),
                                                 ),
                                             ],

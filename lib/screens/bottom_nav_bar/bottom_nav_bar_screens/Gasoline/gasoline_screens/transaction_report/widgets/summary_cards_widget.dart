@@ -24,9 +24,9 @@ class SummaryCardsWidget extends StatelessWidget {
 
     // Find the maximum progress for scaling
     final double maxProgress =
-    kpiProgressValues.isNotEmpty
-        ? kpiProgressValues.reduce((a, b) => a > b ? a : b)
-        : 100;
+        kpiProgressValues.isNotEmpty
+            ? kpiProgressValues.reduce((a, b) => a > b ? a : b)
+            : 100;
 
     return Column(
       children: [
@@ -112,17 +112,17 @@ class SummaryCardsWidget extends StatelessWidget {
   }
 
   Widget _cardWidget(
-      String title,
-      String mainValue,
-      String badgeValue,
-      IconData icon,
-      Color badgeColor,
-      Color badgeBgColor,
-      Color textColor, {
-        String? subText,
-        double? progress,
-        Color? progressColor,
-      }) {
+    String title,
+    String mainValue,
+    String badgeValue,
+    IconData icon,
+    Color badgeColor,
+    Color badgeBgColor,
+    Color textColor, {
+    String? subText,
+    double? progress,
+    Color? progressColor,
+  }) {
     return Card(
       elevation: 2,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
@@ -215,8 +215,8 @@ class SummaryCardsWidget extends StatelessWidget {
                 child: LinearProgressIndicator(
                   value: progress.clamp(0.0, 1.0),
                   minHeight: 6,
-                  backgroundColor: (progressColor ?? textColor).withOpacity(
-                    0.3,
+                  backgroundColor: (progressColor ?? textColor).withValues(
+                    alpha: 0.3,
                   ),
                   valueColor: AlwaysStoppedAnimation<Color>(
                     progressColor ?? textColor,

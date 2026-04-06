@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:storatax/utils/utils.dart';
+
 import '../../../../../../../utils/app_colors.dart';
 import '../../../../../../res/components/app_localization.dart';
 
@@ -50,7 +51,7 @@ class NameYearInputField extends StatelessWidget {
             margin: const EdgeInsets.symmetric(horizontal: 8.0),
             decoration: BoxDecoration(
               border: Border.all(
-                color: AppColors.blackColor.withOpacity(0.2),
+                color: AppColors.blackColor.withValues(alpha: 0.2),
                 width: 0.5,
               ),
               borderRadius: BorderRadius.circular(10),

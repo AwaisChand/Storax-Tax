@@ -1,4 +1,5 @@
 import 'dart:io';
+
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 
@@ -43,16 +44,13 @@ class _CameraScannerScreenState extends State<CameraScannerScreen>
   @override
   Widget build(BuildContext context) {
     if (controller == null || !controller!.value.isInitialized) {
-      return const Scaffold(
-        body: Center(child: CircularProgressIndicator()),
-      );
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
 
     return Scaffold(
       body: Stack(
         children: [
           CameraPreview(controller!), // live camera feed
-
           // 🔵 Scanner frame
           Align(
             alignment: Alignment.center,

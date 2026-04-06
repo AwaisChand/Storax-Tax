@@ -9,14 +9,14 @@ import 'package:path/path.dart' as path;
 import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:storatax/screens/files/create_tax_manager/create_tax_manager_screen.dart';
+import 'package:storatax/view_models/auth_view_model/auth_view_model.dart';
+import 'package:storatax/view_models/gasoline_view_model/gasoline_view_model.dart';
 import 'package:storatax/view_models/tax_manager_view_model/tax_manager_view_model.dart';
 
 import '../../../../../../../res/app_assets.dart';
 import '../../../../../../../res/components/app_localization.dart';
 import '../../../../../../../utils/app_colors.dart';
 import '../../../../../../../utils/utils.dart';
-import 'package:storatax/view_models/auth_view_model/auth_view_model.dart';
-import 'package:storatax/view_models/gasoline_view_model/gasoline_view_model.dart';
 
 class ScanTaxManagerScreen extends StatefulWidget {
   const ScanTaxManagerScreen({super.key});
@@ -102,12 +102,12 @@ class _ScanTaxManagerScreenState extends State<ScanTaxManagerScreen>
         startTextCycle();
         startAutoScan(croppedImage, scanWithAI: true);
       }
-
     } catch (e) {
       print("ImageCropper error: $e");
       Utils.toastMessage("Failed to crop image.");
     }
   }
+
   void startTextCycle() {
     textCycleTimer?.cancel();
     textCycleTimer = Timer.periodic(const Duration(seconds: 2), (timer) {
@@ -139,7 +139,10 @@ class _ScanTaxManagerScreenState extends State<ScanTaxManagerScreen>
       setState(() => elapsedSeconds++);
 
       if (elapsedSeconds == 3) {
-        final gasoline = Provider.of<TaxManagerViewModel>(context, listen: false);
+        final gasoline = Provider.of<TaxManagerViewModel>(
+          context,
+          listen: false,
+        );
         final auth = Provider.of<AuthViewModel>(context, listen: false);
 
         try {
@@ -212,7 +215,6 @@ class _ScanTaxManagerScreenState extends State<ScanTaxManagerScreen>
     super.dispose();
   }
 
-
   Future<void> startSmartCameraCapture() async {
     try {
       // 1. Corrected options for version 0.4.1
@@ -244,14 +246,12 @@ class _ScanTaxManagerScreenState extends State<ScanTaxManagerScreen>
       }
 
       await documentScanner.close();
-
     } catch (e) {
       debugPrint("Document Scanner Error: $e");
       // If the user presses the back button without scanning,
       // it might throw an exception or return empty.
     }
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -461,8 +461,12 @@ class _ScanTaxManagerScreenState extends State<ScanTaxManagerScreen>
                                     if (isAutoScanning)
                                       Container(
                                         decoration: BoxDecoration(
-                                          color: Colors.black.withOpacity(0.4),
-                                          borderRadius: BorderRadius.circular(10),
+                                          color: Colors.black.withValues(
+                                            alpha: 0.4,
+                                          ),
+                                          borderRadius: BorderRadius.circular(
+                                            10,
+                                          ),
                                         ),
                                       ),
                                     // Scanning line animation
@@ -471,7 +475,11 @@ class _ScanTaxManagerScreenState extends State<ScanTaxManagerScreen>
                                         animation: _scanAnimation,
                                         builder: (context, child) {
                                           return Positioned(
-                                            top: _scanAnimation.value * (Utils.setHeight(context) * 0.25 - 4),
+                                            top:
+                                                _scanAnimation.value *
+                                                (Utils.setHeight(context) *
+                                                        0.25 -
+                                                    4),
                                             left: 0,
                                             right: 0,
                                             child: Container(

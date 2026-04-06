@@ -484,7 +484,7 @@ class _RentalPropertyAddressingScreenState
                                     ),
                                     const SizedBox(height: 8),
                                     DropdownButtonFormField<String>(
-                                      value: selectedPropertyType,
+                                      initialValue: selectedPropertyType,
                                       items:
                                           propertyTypes
                                               .map(

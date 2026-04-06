@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
@@ -30,9 +29,9 @@ class _IncrementDecrementFieldWidgetState
   void initState() {
     super.initState();
     _currentValue =
-    widget.initialValue < 1
-        ? 1
-        : widget.initialValue; // Ensure min value is 1
+        widget.initialValue < 1
+            ? 1
+            : widget.initialValue; // Ensure min value is 1
     _controller = TextEditingController(text: _currentValue.toString());
 
     _controller.addListener(() {

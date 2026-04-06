@@ -3,13 +3,11 @@ import 'dart:io';
 import 'package:csv/csv.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
 import 'package:http/http.dart' as http;
-import 'package:image_picker/image_picker.dart';
-import 'package:intl/intl.dart';
 import 'package:open_file/open_file.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:pdf/widgets.dart' as pw;
+import 'package:share_plus/share_plus.dart';
 import 'package:storatax/models/get_rental_property_plan_model/get_rental_property_plan_model.dart';
 import 'package:storatax/models/get_reports_model/get_reports_model.dart';
 import 'package:storatax/models/rental_property_models/database_entry_model/database_entry_model.dart';
@@ -18,15 +16,10 @@ import 'package:storatax/models/rental_property_models/get_income_types_model/ge
 import 'package:storatax/models/rental_property_models/property_owner_model/property_owner_model.dart';
 import 'package:storatax/screens/bottom_nav_bar/bottom_nav_bar_screens/rental_property/rental_property_screens/entry/entry_screens/all_regular_entry_screen.dart';
 import 'package:storatax/screens/bottom_nav_bar/bottom_nav_bar_screens/rental_property/rental_property_screens/rental_income_type/rental_income_type_screen/rental_income_type_list_screen.dart';
-import 'package:storatax/screens/bottom_nav_bar/bottom_nav_bar_screens/rental_property/rental_property_screens/rental_income_type/rental_income_type_screen/rental_income_type_screen.dart';
-import 'package:storatax/screens/bottom_nav_bar/bottom_nav_bar_screens/rental_property/rental_property_screens/rental_property_tab_screen/rental_property_tab_screen.dart';
-import 'package:storatax/utils/routes/routes_name.dart';
-import 'package:share_plus/share_plus.dart';
 
 import '../../models/expense_type_model/expense_type_model.dart';
 import '../../models/rental_property_models/account_setting_model/account_setting_model.dart';
 import '../../repository/rental_property_repository/rental_property_repository.dart';
-
 import '../../res/components/app_localization.dart';
 import '../../utils/utils.dart';
 
@@ -871,7 +864,7 @@ class RentalPropertyViewModel extends ChangeNotifier {
         language: language, // pass language here
       );
 
-      if (result != null && result["status"] == 1 && result["file"] != null) {
+      if (result["status"] == 1 && result["file"] != null) {
         // ✅ Save PDF to local
         final response = result["file"] as http.Response;
         final tempDir = await getTemporaryDirectory();
@@ -883,7 +876,7 @@ class RentalPropertyViewModel extends ChangeNotifier {
       } else {
         // ✅ Show clean server message (never crashes)
         final message =
-            (result != null && result["success"] is String)
+            (result["success"] is String)
                 ? result["success"] as String
                 : "Please update your account settings to proceed";
 
@@ -1065,7 +1058,7 @@ class RentalPropertyViewModel extends ChangeNotifier {
         language: language,
       );
 
-      if (result != null && result["status"] == 1 && result["file"] != null) {
+      if (result["status"] == 1 && result["file"] != null) {
         final response = result["file"] as http.Response;
         final tempDir = await getTemporaryDirectory();
         final filePath =
@@ -1075,7 +1068,7 @@ class RentalPropertyViewModel extends ChangeNotifier {
         return filePath;
       } else {
         final message =
-            (result != null && result["success"] is String)
+            (result["success"] is String)
                 ? result["success"] as String
                 : "Please update your account settings to proceed";
         Utils.toastMessage(message);
@@ -1106,7 +1099,7 @@ class RentalPropertyViewModel extends ChangeNotifier {
         language: language,
       );
 
-      if (result != null && result["status"] == 1 && result["file"] != null) {
+      if (result["status"] == 1 && result["file"] != null) {
         final response = result["file"] as http.Response;
         final tempDir = await getTemporaryDirectory();
         final filePath =
@@ -1116,7 +1109,7 @@ class RentalPropertyViewModel extends ChangeNotifier {
         return filePath;
       } else {
         final message =
-            (result != null && result["success"] is String)
+            (result["success"] is String)
                 ? result["success"] as String
                 : "Please update your account settings to proceed";
         Utils.toastMessage(message);

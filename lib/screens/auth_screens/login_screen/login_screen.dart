@@ -4,10 +4,8 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'package:storatax/res/app_assets.dart';
 import 'package:storatax/res/components/app_button.dart';
-import 'package:storatax/screens/auth_screens/tax_professional_register/tax_professional_register.dart';
 import 'package:storatax/screens/auth_screens/verify_email/verify_email_screen.dart';
 import 'package:storatax/screens/pricing_plans/client_plans/client_plans_screen.dart';
-import 'package:storatax/screens/pricing_plans/tax_professional_plans/tax_professional_plans_screen.dart';
 import 'package:storatax/utils/app_colors.dart';
 import 'package:storatax/utils/utils.dart';
 import 'package:storatax/view_models/auth_view_model/auth_view_model.dart';
@@ -119,7 +117,10 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                       SizedBox(height: 30),
                       AppButton(
-                        btnText:  AppLocalizations.of(context)!.translate("signInText") ??
+                        btnText:
+                            AppLocalizations.of(
+                              context,
+                            )!.translate("signInText") ??
                             '',
                         isLoading: auth.isLoading,
                         onPressed: () {
