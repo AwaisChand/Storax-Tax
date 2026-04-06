@@ -1,0 +1,545 @@
+{
+  "changeLang": "Changer en anglais",
+
+  "signInText": "Se connecter",
+  "emailText": "E-mail",
+  "passwordText": "Mot de passe",
+  "forgotPasswordText": "Mot de passe oublié ?",
+  "notAccountText": "Vous n'avez pas encore de compte ? Inscrivez-vous maintenant en tant que ",
+  "taxProfessionalText": " Professionnel fiscal ",
+  "orText": " ou ",
+  "clientText": " Client",
+  "descText": " pour commencer ou inscrivez-vous en tant que client sans acheter de forfait afin de commencer.",
+  "hereText": "ici.",
+  "alertEmailText": "Veuillez entrer un e-mail",
+  "alertPasswordText": "Veuillez entrer un mot de passe",
+  "8DigitPassText": "Veuillez entrer un mot de passe d'au moins 8 caractères",
+
+  "verifyEmailText": "Vérifier l'e-mail",
+  "alertVerifyEmailText": "Veuillez saisir votre adresse e-mail pour vérification",
+
+  "verifyOtpText": "Vérifier le code OTP",
+  "placeholderOtpText": "Entrez le code OTP ici",
+  "alertForOtpText": "Veuillez entrer votre e-mail pour continuer",
+  "alertOtpCodeText": "Veuillez entrer votre code OTP à 6 chiffres",
+  "alertResendOtpText": "Veuillez entrer votre e-mail pour renvoyer le code OTP",
+  "resendOtpText": "Renvoyer le code OTP",
+
+  "resetPasswordText": "Réinitialiser le mot de passe",
+  "confirmPasswordText": "Confirmer le mot de passe",
+  "resetBtnText": "Réinitialiser",
+  "alertPasswordNotMatchText": "Le mot de passe ne correspond pas",
+
+  "pricingPlanText": "Plan tarifaire",
+
+  "registerText": "S'inscrire",
+  "regDescText": "Les taxes seront calculées automatiquement lors du paiement.",
+  "firstBusinessNameText": "Prénom / Nom de l'entreprise",
+  "lastBusinessNameText": "Nom / Nom de l'entreprise (Optionnel)",
+  "agreeTermsAndPrivacy": "J'accepte les conditions générales\net la politique de confidentialité",
+  "alreadyAcc": "Vous avez déjà un compte?",
+  "loginHereText": "Connectez-vous ici",
+  "accessDashboardText": " pour accéder à votre tableau de bord.",
+  "validationRegText1": "Veuillez saisir votre prénom / nom de l’entreprise",
+  "validationRegText2": "Veuillez saisir votre adresse e-mail",
+  "validationRegText3": "Veuillez saisir un mot de passe de 8 caractères",
+  "validationRegText4": "Veuillez saisir votre mot de passe de confirmation",
+  "validationRegText5": "Veuillez accepter les conditions générales et la politique de confidentialité",
+
+  "getStartedText": "Commencer",
+  "activatedText": "Activé",
+  "taxCalculated": "Les taxes seront calculées automatiquement lors du paiement.",
+
+  "myPlansText": "Mes abonnements",
+  "unSubscribeText": "Se désabonner",
+  "subMorePlanText": "S’abonner à un autre plan",
+  "noSubscribePlanText": "Vous n'avez aucun abonnement actif",
+
+  "dashboardText": "Tableau de bord",
+  "viewAccessText": "Voir l'accès",
+  "teamManagementText": "Gestion de l'équipe",
+  "plansText": "Plans",
+  "filesTotalText": "Nombre total de\nfichiers",
+  "subscTotalText": "Nombre total\nd'abonnements",
+  "manageProfileText": "Gérez votre profil",
+  "manageSettingsText": "Gérer les paramètres",
+  "logoutText": "Déconnexion",
+  "profileText": "Profil",
+  "userProfileText": "Profil de l'utilisateur",
+  "descProfileText": "Mettez à jour votre photo et vos informations personnelles.",
+  "saveText": "Enregistrer",
+  "deleteText": "Supprimer",
+  "firstNameText": "Prénom",
+  "lastNameText": "Nom de famille",
+  "selectProvinceText": "Sélectionner une province",
+  "selectStateText": "Sélectionner un État",
+  "currentPasswordText": "Mot de passe actuel",
+  "newPasswordText": "Nouveau mot de passe",
+  "updatePasswordText": "Mettre à jour le mot de passe",
+  "userPasswordText":"Mot de passe utilisateur",
+  "selectTxProfessionalText": "Sélectionner un professionnel fiscal",
+  "searchTaxProfessionalText": "Rechercher un professionnel fiscal",
+  "connectText": "Connecter",
+  "disconnectText": "Déconnecter",
+  "selectAccountantText": "Veuillez choisir un comptable",
+  "gasolineEnterpriseText": "Gasoline Entreprise",
+  "gasolineProText": "Gasoline Pro",
+  "gasolineBasicText": "Gasoline Basique",
+  "taxManagerText": "Gestionnaire fiscal",
+  "businessTaxManagerText": "Gestionnaire fiscal d’entreprise",
+  "quebecText": "Québec",
+  "rentalPropertyText": "Propriété locative",
+
+  "gasolineText": "Essence",
+  "manageGasolineText": "Gérez vos reçus d’essence",
+  "filterText": "Filtrer par",
+  "viewReportText": "Voir le rapport",
+  "forwardFileText": "Transférer le fichier",
+  "transactionReportText": "Rapport de transactions",
+  "noGasolineText": "Vous n’avez aucune essence",
+  "merchantText": "Commerçant",
+  "totalText": "Total",
+  "taxText": "Taxes",
+  "beforeTaxText": "Montant avant taxes",
+  "dateText": "Date de réception",
+  "refText": "Référence",
+  "statusText": "Statut",
+  "uploadByText": "Téléversé par",
+  "gasRestrictionText": "Limite de 10 reçus d’essence atteinte. Mettez à jour votre forfait pour en ajouter davantage.",
+  "selectFileForwardText": "Sélectionnez au moins un fichier à transférer.",
+  "addNewReceiptText": "Ajouter un nouveau reçu",
+  "descNewReceiptText": "Remplissez les informations pour ajouter un nouveau reçu.",
+  "uploadFileText": "Téléverser le fichier",
+  "chooseFileText": "Choisir un fichier",
+  "nextText": "Suivant",
+  "galleryText": "Galerie",
+  "cameraText": "Scanner avec la caméra",
+  "uploadReceiptText":"Télécharger le reçu",
+  "totalAmountText": "Montant total",
+  "totalTaxText":"Impôt total",
+  "cancelText":"Annuler",
+  "updateGasolineText":"Mise à jour de l'essence",
+  "updateText": "Mise à jour",
+  "receiptText": "Reçu",
+  "gasDetailsText": "Détails de l’essence",
+  "descViewGasText": "Voir et gérer les détails de l’essence",
+  "gasInfoText": "Informations sur l’essence",
+
+  "transReport": "Rapport de transactions",
+  "descTransReport": "Liste détaillée des transactions avec répartition des taxes",
+  "noTransReportText": "Aucun rapport de transaction n'est disponible.",
+  "printText": "Imprimer",
+  "emailReportText": "Rapport par e-mail",
+  "totalTransText": "Total des transactions",
+  "beforeTText": "Montant avant taxes",
+  "emailTransReportText": "Envoyer le rapport de transactions par e-mail",
+  "recipientEmail": "E-mail du destinataire",
+  "encryptPassText": "Mot de passe pour chiffrer le fichier PDF",
+  "sendReportText": "Envoyer le rapport",
+  "monthlyGasText": "Dépenses mensuelles en carburant",
+  "taxAmountText": "Montant de la taxe",
+  "hMonthText": "Mois le plus élevé",
+  "mAverageText": "Moyenne mensuelle",
+  "trendText": "Tendance",
+  "transDetailsText": "Détails des transactions",
+  "transText": "Transaction",
+  "noTransAvailable": "Aucune transaction disponible",
+  "noDataText": "Aucune donnée sélectionnée",
+  "fromDateText": "À partir de la date",
+  "toDateText": "À la date",
+  "selectMonthText": "Sélectionner le mois",
+  "filter": "Filtrer",
+  "resetText": "Réinitialiser",
+  "ascText": "Ascendant",
+  "descendingText": "Descendant",
+  "selectYearText": "Sélectionner l’année",
+  "sortByText": "Trier par",
+  "sortOrderText": "Ordre de tri",
+  "allGraphicEntryText": "Graphique de toutes vos entrées",
+  "viewRepText": "Voir votre rapport",
+  "amountMonthText": "Montant par mois",
+  "monthText": "Mois",
+  "gst/hstText": "TPS/TVH",
+  "pstText": "TVP",
+  "grandTotalText": "Total Général",
+  "gstText": "TPS",
+  "hstText": "TVH",
+
+  "noFilesText": "Vous n'avez aucun fichier",
+  "personalInfoText": "Informations personnelles",
+  "uploadedDateText": "Date de téléchargement",
+  "fileNameText": "Nom du fichier",
+  "cateText": "Catégorie",
+  "yearText": "Année",
+  "viewText": "Voir",
+  "editText": "Modifier",
+  "downFileText": "Télécharger le fichier",
+  "taxManagerListText": "Liste des gestionnaires de taxes",
+  "manageTaxesText": "Gérez votre gestionnaire de taxes",
+  "fromText": "De",
+  "toText": "À",
+
+
+  "incomeTaxPersonalInfoText": "Informations personnelles sur l'impôt sur le revenu",
+  "canadianCText": "Citoyen canadien",
+  "createdText": "Créé",
+  "noPersonalInfoText": "Vous n'avez pas encore d'informations personnelles.",
+  "preparingPdf": "Préparation du PDF...",
+  "viewDetailsText": "Voir et gérer les détails du fichier",
+  "taxesDetailsText": "Détails du gestionnaire de taxes",
+  "taxManagerInfoText": "Informations du gestionnaire de taxes",
+  "taxManagerName": "Nom du gestionnaire de taxes",
+  "commentsText": "Commentaires",
+
+  "updateTaxManagerText": "Mettre à jour le gestionnaire de taxes",
+  "taxSummaryText": "Résumé fiscal pour la période par (année fiscale)",
+  "selectCateText": "Sélectionnez la catégorie (revenus, dépenses, déductions, etc.)",
+  "choiceYearText": "Choix de la date dans l'année fiscale",
+  "copyAttachmentText": "(copie de votre document)",
+  "noFileAText": "Aucune donnée de fichier disponible",
+  "scanTaxManagerText": "Scanner le gestionnaire fiscal",
+  "detailText": "Remplissez les détails pour ajouter un nouveau reçu.",
+  "scanAIText": "Scanner avec IA",
+  "processingText": "Traitement en cours",
+  "scanDisabledText": "Le scan IA est désactivé. Veuillez l'activer pour continuer le traitement.",
+  "scanReceipt": "Veuillez choisir un reçu à scanner",
+  "createTaxManagerText": "Créer un nouveau gestionnaire de taxes",
+
+  "incomeTaxInfoForm": "Formulaire d'informations fiscales sur le revenu",
+  "taxYearText": "Année fiscale*",
+  "personalInfoNoChangeText": "Informations personnelles / Aucun changement",
+  "personalInformationText": "Informations personnelles",
+  "langCorresPondenceText": "Langue de correspondance *",
+  "homeAddressText": "Adresse personnelle*",
+  "workPhoneText": "Téléphone professionnel*",
+  "homePhoneText": "Téléphone personnel",
+  "frenchText": "Français",
+  "englishText": "Anglais",
+  "yesText": "Oui",
+  "noText": "Non",
+  "provinceResidenceText": "Province de résidence au 31 décembre 2025 *",
+  "maritalStatusText": "État civil au 31 décembre 2025 *",
+  "singleText": "Célibataire",
+  "marriedText": "Marié(e)",
+  "divorcedText": "Divorcé(e)",
+  "sepText": "Séparé(e)",
+  "widText": "Veuf / Veuve",
+  "livingText": "Union libre",
+  "maritalStatusChanged": "Votre état civil a-t-il changé au cours de l'année ? *",
+  "spouseInfoText": "Informations sur le conjoint*",
+  "noSpouseText": "Pas de conjoint",
+  "spouseCommonLawText": "Nom du conjoint ou partenaire de fait",
+  "yesSpouseText": "Si oui, précisez la date et fournissez des détails",
+  "selectDateText": "Sélectionner la date",
+  "provideDetailsText": "Fournir les détails ici...",
+  "commonLawText": "Nom du partenaire de fait",
+  "foreignPropertyText": "Possédez-vous un bien étranger spécifique à tout moment en 2024 pour un coût total supérieur à 100 000 $ CAN ?*",
+  "qcPerscText": "Information sur l’assurance médicaments du Québec",
+  "privateMonthsText": "Privé (mois)",
+  "qcAdvancePaymentText": "Paiement anticipé du Québec pour les frais de garde d’enfants et le crédit pour prime au travail*",
+  "amountText": "Montant",
+  "realEstateText": "Disposition de biens immobiliers*",
+  "principleResText": "Disposition de la résidence principale*",
+  "firstTaxText": "Première déclaration de revenus*",
+  "dependantInfoText": "Informations sur les personnes à charge",
+  "childNameText": "Nom de l’enfant",
+  "disText": "Invalidité (Oui/Non)",
+  "birthText": "Date de naissance (J/M/A)",
+  "citizenshipText": "Pays de citoyenneté",
+  "monthLivedText": "Mois vécus avec vous",
+  "incomeText": "Revenu",
+  "sensitiveInfoText": "N.B. : les informations sensibles doivent être partagées directement avec votre spécialiste fiscal.",
+  "pleaseSelectYear": "Veuillez sélectionner une année",
+
+  "rentalPropertyPlansText": "Plans de propriétés locatives",
+  "noRentalFoundText": "Aucune propriété locative trouvée.",
+  "propertyAddressSettingsText": "Paramètres de l’adresse de la propriété",
+  "propertyOwnerText": "Propriétaire du bien",
+  "propertyOwnerDetails": "Détails du propriétaire",
+  "incomeTypeText": "Type de revenu",
+  "addEntryText": "Ajouter une entrée",
+  "allRegEntriesText": "Toutes les entrées régulières",
+  "databaseText": "Base de données",
+  "enterAccDetailsText": "Paramètres du compte introuvables — veuillez saisir les informations.",
+  "addressNumText": "Numéro civique",
+  "streetText": "Rue, case postale",
+  "cityText": "Ville",
+  "provinceText": "Province",
+  "stateText": "État",
+  "postalCodeText": "Code postal",
+  "AptText": "Appartement ou suite",
+  "percentageText": "Votre pourcentage %",
+  "personalUseText": "Utilisation personnelle %",
+  "NumOfUnits": "Nombre d’unités",
+  "typeText": "Type de propriété",
+  "selectPropertyText": "Sélectionner le type de propriété",
+  "describeText": "Décrire un autre type de propriété",
+  "fairRentalText": "Jours de location équitable",
+  "personalUseDaysText": "Jours d’utilisation personnelle",
+  "singleResText": "Résidence unifamiliale",
+  "multiResText": "Résidence multifamiliale",
+  "shortTText": "Location de vacances / courte durée",
+  "commercialText": "Commercial",
+  "landText": "Terrain",
+  "rText": "Redevances",
+  "sRText": "Location à soi-même",
+  "otherText": "Autre (décrire)",
+  "addText": "Ajouter",
+  "rIncomeText": "Type de revenu locatif",
+  "manageIncomeText": "Gérez vos types de revenus",
+  "noIncomeTypesText": "Vous n'avez aucun type de revenu",
+  "nameText": "Nom",
+  "incomeDText": "Nom (adresse de l’immeuble sans numéro d’appartement, appartement 1, 2, 3, etc., loyer 1, 2, etc.)",
+  "tenText": "Nombre total de locataires et de sous-locataires",
+
+  "date": "Date",
+  "type": "Type",
+  "expenseType": "Types de dépenses",
+
+
+  "expense_advertising": "Publicité",
+  "expense_insurance": "Assurance",
+  "expense_interest_bank": "Intérêts et frais bancaires",
+  "expense_office": "Frais de bureau",
+  "expense_professional_fees": "Honoraires professionnels",
+  "expense_management_admin": "Frais de gestion et d’administration",
+  "expense_repairs_maintenance": "Réparations et entretien",
+  "expense_salaries_benefits": "Salaires, traitements et avantages sociaux",
+  "expense_property_taxes": "Impôts fonciers",
+  "expense_travel": "Déplacements",
+  "expense_utilities": "Services publics",
+  "expense_motor_vehicle": "Frais de véhicule à moteur",
+  "expense_other_busauto": "Autres dépenses (BusAuto)",
+  "expense_other": "Autres dépenses",
+
+  "expense_auto_travel": "Automobile et déplacements (voir instructions)",
+  "expense_cleaning_maintenance": "Nettoyage et entretien",
+  "expense_commissions": "Commissions",
+  "expense_legal_professional": "Frais juridiques et autres honoraires professionnels",
+  "expense_management_fees": "Frais de gestion",
+  "expense_mortgage_interest": "Intérêts hypothécaires payés aux banques, etc. (voir instructions)",
+  "expense_other_interest": "Autres intérêts",
+  "expense_repairs": "Réparations",
+  "expense_supplies": "Fournitures",
+  "expense_taxes": "Taxes",
+  "expense_depreciation": "Charge d’amortissement ou d’épuisement",
+  "expense_other_list": "Autres (à préciser)",
+
+
+  "uberTitleText": "Déclaration GST/QST",
+  "manageDescText": "Gérer votre GST/PST",
+  "periodFromText": "Période du",
+  "periodToText": "Période au",
+  "dueDateText": "Date d’échéance",
+  "genGrossText": "Générer le rapport de revenus bruts",
+  "printGrossText": "Imprimer le rapport de revenu brut",
+  "forwardGrossReportText": "Transférer le rapport de revenu brut",
+  "genReportText": "Générer le rapport TPS/TVQ",
+  "printReportText": "Imprimer le rapport GST/QST",
+  "forwardReportText": "Transmettre le rapport TPS/TVQ",
+  "noQuebecText": "Aucune donnée pour le Québec",
+  "docTitleText": "CECI N’EST PAS UNE FACTURE NI UN DOCUMENT FISCAL OFFICIEL",
+  "taxSummaryPeriodText": "Résumé fiscal pour la période de l’année d’imposition",
+  "grossRideDescText": "Plusieurs des éléments énumérés ci-dessous peuvent être déductibles d’impôt. Pour plus d’informations, nous vous recommandons de consulter un service ou un professionnel fiscal qualifié.",
+  "uberTitle": "COURSES UBER – DÉTAIL DES RECETTES BRUTES",
+  "subText": "Cette section indique les frais que vous avez facturés aux passagers.",
+  "grossRidesText": "Recettes brutes des courses Uber",
+  "bookingFeeText": "Frais de réservation",
+  "mtqDuesText": "Cotisations MTQ",
+  "airportFeeText": "Frais d’aéroport",
+  "splitText": "Course partagée",
+  "miscText": "Divers",
+  "tollsText": "Péages",
+  "tipsText": "Pourboires",
+  "gstCRiderText": "TPS perçue auprès des passagers",
+  "qstCRiderText": "TVQ perçue auprès des passagers",
+
+
+  "freesBreakdownUberText": "COURSES UBER\nDÉTAIL DES FRAIS",
+  "feesBreakdownText": "Cette section indique les frais que vous avez payés à Uber. Ceux-ci comprennent les frais de service ainsi que les frais refacturés tels que les frais de réservation, les frais réglementaires ou les frais d’aéroport.",
+  "serviceFeeText": "Frais de service",
+  "otherAmountsText": "Autres montants (réservation, aéroport, course partagée, frais environnementaux)",
+  "feeDiscountText": "Rabais sur les frais",
+  "gstUberText": "TPS payée à Uber",
+  "qstUberText": "TVQ payée à Uber",
+  "uberRegNumText": "Numéro d’inscription TPS d’Uber",
+  "qstRegNumText": "Numéro d’inscription TVQ d’Uber",
+  "prevText": "Précédent",
+
+
+  "forGstQstReturnText": "POUR VOTRE\nDÉCLARATION TPS/TVQ",
+  "forDescText": "Cette section contient les renseignements nécessaires à la préparation de votre déclaration de TPS/TVQ. Veuillez noter que, conformément à l’entente fiscale exigée par Revenu Québec, les montants indiqués comme ayant été remis par Uber en votre nom pour la TPS et la TVQ sont considérés comme des paiements provisionnels que vous avez remis à Revenu Québec. Des ajustements supplémentaires à l’impôt que vous devez payer peuvent être requis selon votre situation (consultez les instructions sur le site Web de Revenu Québec).",
+  "supplyText": "Fournitures excluant la TPS et la TVQ",
+  "gstRemittedText": "TPS remise par Uber en votre nom",
+  "qstRemittedText": "TVQ remise par Uber en votre nom",
+  "gstNumText": "Votre numéro de TPS",
+  "qstNumText": "Votre numéro de TVQ",
+
+
+  "uberEatsGrossText": "UBER EATS\nDÉTAIL DES RECETTES BRUTES",
+  "uberEatsDescText": "Les péages et les pourboires ne sont pas assujettis à la TPS/TVQ. Vous avez perçu la TPS/TVQ auprès d’Uber sur vos recettes Uber Eats si vous êtes inscrit à la TPS/TVQ et avez fourni tous les renseignements requis dans votre profil fiscal. Si vous n’êtes pas inscrit à la TPS/TVQ parce que vous êtes un petit fournisseur (par exemple, vous avez réalisé moins de 30 000 $ de ventes au cours des 12 derniers mois), vous n’avez pas à remplir votre profil fiscal.",
+  "grossUberText": "Recettes brutes Uber Eats",
+  "gstUberC": "TPS perçue auprès d’Uber",
+  "qstUberC": "TVQ perçue auprès d’Uber",
+
+
+  "otherIncomeText": "AUTRES REVENUS\nDÉTAIL",
+  "incomeDescText": "Cette section indique les autres montants qui vous ont été versés par Uber. Les primes et les promotions sont assujetties à la TPS/TVQ.",
+  "quickAccountingText": "6,085 % avec la méthode de comptabilité rapide",
+  "otherTaxIncomeText": "Autres revenus imposables",
+
+
+  "potentialDedText": "AUTRES DÉDUCTIONS\nPOTENTIELLES",
+  "tripMileageText": "Kilométrage en course",
+  "onlineMileageText": "Kilométrage en ligne",
+  "lastDetailsText": "Les informations de ce résumé ne reflètent pas votre situation fiscale personnelle et sont fournies à titre informatif seulement. Rien dans ce résumé ne constitue un conseil fiscal ni une relation d'emploi entre Uber et vous, que ce soit de façon expresse ou implicite. Veuillez consulter votre conseiller fiscal ou l'administration fiscale locale pour vos obligations fiscales personnelles.",
+
+
+  "scanQuebecText": "Scanner Uber Québec",
+  "scanDescText": "Remplissez les détails pour ajouter un nouveau reçu.",
+  "skipScanText": "Ignorer le scan",
+  "viewPdfText": "Voir le PDF",
+  "pickPdfFileText": "Choisir un fichier PDF",
+  "enterNameText": "Entrez votre nom",
+  "revInfoTitleText": "Veuillez vérifier vos informations",
+  "revInfoSubText": "Veuillez vérifier vos informations avant de les enregistrer — vous ne pourrez pas les modifier ou les supprimer après l'enregistrement. Voulez-vous continuer ?",
+  "yesSaveText": "Oui, enregistrer",
+
+  "teamMembersText": "Membres de l'équipe",
+  "manageTeamMembersText": "Gérer vos membres de l'équipe",
+  "noTeamMembersText": "Vous n'avez aucun membre dans l'équipe",
+  "teamForText": "Équipe pour",
+  "addNewTeamMemberText": "Ajouter un nouveau membre de l'équipe",
+  "fillDescText": "Remplissez les détails pour ajouter un nouveau membre de l'équipe.",
+  "updateTeamText": "Mettre à jour le membre de l'équipe",
+  "updateDescText": "Mettez à jour les détails du membre de l'équipe.",
+
+
+  "viewersTitleText": "Voir la liste des autorisations des spectateurs",
+  "manageViewersText": "Gérer les autorisations des spectateurs",
+  "noViewersText": "La liste des spectateurs est vide",
+
+  "addViewersText": "Ajouter de nouvelles permissions de visionnage",
+  "addVDescText": "Remplissez les informations pour ajouter une nouvelle permission de visionnage.",
+  "updateViewersText": "Modifier les permissions de visionnage",
+  "updateVDescText": "Remplissez les informations pour modifier une permission de visionnage.",
+
+  "graphicEntryText": "Graphique de toutes les entrées",
+  "manageEntryText": "Gérez vos entrées de base de données.",
+  "repT776Text": "Rapport T776",
+  "repScheduleText": "À déclarer sur le formulaire 1040 – Annexe E",
+  "printT776Text": "Imprimer votre T776",
+  "printScheduleText": "Imprimer le formulaire 1040 – Annexe E",
+  "forwardRepText": "Transférer le rapport",
+  "expenseText": "Dépenses",
+  "expToPdfText": "Exporter en PDF",
+
+
+  "allRegularEntriesText": "Toutes les entrées régulières",
+  "exportText": "Exporter",
+  "pdfText": "PDF",
+  "proofText": "Preuve",
+  "noRegEntriesText": "Vous n'avez aucune entrée régulière",
+  "onlyRentalText": "Uniquement pour la location",
+
+  "updateEntryText": "Mettre à jour l’entrée",
+  "otherExpenseName": "Saisir le nom d’autre dépense",
+  "enterExpenseName": "Saisir le nom de la dépense",
+  "chooseTypeText": "Choisir le type",
+  "forwardText": "Transférer",
+  "forwardMultipleGas": "Transférer plusieurs rapports d’essence",
+  "taxesText": "Les taxes seront calculées automatiquement\nlors du passage à la caisse",
+  "subscribePlanText": "Vous pouvez vous abonner à ce forfait ici",
+  "forwardMultipleFileText": "Transférer plusieurs fichiers",
+  "forwardMultipleEntriesText": "Transférer plusieurs entrées",
+
+
+  "noEntriesToExport": "Aucune entrée à exporter",
+  "exportedEntries": "Entrées exportées",
+  "exportFailed": "Échec de l’exportation",
+
+  "expense": "Dépense",
+  "onlyForRental": "Uniquement pour la location",
+  "incomeType": "Type de revenu",
+  "amount": "Montant",
+  "yearText1": "année"
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+}
