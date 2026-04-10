@@ -1,7 +1,9 @@
+
 import 'package:flutter/material.dart';
 import 'package:flutter_stripe/flutter_stripe.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:geolocator/geolocator.dart';
+
 
 import '../utils/utils.dart';
 import '../view_models/pricing_plans_view_model/pricing_plans_view_model.dart';
@@ -35,15 +37,14 @@ Future<String> getCountryCode() async {
 }
 
 Future<void> startSubscriptionFlow(
-  BuildContext context,
-  String userId,
-  int planId,
-  PricingPlansViewModel provider,
-) async {
+    BuildContext context,
+    String userId,
+    int planId,
+    PricingPlansViewModel provider,
+    ) async {
   try {
     debugPrint("🚀 STEP 1: SetupIntent API");
 
-    // 1️⃣ SetupIntent
     final setupResponse = await provider.createSetupIntentApi({
       "user_id": userId,
       "plan_id": planId,
@@ -75,7 +76,7 @@ Future<void> startSubscriptionFlow(
     debugPrint("🔑 ephemeralKey: $ephemeralKey");
     debugPrint("💲 priceId: $priceId");
 
-    // 2️⃣ Init Payment Sheet
+    // ✅ STEP 2: Init Payment Sheet (UPDATED)
     debugPrint("🚀 STEP 2: Init Payment Sheet");
 
     await Stripe.instance.initPaymentSheet(
@@ -84,28 +85,42 @@ Future<void> startSubscriptionFlow(
         customerEphemeralKeySecret: ephemeralKey,
         setupIntentClientSecret: clientSecret,
         merchantDisplayName: 'Stora Tax',
+
+        // 🔥 APPLE PAY ENABLED
+        applePay: const PaymentSheetApplePay(
+          merchantCountryCode: 'CA',
+        ),
+
+        // Optional (good UX)
+        style: ThemeMode.system,
       ),
     );
 
     debugPrint("✅ INIT SUCCESS");
 
-    // 3️⃣ Present Payment Sheet
+    // ✅ STEP 3: Present Payment Sheet
     debugPrint("🚀 STEP 3: Present Payment Sheet");
 
     await Stripe.instance.presentPaymentSheet();
 
     debugPrint("✅ PAYMENT METHOD SAVED");
 
-    // 4️⃣ Retrieve PaymentMethod
+    // ✅ STEP 4: Retrieve SetupIntent
     debugPrint("🚀 STEP 4: Retrieve SetupIntent");
 
-    final setupIntent = await Stripe.instance.retrieveSetupIntent(clientSecret);
+    final setupIntent =
+    await Stripe.instance.retrieveSetupIntent(clientSecret);
 
     final paymentMethodId = setupIntent.paymentMethodId;
 
+    if (paymentMethodId == null) {
+      Utils.toastMessage("Payment method not found");
+      return;
+    }
+
     debugPrint("💳 PaymentMethodId: $paymentMethodId");
 
-    // 5️⃣ Create Subscription
+    // ✅ STEP 5: Create Subscription
     debugPrint("🚀 STEP 5: Create Subscription");
 
     final subPayload = {
@@ -113,7 +128,6 @@ Future<void> startSubscriptionFlow(
       "payment_method_id": paymentMethodId,
       "user_id": userId,
       "plan_id": planId,
-      // "coupon_id": couponId, // optional here
     };
 
     debugPrint("📌 SUBSCRIPTION REQUEST PAYLOAD: $subPayload");
@@ -136,7 +150,7 @@ Future<void> startSubscriptionFlow(
 
     debugPrint("✅ Subscription ID: $subscriptionId");
 
-    // 6️⃣ ✅ CALL paymentApi (NO coupon_id here)
+    // ✅ STEP 6: Call paymentApi
     debugPrint("🚀 STEP 6: Call paymentApi");
 
     await provider.paymentApi(context, {
@@ -145,6 +159,12 @@ Future<void> startSubscriptionFlow(
     });
 
     debugPrint("✅ FLOW COMPLETED SUCCESSFULLY");
+
+  } on StripeException catch (e) {
+    debugPrint("❌ STRIPE ERROR: ${e.error.localizedMessage}");
+    Utils.toastMessage(
+        e.error.localizedMessage ?? "Payment cancelled");
+
   } catch (e, s) {
     debugPrint("❌ FINAL ERROR: $e\n$s");
     Utils.toastMessage("Something went wrong");
@@ -223,18 +243,15 @@ Future<void> startSubscriptionFlow(
 // }
 
 Future<void> saveSubscriptionFlow(
-  BuildContext context,
-  int userId,
-  int planId,
-  int? couponId,
-  PricingPlansViewModel provider,
-) async {
+    BuildContext context,
+    int userId,
+    int planId,
+    int? couponId,
+    PricingPlansViewModel provider,
+    ) async {
   try {
     debugPrint("🚀 STEP 1: Calling SetupIntent API");
-    debugPrint(
-      "📤 SetupIntent Payload: ${{"user_id": userId, "plan_id": planId}}",
-    );
-    // 1️⃣ SetupIntent API
+
     final setupResponse = await provider.createSetupIntentApi({
       "user_id": userId,
       "plan_id": planId,
@@ -268,7 +285,7 @@ Future<void> saveSubscriptionFlow(
     debugPrint("🔑 ephemeralKey: $ephemeralKey");
     debugPrint("💲 Price ID: $priceId");
 
-    // 2️⃣ Init Payment Sheet
+    // ✅ STEP 2: Init Payment Sheet (UPDATED WITH APPLE PAY)
     debugPrint("🚀 STEP 2: Init Payment Sheet");
 
     await Stripe.instance.initPaymentSheet(
@@ -277,28 +294,42 @@ Future<void> saveSubscriptionFlow(
         customerEphemeralKeySecret: ephemeralKey,
         setupIntentClientSecret: clientSecret,
         merchantDisplayName: 'Stora Tax',
+
+        // 🔥 ADD THIS FOR APPLE PAY
+        applePay: const PaymentSheetApplePay(
+          merchantCountryCode: 'CA', // Canada
+        ),
+
+        // Optional (recommended)
+        style: ThemeMode.system,
       ),
     );
 
     debugPrint("✅ INIT SUCCESS");
 
-    // 3️⃣ Present Payment Sheet
+    // ✅ STEP 3: Present Payment Sheet
     debugPrint("🚀 STEP 3: Present Payment Sheet");
 
     await Stripe.instance.presentPaymentSheet();
 
     debugPrint("✅ PRESENT SUCCESS");
 
-    // 4️⃣ Retrieve SetupIntent
+    // ✅ STEP 4: Retrieve SetupIntent
     debugPrint("🚀 STEP 4: Retrieve SetupIntent");
 
-    final setupIntent = await Stripe.instance.retrieveSetupIntent(clientSecret);
+    final setupIntent =
+    await Stripe.instance.retrieveSetupIntent(clientSecret);
 
     final paymentMethodId = setupIntent.paymentMethodId;
 
+    if (paymentMethodId == null) {
+      Utils.toastMessage("Payment method not found");
+      return;
+    }
+
     debugPrint("💳 PaymentMethodId: $paymentMethodId");
 
-    // 5️⃣ Create Subscription
+    // ✅ STEP 5: Create Subscription
     debugPrint("🚀 STEP 5: Create Subscription");
 
     final subPayload = {
@@ -306,7 +337,7 @@ Future<void> saveSubscriptionFlow(
       "payment_method_id": paymentMethodId,
       "user_id": userId,
       "plan_id": planId,
-      "coupon_id": couponId, // ✅ included
+      "coupon_id": couponId,
     };
 
     debugPrint("📌 SUBSCRIPTION REQUEST PAYLOAD: $subPayload");
@@ -329,7 +360,7 @@ Future<void> saveSubscriptionFlow(
 
     debugPrint("✅ Subscription ID: $subscriptionId");
 
-    // 6️⃣ 🔥 CALL YOUR SAVE SUBSCRIPTION API
+    // ✅ STEP 6: Save Subscription
     await provider.saveSubscriptionApi(context, {
       "subscription_id": subscriptionId,
       "user_id": userId,
@@ -338,9 +369,17 @@ Future<void> saveSubscriptionFlow(
     });
 
     debugPrint("✅ saveSubscriptionApi called");
+
+  } on StripeException catch (e) {
+    debugPrint("❌ STRIPE ERROR: ${e.error.localizedMessage}");
+    Utils.toastMessage(e.error.localizedMessage ?? "Payment cancelled");
+
   } catch (e, s) {
     debugPrint("❌ FINAL ERROR: $e");
     debugPrint("$s");
     Utils.toastMessage("Something went wrong during subscription");
   }
 }
+
+
+

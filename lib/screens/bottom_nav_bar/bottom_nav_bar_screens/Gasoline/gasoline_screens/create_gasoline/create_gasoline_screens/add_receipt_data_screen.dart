@@ -62,7 +62,7 @@ class _AddReceiptDataScreenState extends State<AddReceiptDataScreen> {
               onPrimary: Colors.white,
               onSurface: Colors.black,
             ),
-            dialogTheme: DialogThemeData(backgroundColor: Colors.white),
+            dialogBackgroundColor: Colors.white,
           ),
           child: child!,
         );
@@ -88,26 +88,26 @@ class _AddReceiptDataScreenState extends State<AddReceiptDataScreen> {
       });
     } else {
       // For non-US users, calculate as before
-      double percentagegstHst = hstActual > 0 ? hstActual : gstActual;
+      double percentageGST_HST = hstActual > 0 ? hstActual : gstActual;
       double percentagePST = pstActual;
 
       double beforeTax =
-          totalAmount / (1 + (percentagegstHst + percentagePST) / 100);
+          totalAmount / (1 + (percentageGST_HST + percentagePST) / 100);
 
-      double fetchedgstHst = beforeTax * (percentagegstHst / 100);
+      double fetchedGST_HST = beforeTax * (percentageGST_HST / 100);
       double fetchedPST = beforeTax * (percentagePST / 100);
 
       setState(() {
         beforeTaxController.text = beforeTax.toStringAsFixed(2);
 
         if (hstActual > 0) {
-          hst = fetchedgstHst;
+          hst = fetchedGST_HST;
         } else {
-          gst = fetchedgstHst;
+          gst = fetchedGST_HST;
         }
 
         pst = fetchedPST;
-        totalTaxesValue = fetchedgstHst + fetchedPST;
+        totalTaxesValue = fetchedGST_HST + fetchedPST;
       });
     }
   }
@@ -182,11 +182,13 @@ class _AddReceiptDataScreenState extends State<AddReceiptDataScreen> {
         return Scaffold(
           resizeToAvoidBottomInset: false,
           appBar: CustomAppBar(
-            text1:
-                AppLocalizations.of(context)!.translate("addNewReceiptText") ??
+             text1:AppLocalizations.of(
+              context,
+            )!.translate("addNewReceiptText") ??
                 '',
-            text2:
-                AppLocalizations.of(context)!.translate("descNewReceiptText") ??
+            text2: AppLocalizations.of(
+              context,
+            )!.translate("descNewReceiptText") ??
                 '',
             showBackButton: true,
             onBackTap: () {
@@ -211,6 +213,7 @@ class _AddReceiptDataScreenState extends State<AddReceiptDataScreen> {
 
               Column(
                 children: [
+
                   Expanded(
                     child: SingleChildScrollView(
                       child: Padding(
@@ -504,7 +507,7 @@ class _AddReceiptDataScreenState extends State<AddReceiptDataScreen> {
                                         gasoline.createGasolineApi(
                                           context,
                                           fields,
-                                          widget.receiptFile,
+                                          widget.receiptFile
                                         );
                                       }
                                     },

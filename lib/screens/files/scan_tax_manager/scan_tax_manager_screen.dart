@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:io' hide Context;
 
 import 'package:flutter/material.dart';
+import 'package:flutter_doc_scanner/flutter_doc_scanner.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:google_mlkit_document_scanner/google_mlkit_document_scanner.dart';
 import 'package:image_cropper/image_cropper.dart';
@@ -9,14 +10,14 @@ import 'package:path/path.dart' as path;
 import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:storatax/screens/files/create_tax_manager/create_tax_manager_screen.dart';
-import 'package:storatax/view_models/auth_view_model/auth_view_model.dart';
-import 'package:storatax/view_models/gasoline_view_model/gasoline_view_model.dart';
 import 'package:storatax/view_models/tax_manager_view_model/tax_manager_view_model.dart';
 
 import '../../../../../../../res/app_assets.dart';
 import '../../../../../../../res/components/app_localization.dart';
 import '../../../../../../../utils/app_colors.dart';
 import '../../../../../../../utils/utils.dart';
+import 'package:storatax/view_models/auth_view_model/auth_view_model.dart';
+import 'package:storatax/view_models/gasoline_view_model/gasoline_view_model.dart';
 
 class ScanTaxManagerScreen extends StatefulWidget {
   const ScanTaxManagerScreen({super.key});
@@ -102,12 +103,12 @@ class _ScanTaxManagerScreenState extends State<ScanTaxManagerScreen>
         startTextCycle();
         startAutoScan(croppedImage, scanWithAI: true);
       }
+
     } catch (e) {
       print("ImageCropper error: $e");
       Utils.toastMessage("Failed to crop image.");
     }
   }
-
   void startTextCycle() {
     textCycleTimer?.cancel();
     textCycleTimer = Timer.periodic(const Duration(seconds: 2), (timer) {
@@ -139,10 +140,7 @@ class _ScanTaxManagerScreenState extends State<ScanTaxManagerScreen>
       setState(() => elapsedSeconds++);
 
       if (elapsedSeconds == 3) {
-        final gasoline = Provider.of<TaxManagerViewModel>(
-          context,
-          listen: false,
-        );
+        final gasoline = Provider.of<TaxManagerViewModel>(context, listen: false);
         final auth = Provider.of<AuthViewModel>(context, listen: false);
 
         try {
@@ -215,43 +213,107 @@ class _ScanTaxManagerScreenState extends State<ScanTaxManagerScreen>
     super.dispose();
   }
 
+
+  // Future<void> startSmartCameraCapture() async {
+  //   try {
+  //     // 1. Corrected options for version 0.4.1
+  //     final options = DocumentScannerOptions(
+  //       documentFormats: {DocumentFormat.jpeg}, // Use {} to make it a Set
+  //       mode: ScannerMode.full,
+  //       isGalleryImport: false,
+  //       pageLimit: 1,
+  //     );
+  //
+  //     final documentScanner = DocumentScanner(options: options);
+  //
+  //     final result = await documentScanner.scanDocument();
+  //
+  //     if (result.images!.isNotEmpty) {
+  //       final File capturedFile = File(result.images!.first);
+  //
+  //       if (!mounted) return;
+  //
+  //       setState(() {
+  //         localPickedImage = capturedFile;
+  //         elapsedSeconds = 0;
+  //         currentTextIndex = 0;
+  //         isAutoScanning = true;
+  //       });
+  //
+  //       startTextCycle();
+  //       startAutoScan(capturedFile);
+  //     }
+  //
+  //     await documentScanner.close();
+  //
+  //   } catch (e) {
+  //     debugPrint("Document Scanner Error: $e");
+  //     // If the user presses the back button without scanning,
+  //     // it might throw an exception or return empty.
+  //   }
+  // }
+
   Future<void> startSmartCameraCapture() async {
     try {
-      // 1. Corrected options for version 0.4.1
-      final options = DocumentScannerOptions(
-        documentFormats: {DocumentFormat.jpeg}, // Use {} to make it a Set
-        mode: ScannerMode.full,
-        isGalleryImport: false,
-        pageLimit: 1,
-      );
+      if (Platform.isAndroid) {
+        // --- ANDROID: GOOGLE ML KIT (Fixed for your TECNO) ---
+        final options = DocumentScannerOptions(
+          documentFormats: {DocumentFormat.jpeg},
+          mode: ScannerMode.full,
+          isGalleryImport: false,
+          pageLimit: 1,
+        );
 
-      final documentScanner = DocumentScanner(options: options);
+        final documentScanner = DocumentScanner(options: options);
+        final result = await documentScanner.scanDocument();
 
-      final result = await documentScanner.scanDocument();
+        if (result.images != null && result.images!.isNotEmpty) {
+          _processScannedFile(File(result.images!.first));
+        }
 
-      if (result.images!.isNotEmpty) {
-        final File capturedFile = File(result.images!.first);
+        await documentScanner.close();
 
-        if (!mounted) return;
+      } else if (Platform.isIOS) {
+        // --- iOS: APPLE VISIONKIT (Using flutter_doc_scanner) ---
+        // This launches the native iOS scanner with the yellow box edge detection.
+        final result = await FlutterDocScanner().getScanDocuments();
 
-        setState(() {
-          localPickedImage = capturedFile;
-          elapsedSeconds = 0;
-          currentTextIndex = 0;
-          isAutoScanning = true;
-        });
-
-        startTextCycle();
-        startAutoScan(capturedFile);
+        if (result != null && result.containsKey('images')) {
+          List<dynamic> images = result['images'];
+          if (images.isNotEmpty) {
+            // The result returns the path as a string in the first index
+            _processScannedFile(File(images.first.toString()));
+          }
+        }
       }
-
-      await documentScanner.close();
     } catch (e) {
       debugPrint("Document Scanner Error: $e");
-      // If the user presses the back button without scanning,
-      // it might throw an exception or return empty.
+      // Show a user-friendly message if the scanner fails or user cancels
+      if (e.toString().contains("cancel")) {
+        debugPrint("User cancelled the scan");
+      } else {
+        Utils.toastMessage("Could not launch camera");
+      }
     }
   }
+
+  void _processScannedFile(File file) {
+    if (!mounted) return;
+
+    setState(() {
+      localPickedImage = file;
+      elapsedSeconds = 0;
+      currentTextIndex = 0;
+      isAutoScanning = true;
+    });
+
+    // These are your existing methods for the Stora Tax receipt logic
+    startTextCycle();
+    startAutoScan(file);
+  }
+
+
+
 
   @override
   Widget build(BuildContext context) {
@@ -461,12 +523,8 @@ class _ScanTaxManagerScreenState extends State<ScanTaxManagerScreen>
                                     if (isAutoScanning)
                                       Container(
                                         decoration: BoxDecoration(
-                                          color: Colors.black.withValues(
-                                            alpha: 0.4,
-                                          ),
-                                          borderRadius: BorderRadius.circular(
-                                            10,
-                                          ),
+                                          color: Colors.black.withOpacity(0.4),
+                                          borderRadius: BorderRadius.circular(10),
                                         ),
                                       ),
                                     // Scanning line animation
@@ -475,11 +533,7 @@ class _ScanTaxManagerScreenState extends State<ScanTaxManagerScreen>
                                         animation: _scanAnimation,
                                         builder: (context, child) {
                                           return Positioned(
-                                            top:
-                                                _scanAnimation.value *
-                                                (Utils.setHeight(context) *
-                                                        0.25 -
-                                                    4),
+                                            top: _scanAnimation.value * (Utils.setHeight(context) * 0.25 - 4),
                                             left: 0,
                                             right: 0,
                                             child: Container(

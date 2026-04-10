@@ -303,7 +303,7 @@ class _UpdateFileScreenState extends State<UpdateFileScreen> {
                             width: double.infinity,
                             height: 200,
                             decoration: BoxDecoration(
-                              color: Colors.black.withValues(alpha:0.3),
+                              color: Colors.black.withOpacity(0.3),
                               borderRadius: BorderRadius.circular(8),
                             ),
                             child: const Center(
@@ -347,7 +347,7 @@ class _UpdateFileScreenState extends State<UpdateFileScreen> {
           ),
 
           // Only allow value if it exists in `years`
-          initialValue: years.contains(selectedYear) ? selectedYear : null,
+          value: years.contains(selectedYear) ? selectedYear : null,
 
           items:
               years.map((year) {
@@ -396,7 +396,7 @@ class _UpdateFileScreenState extends State<UpdateFileScreen> {
           ),
           hint: Text(isFrench ? "Choisir" : "Choose One"),
 
-          initialValue:
+          value:
               categoryItems.any((c) => c.backendValue == selectedCategory)
                   ? selectedCategory
                   : null,

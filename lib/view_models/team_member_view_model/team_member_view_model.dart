@@ -29,15 +29,9 @@ class TeamMemberViewModel extends ChangeNotifier {
 
       if (response.status == 1) {
         _allData = response.data!;
-        return {
-          "success": true,
-          "message": response.success ?? "Fetched successfully",
-        };
+        return {"success": true, "message": response.success ?? "Fetched successfully"};
       } else {
-        return {
-          "success": false,
-          "message": response.success ?? "Something went wrong",
-        };
+        return {"success": false, "message": response.success ?? "Something went wrong"};
       }
     } catch (e, stackTrace) {
       debugPrint("Get All Team Member data error: $e $stackTrace");
@@ -97,6 +91,7 @@ class TeamMemberViewModel extends ChangeNotifier {
       if (response["status"].toString() == "1") {
         Utils.toastMessage(response["success"]);
         context.pushNamed("viewTeamMember");
+
       } else {
         Utils.toastMessage(response["success"]);
       }

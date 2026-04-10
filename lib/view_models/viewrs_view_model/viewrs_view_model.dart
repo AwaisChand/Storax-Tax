@@ -47,14 +47,19 @@ class ViewrsViewModel extends ChangeNotifier {
 
   ///Create Viewrs Api
 
-  Future<void> createViewrsApi(BuildContext context, dynamic data) async {
+
+  Future<void> createViewrsApi(
+      BuildContext context,
+      dynamic data,
+      ) async {
     loading = true;
     notifyListeners();
 
     try {
       debugPrint("create viewrs data: $data");
 
-      final response = await viewrsRepository.createViewrsRep(data);
+      final response = await viewrsRepository
+          .createViewrsRep(data);
 
       if (response["status"].toString() == "1") {
         Utils.toastMessage(response["success"]);
@@ -77,20 +82,18 @@ class ViewrsViewModel extends ChangeNotifier {
   }
 
   Future<void> updateViewrsApi(
-    BuildContext context,
-    int id,
-    dynamic data,
-  ) async {
+      BuildContext context,
+      int id,
+      dynamic data,
+      ) async {
     loading = true;
     notifyListeners();
 
     try {
       debugPrint("Update viewrs data: $data");
 
-      final response = await viewrsRepository.updateViewrsRepo(
-        id: id,
-        data: data,
-      );
+      final response = await viewrsRepository
+          .updateViewrsRepo(id: id, data: data);
 
       if (response["status"].toString() == "1") {
         Utils.toastMessage(response["success"]);
@@ -135,4 +138,5 @@ class ViewrsViewModel extends ChangeNotifier {
       loading = false;
     }
   }
+
 }

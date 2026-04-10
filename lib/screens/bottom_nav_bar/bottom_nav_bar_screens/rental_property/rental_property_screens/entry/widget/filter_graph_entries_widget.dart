@@ -83,7 +83,7 @@ Future showFilterDialog(BuildContext context, int planId) async {
                     /// Year Dropdown
                     DropdownButtonFormField<String>(
                       isExpanded: true,
-                      initialValue: selectedYear,
+                      value: selectedYear,
                       items:
                           past7Years.map((year) {
                             return DropdownMenuItem(
@@ -409,7 +409,7 @@ Future showFilterGraphDialog(BuildContext context, int planId) async {
                         const SizedBox(width: 10),
                         Expanded(
                           child: DropdownButtonFormField<String>(
-                            initialValue:
+                            value:
                                 selectedYear, // will be current year by default
                             items:
                                 past7Years

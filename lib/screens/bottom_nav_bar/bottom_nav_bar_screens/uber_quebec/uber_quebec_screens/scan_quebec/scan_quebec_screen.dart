@@ -1,6 +1,6 @@
 import 'dart:io';
-
 import 'package:flutter/material.dart';
+import 'package:flutter_doc_scanner/flutter_doc_scanner.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:google_mlkit_document_scanner/google_mlkit_document_scanner.dart';
 import 'package:open_file/open_file.dart';
@@ -26,40 +26,60 @@ class ScanQuebecScreen extends StatefulWidget {
 class _ScanQuebecScreenState extends State<ScanQuebecScreen> {
   File? pickedFile;
 
-  Future<void> startSmartCameraCapture() async {
+  Future<void> startSmartQuebecCameraCapture() async {
     try {
-      // 1. Corrected options for version 0.4.1
-      final options = DocumentScannerOptions(
-        documentFormats: {DocumentFormat.jpeg}, // Use {} to make it a Set
-        mode: ScannerMode.full,
-        isGalleryImport: false,
-        pageLimit: 1,
-      );
+      if (Platform.isAndroid) {
+        // --- ANDROID: Google ML Kit Scanner ---
+        final options = DocumentScannerOptions(
+          documentFormats: {DocumentFormat.jpeg},
+          mode: ScannerMode.full,
+          isGalleryImport: false,
+          pageLimit: 1,
+        );
 
-      final documentScanner = DocumentScanner(options: options);
+        final documentScanner = DocumentScanner(options: options);
+        final result = await documentScanner.scanDocument();
 
-      final result = await documentScanner.scanDocument();
+        if (result.images != null && result.images!.isNotEmpty) {
+          final File capturedFile = File(result.images!.first);
 
-      if (result.images!.isNotEmpty) {
-        final File capturedFile = File(result.images!.first);
+          if (!mounted) return;
 
-        if (!mounted) return;
+          setState(() {
+            pickedFile = capturedFile;
+          });
+        }
 
-        setState(() {
-          pickedFile = capturedFile;
-        });
+        await documentScanner.close();
 
+      } else if (Platform.isIOS) {
+        // --- iOS: VisionKit via flutter_doc_scanner ---
+        final result = await FlutterDocScanner().getScanDocuments();
+
+        if (result != null && result.containsKey('images')) {
+          List<dynamic> images = result['images'];
+
+          if (images.isNotEmpty) {
+            final File capturedFile = File(images.first.toString());
+
+            if (!mounted) return;
+
+            setState(() {
+              pickedFile = capturedFile;
+            });
+          }
+        }
       }
-
-      await documentScanner.close();
-
     } catch (e) {
       debugPrint("Document Scanner Error: $e");
-      // If the user presses the back button without scanning,
-      // it might throw an exception or return empty.
+
+      if (e.toString().toLowerCase().contains("cancel")) {
+        debugPrint("User cancelled the scan");
+      } else {
+        Utils.toastMessage("Could not launch camera");
+      }
     }
   }
-
   @override
   Widget build(BuildContext context) {
     final auth = context.watch<AuthViewModel>();
@@ -224,7 +244,7 @@ class _ScanQuebecScreenState extends State<ScanQuebecScreen> {
                                                     onTap: () async {
                                                       Navigator.pop(context);
 
-                                                      startSmartCameraCapture();
+                                                      startSmartQuebecCameraCapture();
 
                                                       if (auth.pickedImage !=
                                                           null) {
@@ -364,7 +384,7 @@ class _ScanQuebecScreenState extends State<ScanQuebecScreen> {
                                             width: double.infinity,
                                             height:
                                                 Utils.setHeight(context) * 0.35,
-                                            color: Colors.black.withValues(alpha:
+                                            color: Colors.black.withOpacity(
                                               0.5,
                                             ),
                                             child: const Center(

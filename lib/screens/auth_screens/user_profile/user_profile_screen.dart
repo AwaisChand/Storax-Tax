@@ -311,7 +311,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                                 ),
                                 SizedBox(height: 20),
                                 DropdownButtonFormField<String>(
-                                  initialValue:
+                                  value:
                                       provinceList.contains(selectedIndex)
                                           ? selectedIndex
                                           : null,
@@ -340,7 +340,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                                       borderRadius: BorderRadius.circular(8),
                                       borderSide: BorderSide(
                                         color: AppColors.mediumGrayColor
-                                            .withValues(alpha: 0.5),
+                                            .withOpacity(0.5),
                                       ),
                                     ),
                                   ),

@@ -225,38 +225,61 @@ class Utils {
   }
 
   static void showErrorDialog({
-    required String message,
     required BuildContext context,
+    String title = "Scan Failed",
+    required String message,
   }) {
-    if (!context.mounted) return;
+    if (context == null) return;
     showDialog(
       context: context,
-      builder: (_) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      builder:
+          (dialogContext) => AlertDialog(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+        ),
         contentPadding: const EdgeInsets.all(20),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             Icon(Icons.error_outline, size: 50, color: Colors.orangeAccent),
             const SizedBox(height: 10),
-            const Text(
-              "Scan Failed",
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 18,
+            Text(
+              title,
+              style: GoogleFonts.montserrat(
+                fontSize: 16,
+                fontWeight: FontWeight.w500,
+                color: AppColors.blackColor,
               ),
             ),
             const SizedBox(height: 10),
             Text(
               message,
               textAlign: TextAlign.center,
-              style: const TextStyle(fontSize: 14),
+              style: GoogleFonts.montserrat(
+                fontSize: 14,
+                fontWeight: FontWeight.w500,
+                color: AppColors.blackColor,
+              ),
             ),
             const SizedBox(height: 15),
             ElevatedButton(
-              style: ElevatedButton.styleFrom(backgroundColor: Colors.blue),
-              onPressed: () => Navigator.pop(context),
-              child: const Text("OK"),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.goldenOrangeColor,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadiusGeometry.circular(10),
+                ),
+              ),
+              onPressed: () {
+                Navigator.of(dialogContext).pop();
+              },
+              child: Text(
+                "OK",
+                style: GoogleFonts.montserrat(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w500,
+                  color: AppColors.whiteColor,
+                ),
+              ),
             ),
           ],
         ),
@@ -264,8 +287,8 @@ class Utils {
     );
   }
 
-  static String publishKey =
-      "pk_live_51QWhgzAX1dkfLpyeIbA3me7rYfvXcQUxUnzWwCDvgc2DFG1n2vn0y7kxew5cBlDHT8DD4DFL1iq7pnI5hGHvdVhs00MPf4A5l6";
+  // static String publishKey =
+  //     "pk_live_51QWhgzAX1dkfLpyeIbA3me7rYfvXcQUxUnzWwCDvgc2DFG1n2vn0y7kxew5cBlDHT8DD4DFL1iq7pnI5hGHvdVhs00MPf4A5l6";
 
 
 }
@@ -383,4 +406,6 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
       ),
     );
   }
+
+
 }

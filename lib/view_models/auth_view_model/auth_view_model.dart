@@ -30,7 +30,7 @@ class AuthViewModel extends ChangeNotifier {
   File? _tempPickedImage;
   File? get pickedImage => _pickedImage ?? _tempPickedImage;
 
-  final List<XFile> _pickedImages = [];
+  List<XFile> _pickedImages = [];
   List<XFile> get pickedImages => _pickedImages;
 
   final ImagePicker _picker = ImagePicker();
@@ -195,8 +195,8 @@ class AuthViewModel extends ChangeNotifier {
   ///Pick Multiple Images from gallery
   Future<void> pickMultipleImages() async {
     try {
-      final List<XFile> images = await _picker.pickMultiImage();
-      if (images.isNotEmpty) {
+      final List<XFile>? images = await _picker.pickMultiImage();
+      if (images != null && images.isNotEmpty) {
         _pickedImages.addAll(images);
         notifyListeners();
       }
@@ -294,10 +294,10 @@ class AuthViewModel extends ChangeNotifier {
   ///verify otp
 
   Future<void> verifyOtpApi(
-    BuildContext context,
-    dynamic data, {
-    bool fromLogin = false,
-  }) async {
+      BuildContext context,
+      dynamic data, {
+        bool fromLogin = false,
+      }) async {
     loading = true;
     try {
       debugPrint("Verify OTP data: $data");
@@ -316,10 +316,16 @@ class AuthViewModel extends ChangeNotifier {
           await prefs.setBool("isOtpVerified", true);
 
           // ✅ Navigate to dashboard
-          context.goNamed('bottomNavBar', extra: {"initialIndex": 0});
+          context.goNamed(
+            'bottomNavBar',
+            extra: {"initialIndex": 0},
+          );
         } else {
           // Forgot password flow
-          context.pushNamed('resetPassword', extra: email);
+          context.pushNamed(
+            'resetPassword',
+            extra: email,
+          );
         }
       } else {
         Utils.toastMessage(response["success"]);
@@ -684,7 +690,10 @@ class AuthViewModel extends ChangeNotifier {
 
         context.goNamed(
           "verifyOtp",
-          extra: {"email": user.email, "fromLogin": true},
+          extra: {
+            "email": user.email,
+            "fromLogin": true,
+          },
         );
         return;
       }
@@ -702,7 +711,6 @@ class AuthViewModel extends ChangeNotifier {
       context.goNamed("login");
     }
   }
-
   Future<void> logout(BuildContext context) async {
     try {
       final prefs = await SharedPreferences.getInstance();

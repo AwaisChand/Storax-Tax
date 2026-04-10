@@ -17,7 +17,10 @@ class StaticNameYearInputField extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        border: Border.all(color: AppColors.blackColor, width: 0.5),
+        border: Border.all(
+          color: AppColors.blackColor,
+          width: 0.5,
+        ),
         borderRadius: BorderRadius.circular(10),
         color: AppColors.whiteColor,
       ),
@@ -26,10 +29,16 @@ class StaticNameYearInputField extends StatelessWidget {
           // Static Name Text
           Expanded(
             child: Padding(
-              padding: const EdgeInsets.symmetric(vertical: 13, horizontal: 15),
+              padding: const EdgeInsets.symmetric(
+                vertical: 13,
+                horizontal: 15,
+              ),
               child: Text(
                 name,
-                style: TextStyle(color: Colors.grey.shade700, fontSize: 16.0),
+                style: TextStyle(
+                  color: Colors.grey.shade700,
+                  fontSize: 16.0,
+                ),
               ),
             ),
           ),
@@ -41,7 +50,7 @@ class StaticNameYearInputField extends StatelessWidget {
             margin: const EdgeInsets.symmetric(horizontal: 8.0),
             decoration: BoxDecoration(
               border: Border.all(
-                color: AppColors.blackColor.withValues(alpha: 0.2),
+                color: AppColors.blackColor.withOpacity(0.2),
                 width: 0.5,
               ),
               borderRadius: BorderRadius.circular(10),
@@ -54,7 +63,10 @@ class StaticNameYearInputField extends StatelessWidget {
             padding: const EdgeInsets.only(right: 12.0),
             child: Text(
               selectedYear,
-              style: TextStyle(color: Colors.grey.shade700, fontSize: 16.0),
+              style: TextStyle(
+                color: Colors.grey.shade700,
+                fontSize: 16.0,
+              ),
             ),
           ),
         ],

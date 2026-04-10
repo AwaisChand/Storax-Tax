@@ -84,6 +84,7 @@ Future showFilterReportDialog(BuildContext context) async {
           : List.generate(7, (i) => (currentYear - i).toString());
   final locale = Localizations.localeOf(context).languageCode;
 
+
   return showDialog(
     context: context,
     builder: (context) {
@@ -233,7 +234,7 @@ Future showFilterReportDialog(BuildContext context) async {
                         const SizedBox(width: 10),
                         Expanded(
                           child: DropdownButtonFormField<String>(
-                            initialValue: selectedYear,
+                            value: selectedYear,
                             decoration: _input("Year"),
                             items:
                                 yearItems
@@ -304,7 +305,7 @@ Future showFilterReportDialog(BuildContext context) async {
                               month: selectedMonth,
                               fromDate: fromDate,
                               toDate: toDate,
-                              language: locale,
+                              language: locale
                             );
 
                             Navigator.pop(context);
