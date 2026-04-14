@@ -1,21 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_stripe/flutter_stripe.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:storatax/res/components/app_localization.dart';
 import 'package:storatax/res/providers.dart';
 import 'package:storatax/utils/routes/routes.dart';
-import 'package:flutter_localizations/flutter_localizations.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Stripe.publishableKey = Utils.publishKey;
-
   // 1️⃣ Load environment variables first
-  await dotenv.load(fileName: ".env");
+  await dotenv.load(fileName: "keys.env");
 
   // 2️⃣ Now set Stripe key from env
   Stripe.publishableKey = dotenv.env['STRIPE_PUBLISHABLE_KEY'] ?? '';
@@ -43,6 +41,7 @@ void main() async {
   // 5️⃣ Run app
   runApp(MyApp(initialLocale: locale));
 }
+
 class MyApp extends StatefulWidget {
   final Locale initialLocale;
 
@@ -69,7 +68,9 @@ class _MyAppState extends State<MyApp> {
   Future<void> changeLocale(Locale locale) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     await prefs.setString(
-        'saved_locale', "${locale.languageCode}_${locale.countryCode}");
+      'saved_locale',
+      "${locale.languageCode}_${locale.countryCode}",
+    );
 
     setState(() {
       _locale = locale;
@@ -85,10 +86,7 @@ class _MyAppState extends State<MyApp> {
         title: 'StoraTax',
         debugShowCheckedModeBanner: false,
         locale: _locale,
-        supportedLocales: const [
-          Locale('en', 'US'),
-          Locale('fr', 'FR'),
-        ],
+        supportedLocales: const [Locale('en', 'US'), Locale('fr', 'FR')],
         localizationsDelegates: const [
           AppLocalizations.delegate,
           GlobalMaterialLocalizations.delegate,

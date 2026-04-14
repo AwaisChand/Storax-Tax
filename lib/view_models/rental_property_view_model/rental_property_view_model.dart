@@ -991,14 +991,14 @@ class RentalPropertyViewModel extends ChangeNotifier {
       }
 
       // 4️⃣ Convert to CSV
-      final csv = const ListToCsvConverter().convert(rows);
+      final csvString = csv.encode(rows);
 
       // 5️⃣ Save file
       final directory = await getApplicationDocumentsDirectory();
       final path = "${directory.path}/entry_export.csv";
 
       final file = File(path);
-      await file.writeAsString(csv);
+      await file.writeAsString(csvString);
 
       // 6️⃣ Share CSV
       await Share.shareXFiles([
