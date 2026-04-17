@@ -13,7 +13,7 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   // 1️⃣ Load environment variables first
-  await dotenv.load(fileName: "keys.env");
+  await dotenv.load(fileName: ".env");
 
   // 2️⃣ Now set Stripe key from env
   Stripe.publishableKey = dotenv.env['STRIPE_PUBLISHABLE_KEY'] ?? '';
