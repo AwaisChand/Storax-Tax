@@ -11,9 +11,10 @@ import VisionKit
         _ application: UIApplication,
         didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
     ) -> Bool {
+        let ok = super.application(application, didFinishLaunchingWithOptions: launchOptions)
 
         guard let controller = window?.rootViewController as? FlutterViewController else {
-            return false
+            return ok
         }
 
         let channel = FlutterMethodChannel(
@@ -35,7 +36,7 @@ import VisionKit
             }
         }
 
-        return super.application(application, didFinishLaunchingWithOptions: launchOptions)
+        return ok
     }
 
     func openScanner(controller: UIViewController) {
