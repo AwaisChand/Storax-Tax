@@ -122,7 +122,7 @@ class AuthViewModel extends ChangeNotifier {
 
   Future<File?> pickPdfFile() async {
     try {
-      FilePickerResult? result = await FilePicker.platform.pickFiles(
+      FilePickerResult? result = await FilePicker.pickFiles(
         type: FileType.custom,
         allowedExtensions: ['pdf'],
       );
