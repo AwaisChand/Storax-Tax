@@ -11,6 +11,7 @@ import VisionKit
         _ application: UIApplication,
         didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
     ) -> Bool {
+        GeneratedPluginRegistrant.register(with: self)
         let ok = super.application(application, didFinishLaunchingWithOptions: launchOptions)
 
         guard let controller = window?.rootViewController as? FlutterViewController else {
