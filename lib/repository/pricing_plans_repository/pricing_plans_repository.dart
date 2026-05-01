@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:provider/provider.dart';
+import 'package:storatax/models/add_sub_status_model/add_sub_status_model.dart';
 import 'package:storatax/models/client_plan_model/client_plan_model.dart';
 import 'package:storatax/models/get_more_plans/get_more_plans.dart';
 import 'package:storatax/models/my_plans_model/my_plans_model.dart';
@@ -176,7 +177,6 @@ class PricingPlansRepository {
     }
   }
 
-
   /// Create subscription Repo
 
   Future<dynamic> createSubscriptionRepo(dynamic data) async {
@@ -189,6 +189,44 @@ class PricingPlansRepository {
       debugPrint("Api url: ${AppUrl.createSubscriptionEndPoint}");
 
       return response;
+    } catch (e) {
+      debugPrint(e.toString());
+      rethrow;
+    }
+  }
+
+  ///Apple Verify Purchase Repo
+
+  Future<dynamic> appleVerifyPurchaseRepo(dynamic data) async {
+    try {
+      dynamic response = await baseApiServices.postRequest(
+        AppUrl.verifyPurchaseApiEndPoint,
+        data,
+      );
+      debugPrint("response$response");
+      debugPrint("Api url: ${AppUrl.verifyPurchaseApiEndPoint}");
+
+      return response;
+    } catch (e) {
+      debugPrint(e.toString());
+      rethrow;
+    }
+  }
+
+  /// Get Sub Status Repo
+
+  Future<AppleSubscriptionStatusModel> getSubStatusRepo(
+    BuildContext context,
+  ) async {
+    try {
+      final url = AppUrl.subStatusEndPoint;
+
+      dynamic response = await baseApiServices.getRequestToken(url);
+
+      debugPrint("Raw API response JSON: $response");
+      debugPrint("API URL: $url");
+
+      return AppleSubscriptionStatusModel.fromJson(response);
     } catch (e) {
       debugPrint(e.toString());
       rethrow;

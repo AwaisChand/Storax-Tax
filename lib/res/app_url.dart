@@ -124,6 +124,11 @@ class AppUrl {
   static var createSetupIntentEndPoint = '${baseUrl}api/stripe/setup-intent/create';
   static var createSubscriptionEndPoint = '${baseUrl}api/stripe/subscription/create';
 
+  ///Apple IAP End Points
+
+  static var verifyPurchaseApiEndPoint = '${baseUrl}api/iap/verify';
+  static var subStatusEndPoint = '${baseUrl}api/iap/subscription-status';
+
 
 
   static var customerEndPoint = "https://api.stripe.com/v1/customers";

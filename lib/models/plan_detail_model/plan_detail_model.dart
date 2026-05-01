@@ -27,7 +27,7 @@ class Plan {
   String? name;
   String? nameFr;
   String? type;
-  double? price; // always store as double
+  double? price;
   String? details;
   String? planFor;
   String? include;
@@ -42,6 +42,7 @@ class Plan {
   String? usdPriceId;
   String? cadStripeId;
   String? cadPriceId;
+  String? appleProductId;
 
   Plan({
     this.id,
@@ -63,6 +64,7 @@ class Plan {
     this.usdPriceId,
     this.cadStripeId,
     this.cadPriceId,
+    this.appleProductId
   });
 
   Plan.fromJson(Map<String, dynamic> json) {
@@ -98,6 +100,7 @@ class Plan {
     usdPriceId = json['usd_price_id'];
     cadStripeId = json['cad_stripe_id'];
     cadPriceId = json['cad_price_id'];
+    appleProductId = json['apple_product_id'];
   }
 
   Map<String, dynamic> toJson() {
@@ -121,6 +124,7 @@ class Plan {
     data['usd_price_id'] = usdPriceId;
     data['cad_stripe_id'] = cadStripeId;
     data['cad_price_id'] = cadPriceId;
+    data['apple_product_id'] = appleProductId;
     return data;
   }
 }

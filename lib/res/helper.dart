@@ -1,9 +1,9 @@
-
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_stripe/flutter_stripe.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:geolocator/geolocator.dart';
-
+import 'package:in_app_purchase/in_app_purchase.dart';
 
 import '../utils/utils.dart';
 import '../view_models/pricing_plans_view_model/pricing_plans_view_model.dart';
@@ -171,76 +171,6 @@ Future<void> startSubscriptionFlow(
   }
 }
 
-// Future<void> saveSubscriptionFlow(
-//     String amount,
-//     String priceId,
-//     String? customerId,
-//     BuildContext context,
-//     int? couponId,
-//     int? planId,
-//     PricingPlansViewModel pricingProvider,
-//     ) async {
-//   try {
-//     // 1️⃣ Create customer
-//     customerId = await createCustomer();
-//
-//     // 2️⃣ Create payment intent
-//     paymentIntentData = await createPaymentIntent(amount, 'USD');
-//
-//     // 3️⃣ Initialize Stripe Payment Sheet
-//     await Stripe.instance.initPaymentSheet(
-//       paymentSheetParameters: SetupPaymentSheetParameters(
-//         paymentIntentClientSecret: paymentIntentData?['client_secret'],
-//         style: ThemeMode.light,
-//         merchantDisplayName: 'Stora Tax',
-//       ),
-//     );
-//
-//     // 4️⃣ Present Payment Sheet
-//     await Stripe.instance.presentPaymentSheet();
-//
-//     // ✅ Payment successful
-//     String paymentIntentId = paymentIntentData!['id'];
-//
-//     // 5️⃣ Get payment intent details
-//     var response = await http.get(
-//       Uri.parse('https://api.stripe.com/v1/payment_intents/$paymentIntentId'),
-//       headers: {'Authorization': 'Bearer ${Utils.secretKey}'},
-//     );
-//
-//     var paymentIntent = jsonDecode(response.body);
-//     paymentMethodId = paymentIntent['payment_method'];
-//
-//     // 6️⃣ Attach payment method and update default
-//     await attachPaymentMethod(customerId!, paymentMethodId!);
-//     await updateCustomerDefaultPaymentMethod(customerId, paymentMethodId!);
-//
-//     // 7️⃣ Create subscription
-//     final subscription = await createSubscription(customerId, priceId);
-//     final subId = subscription?['id'];
-//
-//     if (subId != null) {
-//       Utils.toastMessage("Subscription Created: $subId");
-//       debugPrint("✅ Subscription ID: $subId");
-//
-//       pricingProvider.saveSubscriptionApi(context, {
-//         "subscription_id": subId,
-//         "coupon_id": couponId,
-//         "plan_id": planId,
-//       });
-//
-//       debugPrint("payment data: $subId $couponId");
-//     }
-//   } on StripeException catch (e) {
-//     // 🔒 User canceled or Stripe-specific errors
-//     debugPrint("⚠ StripeException: ${e.error.localizedMessage}");
-//     Utils.toastMessage("Payment canceled");
-//   } catch (e, s) {
-//     // 🔥 Other errors
-//     debugPrint("❌ ERROR: $e\n$s");
-//     Utils.toastMessage("Payment failed");
-//   }
-// }
 
 Future<void> saveSubscriptionFlow(
     BuildContext context,
@@ -378,6 +308,126 @@ Future<void> saveSubscriptionFlow(
     debugPrint("❌ FINAL ERROR: $e");
     debugPrint("$s");
     Utils.toastMessage("Something went wrong during subscription");
+  }
+}
+
+
+
+Future<void> saveAppleSubscriptionFlow({
+  required BuildContext context,
+  required int userId,
+  required int planId,
+  required String productId,
+  required PricingPlansViewModel provider,
+}) async {
+  final InAppPurchase iap = InAppPurchase.instance;
+
+  try {
+    debugPrint("🚀 STEP 1: Check Store Availability");
+
+    final bool isAvailable = await iap.isAvailable();
+    if (!isAvailable) {
+      Utils.toastMessage("App Store not available");
+      return;
+    }
+
+    // 🔥 STEP 2: Get Product Details
+    debugPrint("🚀 STEP 2: Fetch Product");
+
+    final ProductDetailsResponse response =
+    await iap.queryProductDetails({productId});
+
+    if (response.notFoundIDs.isNotEmpty) {
+      Utils.toastMessage("Product not found");
+      return;
+    }
+
+    final productDetails = response.productDetails.first;
+
+    debugPrint("✅ Product Found: ${productDetails.id}");
+
+    // 🔥 STEP 3: Listen to Purchase Updates
+    late StreamSubscription<List<PurchaseDetails>> subscription;
+
+    subscription = iap.purchaseStream.listen(
+          (List<PurchaseDetails> purchases) async {
+        for (final purchase in purchases) {
+          debugPrint("📦 Purchase Status: ${purchase.status}");
+
+          if (purchase.status == PurchaseStatus.purchased ||
+              purchase.status == PurchaseStatus.restored) {
+
+            // 🔐 RECEIPT
+            final receiptData =
+                purchase.verificationData.serverVerificationData;
+
+            final transactionId = purchase.purchaseID ??"";
+
+            debugPrint("🧾 Receipt: $receiptData");
+            debugPrint("🆔 TransactionId: $transactionId");
+
+            // 🔥 STEP 4: VERIFY WITH BACKEND
+            final verifyPayload = {
+              "user_id": userId,
+              "plan_id": planId,
+              "product_id": productId,
+              "transaction_id": transactionId,
+              "receipt_data": receiptData,
+            };
+
+            debugPrint("📤 VERIFY PAYLOAD: $verifyPayload");
+
+            final verifyResponse =
+            await provider.appleVerifyPurchaseApi(verifyPayload);
+
+            debugPrint("📦 VERIFY RESPONSE: $verifyResponse");
+
+            if (verifyResponse != null &&
+                verifyResponse["status"] == true) {
+
+              // ✅ SUCCESS
+              Utils.toastMessage("Subscription Activated");
+
+              // 🔥 OPTIONAL: COMPLETE TRANSACTION
+              if (purchase.pendingCompletePurchase) {
+                await iap.completePurchase(purchase);
+              }
+
+              await subscription.cancel();
+              return;
+            } else {
+              Utils.toastMessage("Verification failed");
+            }
+          }
+
+          if (purchase.status == PurchaseStatus.error) {
+            debugPrint("❌ Purchase Error: ${purchase.error}");
+            Utils.toastMessage("Purchase failed");
+          }
+
+          if (purchase.pendingCompletePurchase) {
+            await iap.completePurchase(purchase);
+          }
+        }
+      },
+      onError: (error) {
+        debugPrint("❌ STREAM ERROR: $error");
+        Utils.toastMessage("Something went wrong");
+      },
+    );
+
+    // 🔥 STEP 5: Start Purchase
+    debugPrint("🚀 STEP 5: Start Purchase");
+
+    final PurchaseParam purchaseParam =
+    PurchaseParam(productDetails: productDetails);
+
+    await iap.buyNonConsumable(purchaseParam: purchaseParam);
+
+  } catch (e, s) {
+    debugPrint("❌ FINAL ERROR: $e");
+    debugPrint("$s");
+    Utils.toastMessage("Something went wrong");
   }
 }
 

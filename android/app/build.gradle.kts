@@ -1,11 +1,12 @@
 import java.util.Properties
+// ADD THIS IMPORT AT THE VERY TOP
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 val kotlin_version: String by project
 
 plugins {
     id("com.android.application")
-    id("kotlin-android")
-    // Flutter Gradle plugin must come after Android & Kotlin
+    id("org.jetbrains.kotlin.android")
     id("dev.flutter.flutter-gradle-plugin")
 }
 
@@ -25,8 +26,10 @@ android {
         targetCompatibility = JavaVersion.VERSION_11
     }
 
-    kotlinOptions {
-        jvmTarget = JavaVersion.VERSION_11.toString()
+    extensions.configure<org.jetbrains.kotlin.gradle.dsl.KotlinAndroidProjectExtension> {
+        compilerOptions {
+            jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_11)
+        }
     }
 
     defaultConfig {
@@ -60,7 +63,6 @@ flutter {
 }
 
 dependencies {
-    implementation("org.jetbrains.kotlin:kotlin-stdlib:2.1.10")
     implementation("com.google.android.material:material:1.9.0")
     implementation("com.stripe:stripe-android:20.25.0")
 }

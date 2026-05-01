@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:storatax/models/add_sub_status_model/add_sub_status_model.dart';
 import 'package:storatax/models/get_more_plans/get_more_plans.dart';
 import 'package:storatax/models/my_plans_model/my_plans_model.dart';
 import 'package:storatax/models/plan_detail_model/plan_detail_model.dart';
@@ -42,6 +43,9 @@ class PricingPlansViewModel extends ChangeNotifier {
 
   List<MyPlans> _myPlans = [];
   List<MyPlans> get myPlans => _myPlans;
+
+  AppleSubscriptionStatusModel? _appleSubscriptionStatusModel;
+  AppleSubscriptionStatusModel? get appleSubscriptionStatusModel => _appleSubscriptionStatusModel;
 
   Future<void> getTaxProfessionalPlansApi(BuildContext context) async {
     loading = true;
@@ -309,6 +313,61 @@ class PricingPlansViewModel extends ChangeNotifier {
       notifyListeners();
     }
   }
+
+
+  /// Apple Verify Purchase Api
+
+  Future<Map<String, dynamic>?> appleVerifyPurchaseApi(dynamic data) async {
+    loading = true;
+    notifyListeners();
+
+    try {
+      final response =
+      await pricingPlansRepository.appleVerifyPurchaseRepo(data);
+
+      if (response["status"].toString() == "1") {
+        return response; // ✅ RETURN FULL RESPONSE
+      } else {
+        Utils.toastMessage(response["message"]);
+        return null;
+      }
+    } catch (e, st) {
+      Utils.toastMessage("Error: ${e.toString()}");
+      debugPrint("sub cre error: $st");
+      return null;
+    } finally {
+      loading = false;
+      notifyListeners();
+    }
+  }
+
+
+  /// Get Subscription Status API
+
+  Future<void> getSubsStatusApi(BuildContext context) async {
+    loading = true;
+    try {
+      final response = await pricingPlansRepository.getSubStatusRepo(context);
+
+      if (response.status == 1) {
+        _appleSubscriptionStatusModel = response;
+        Utils.toastMessage(response.message!);
+      } else {
+        Utils.toastMessage(response.message!);
+      }
+
+      if (kDebugMode) {
+        debugPrint("Get plan detail API Response: $response");
+      }
+    } catch (e, stackTrace) {
+      debugPrint("Get plan detail data error: $e $stackTrace");
+      Utils.toastMessage("Error: ${e.toString()}");
+    } finally {
+      loading = false;
+    }
+  }
+
+
   /// Save Subscription
 
   Future<void> saveSubscriptionApi(BuildContext context, dynamic data) async {

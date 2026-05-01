@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
@@ -13,6 +15,7 @@ import 'package:shimmer/shimmer.dart';
 
 import '../../res/app_assets.dart';
 import '../../res/components/app_localization.dart';
+import '../../view_models/pricing_plans_view_model/pricing_plans_view_model.dart';
 import '../bottom_nav_bar/bottom_nav_bar.dart';
 
 class DashboardScreen extends StatefulWidget {
@@ -32,10 +35,18 @@ class _DashboardScreenState extends State<DashboardScreen>
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       if (!mounted) return;
 
-      final provider = context.read<AuthViewModel>();
-      await provider.getUserProfileApi(context);
+      final authProvider = context.read<AuthViewModel>();
+      await authProvider.getUserProfileApi(context);
 
       if (!mounted) return;
+
+      if (Platform.isIOS) {
+        final pricingProvider = context.read<PricingPlansViewModel>();
+        await pricingProvider.getSubsStatusApi(context);
+      }
+
+      if (!mounted) return;
+
       final dashboard = context.read<DashboardViewModel>();
       dashboard.getDashboardApi(context);
     });

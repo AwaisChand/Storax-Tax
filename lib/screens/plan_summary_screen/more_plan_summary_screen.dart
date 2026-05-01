@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
@@ -258,6 +260,7 @@ class _MorePlanSummaryScreenState extends State<MorePlanSummaryScreen> {
                               final authProvider = context.read<AuthViewModel>();
 
                               final plan = provider.planDetailModel?.plan;
+
                               if (plan == null) {
                                 Utils.toastMessage("Plan data not loaded");
                                 return;
@@ -269,20 +272,36 @@ class _MorePlanSummaryScreenState extends State<MorePlanSummaryScreen> {
                                 return;
                               }
 
-                              // 🚀 CALL SAVE SUBSCRIPTION FLOW
-                              await saveSubscriptionFlow(
-                                context,
-                                userId,
-                                plan.id!,
-                                widget.couponId,
-                                provider,
-                              );
+                              // 🔥 PLATFORM BASED FLOW
+                              if (Platform.isIOS) {
+                                debugPrint("🍎 iOS detected → Apple IAP flow");
+
+                                await saveAppleSubscriptionFlow(
+                                  context: context,
+                                  userId: userId,
+                                  planId: plan.id!,
+                                  productId: plan.appleProductId ?? "com.storatax.basic_plan",
+                                  provider: provider,
+                                );
+                              } else {
+                                debugPrint("🤖 Android detected → Stripe flow");
+
+                                await saveSubscriptionFlow(
+                                  context,
+                                  userId,
+                                  plan.id!,
+                                  widget.couponId,
+                                  provider,
+                                );
+                              }
 
                             } catch (e, s) {
                               debugPrint("❌ BUTTON ERROR: $e\n$s");
                               Utils.toastMessage("Something went wrong");
                             } finally {
-                              if (mounted) setState(() => _isProcessingPayment = false);
+                              if (mounted) {
+                                setState(() => _isProcessingPayment = false);
+                              }
                             }
                           },
                         ),
