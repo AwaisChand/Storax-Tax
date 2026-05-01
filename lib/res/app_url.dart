@@ -1,8 +1,8 @@
 import 'helper.dart';
 
 class AppUrl {
-  // static var baseUrl = 'http://stora.thetechnologies.net/';
-  static var baseUrl = 'https://storatax.com/';
+  static var baseUrl = 'http://stora.thetechnologies.net/';
+  // static var baseUrl = 'https://storatax.com/';
 
 
 
