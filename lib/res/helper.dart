@@ -304,6 +304,7 @@ Future<void> saveAppleSubscriptionFlow({
   required int userId,
   required int planId,
   required String productId,
+  int? couponId,
   required PricingPlansViewModel provider,
 }) async {
   final InAppPurchase iap = InAppPurchase.instance;
@@ -359,6 +360,7 @@ Future<void> saveAppleSubscriptionFlow({
               "product_id": productId,
               "transaction_id": transactionId,
               "receipt_data": receiptData,
+              if (couponId != null) "coupon_id": couponId,
             };
 
             debugPrint("📤 VERIFY PAYLOAD: $verifyPayload");

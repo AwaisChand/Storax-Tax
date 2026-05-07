@@ -243,7 +243,71 @@ class _MorePlanSummaryScreenState extends State<MorePlanSummaryScreen> {
                         ),
                       ),
 
-               ],
+                      Positioned(
+                        bottom: 10,
+                        left: 20,
+                        right: 20,
+                        child: AppButton(
+                          btnText: _isProcessingPayment ? "Processing..." : "Start Trial",
+                          isLoading: _isProcessingPayment,
+                          onPressed: _isProcessingPayment
+                              ? null
+                              : () async {
+                            setState(() => _isProcessingPayment = true);
+
+                            try {
+                              final provider = context.read<PricingPlansViewModel>();
+                              final authProvider = context.read<AuthViewModel>();
+
+                              final plan = provider.planDetailModel?.plan;
+
+                              if (plan == null) {
+                                Utils.toastMessage("Plan data not loaded");
+                                return;
+                              }
+
+                              final userId = authProvider.user?.id;
+                              if (userId == null) {
+                                Utils.toastMessage("User not found");
+                                return;
+                              }
+
+                              // 🔥 PLATFORM BASED FLOW
+                              if (Platform.isIOS) {
+                                debugPrint("🍎 iOS detected → Apple IAP flow");
+
+                                await saveAppleSubscriptionFlow(
+                                  context: context,
+                                  userId: userId,
+                                  planId: plan.id!,
+                                  productId: plan.appleProductId ?? "com.storatax.basic_plan",
+                                  couponId: widget.couponId,
+                                  provider: provider,
+                                );
+                              } else {
+                                debugPrint("🤖 Android detected → Stripe flow");
+
+                                await saveSubscriptionFlow(
+                                  context,
+                                  userId,
+                                  plan.id!,
+                                  widget.couponId,
+                                  provider,
+                                );
+                              }
+
+                            } catch (e, s) {
+                              debugPrint("❌ BUTTON ERROR: $e\n$s");
+                              Utils.toastMessage("Something went wrong");
+                            } finally {
+                              if (mounted) {
+                                setState(() => _isProcessingPayment = false);
+                              }
+                            }
+                          },
+                        ),
+                      ),
+                    ],
                   ),
         );
       },
