@@ -85,13 +85,6 @@ Future<void> startSubscriptionFlow(
         customerEphemeralKeySecret: ephemeralKey,
         setupIntentClientSecret: clientSecret,
         merchantDisplayName: 'Stora Tax',
-
-        // 🔥 APPLE PAY ENABLED
-        applePay: const PaymentSheetApplePay(
-          merchantCountryCode: 'CA',
-        ),
-
-        // Optional (good UX)
         style: ThemeMode.system,
       ),
     );
@@ -224,13 +217,6 @@ Future<void> saveSubscriptionFlow(
         customerEphemeralKeySecret: ephemeralKey,
         setupIntentClientSecret: clientSecret,
         merchantDisplayName: 'Stora Tax',
-
-        // 🔥 ADD THIS FOR APPLE PAY
-        applePay: const PaymentSheetApplePay(
-          merchantCountryCode: 'CA', // Canada
-        ),
-
-        // Optional (recommended)
         style: ThemeMode.system,
       ),
     );
