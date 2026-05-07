@@ -243,7 +243,7 @@ class _MorePlanSummaryScreenState extends State<MorePlanSummaryScreen> {
                         ),
                       ),
 
-i                    ],
+               ],
                   ),
         );
       },
