@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
@@ -150,31 +152,52 @@ class _PlanSummaryScreenState extends State<PlanSummaryScreen> {
                           btnText: _isProcessingPayment ? "Processing..." : "Start Trial",
                           isLoading: _isProcessingPayment,
                           onPressed: _isProcessingPayment
-                              ? null // 🔒 disable button while processing
+                              ? null
                               : () async {
                             setState(() => _isProcessingPayment = true);
 
                             try {
                               final provider = context.read<PricingPlansViewModel>();
+                              final authProvider = context.read<AuthViewModel>();
 
-                              // ✅ Get current plan
                               final plan = provider.planDetailModel?.plan;
+
                               if (plan == null) {
                                 Utils.toastMessage("Plan data not loaded");
                                 return;
                               }
 
+                              final userId = authProvider.user?.id;
+                              if (userId == null) {
+                                Utils.toastMessage("User not found");
+                                return;
+                              }
 
-                              // 🚀 Start subscription flow
-                              await startSubscriptionFlow(
-                                context,
-                                widget.userId!,
-                                plan.id!,
-                                provider,
-                              );
+                              // 🔥 PLATFORM BASED FLOW
+                              if (Platform.isIOS) {
+                                debugPrint("🍎 iOS detected → Apple IAP flow");
+
+                                await saveAppleSubscriptionFlow(
+                                  context: context,
+                                  userId: userId,
+                                  planId: plan.id!,
+                                  productId: plan.appleProductId!,
+                                  provider: provider,
+                                );
+                              } else {
+                                debugPrint("🤖 Android detected → Stripe flow");
+
+                                await startSubscriptionFlow(
+                                  context,
+                                  widget.userId!,
+                                  plan.id!,
+                                  provider,
+                                );
+                              }
+
                             } catch (e, s) {
-                              Utils.toastMessage("Payment failed");
                               debugPrint("❌ Payment error: $e\n$s");
+                              Utils.toastMessage("Payment failed");
                             } finally {
                               if (mounted) {
                                 setState(() => _isProcessingPayment = false);

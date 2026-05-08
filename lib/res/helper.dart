@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_stripe/flutter_stripe.dart';
 import 'package:geocoding/geocoding.dart';
@@ -48,6 +49,7 @@ Future<void> startSubscriptionFlow(
     final setupResponse = await provider.createSetupIntentApi({
       "user_id": userId,
       "plan_id": planId,
+      "platform": Platform.isIOS ? "ios" : "android",
     });
 
     debugPrint("📦 SetupIntent RESPONSE: $setupResponse");
@@ -121,6 +123,7 @@ Future<void> startSubscriptionFlow(
       "payment_method_id": paymentMethodId,
       "user_id": userId,
       "plan_id": planId,
+      "platform": Platform.isIOS ? "ios" : "android",
     };
 
     debugPrint("📌 SUBSCRIPTION REQUEST PAYLOAD: $subPayload");
@@ -178,6 +181,7 @@ Future<void> saveSubscriptionFlow(
     final setupResponse = await provider.createSetupIntentApi({
       "user_id": userId,
       "plan_id": planId,
+      "platform": Platform.isIOS ? "ios" : "android",
     });
 
     debugPrint("📦 RAW RESPONSE: $setupResponse");
@@ -254,6 +258,7 @@ Future<void> saveSubscriptionFlow(
       "user_id": userId,
       "plan_id": planId,
       "coupon_id": couponId,
+      "platform": Platform.isIOS ? "ios" : "android",
     };
 
     debugPrint("📌 SUBSCRIPTION REQUEST PAYLOAD: $subPayload");
