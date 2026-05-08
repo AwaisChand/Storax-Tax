@@ -181,7 +181,8 @@ class _PlanSummaryScreenState extends State<PlanSummaryScreen> {
                                   context: context,
                                   userId: userId,
                                   planId: plan.id!,
-                                  productId: plan.appleProductId!,
+                                  productId:
+                                      plan.appleProductId ?? "com.storatax.basic_plan",
                                   provider: provider,
                                 );
                               } else {
