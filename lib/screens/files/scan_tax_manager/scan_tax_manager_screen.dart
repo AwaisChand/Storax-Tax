@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:io' hide Context;
 
+import 'package:cunning_document_scanner/cunning_document_scanner.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_doc_scanner/flutter_doc_scanner.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -8,6 +9,7 @@ import 'package:google_mlkit_document_scanner/google_mlkit_document_scanner.dart
 import 'package:image_cropper/image_cropper.dart';
 import 'package:path/path.dart' as path;
 import 'package:path_provider/path_provider.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
 import 'package:storatax/screens/files/create_tax_manager/create_tax_manager_screen.dart';
 import 'package:storatax/view_models/tax_manager_view_model/tax_manager_view_model.dart';
@@ -253,63 +255,154 @@ class _ScanTaxManagerScreenState extends State<ScanTaxManagerScreen>
   //   }
   // }
 
+  // Future<void> startSmartCameraCapture() async {
+  //   try {
+  //     if (Platform.isAndroid) {
+  //       // --- ANDROID: GOOGLE ML KIT (Fixed for your TECNO) ---
+  //       final options = DocumentScannerOptions(
+  //         documentFormats: {DocumentFormat.jpeg},
+  //         mode: ScannerMode.full,
+  //         isGalleryImport: false,
+  //         pageLimit: 1,
+  //       );
+  //
+  //       final documentScanner = DocumentScanner(options: options);
+  //       final result = await documentScanner.scanDocument();
+  //
+  //       if (result.images != null && result.images!.isNotEmpty) {
+  //         _processScannedFile(File(result.images!.first));
+  //       }
+  //
+  //       await documentScanner.close();
+  //
+  //     } else if (Platform.isIOS) {
+  //       // --- iOS: APPLE VISIONKIT (Using flutter_doc_scanner) ---
+  //       // This launches the native iOS scanner with the yellow box edge detection.
+  //       final result = await FlutterDocScanner().getScanDocuments();
+  //
+  //       if (result != null && result.containsKey('images')) {
+  //         List<dynamic> images = result['images'];
+  //         if (images.isNotEmpty) {
+  //           // The result returns the path as a string in the first index
+  //           _processScannedFile(File(images.first.toString()));
+  //         }
+  //       }
+  //     }
+  //   } catch (e) {
+  //     debugPrint("Document Scanner Error: $e");
+  //     // Show a user-friendly message if the scanner fails or user cancels
+  //     if (e.toString().contains("cancel")) {
+  //       debugPrint("User cancelled the scan");
+  //     } else {
+  //       Utils.toastMessage("Could not launch camera");
+  //     }
+  //   }
+  // }
+  //
+  // void _processScannedFile(File file) {
+  //   if (!mounted) return;
+  //
+  //   setState(() {
+  //     localPickedImage = file;
+  //     elapsedSeconds = 0;
+  //     currentTextIndex = 0;
+  //     isAutoScanning = true;
+  //   });
+  //
+  //   // These are your existing methods for the Stora Tax receipt logic
+  //   startTextCycle();
+  //   startAutoScan(file);
+  // }
+
+
+
+
   Future<void> startSmartCameraCapture() async {
-    try {
-      if (Platform.isAndroid) {
-        // --- ANDROID: GOOGLE ML KIT (Fixed for your TECNO) ---
-        final options = DocumentScannerOptions(
-          documentFormats: {DocumentFormat.jpeg},
-          mode: ScannerMode.full,
-          isGalleryImport: false,
-          pageLimit: 1,
-        );
+    // 1. Request/Check Permission
+    var status = await Permission.camera.status;
 
-        final documentScanner = DocumentScanner(options: options);
-        final result = await documentScanner.scanDocument();
+    if (status.isPermanentlyDenied) {
+      openAppSettings();
+      return;
+    }
 
-        if (result.images != null && result.images!.isNotEmpty) {
-          _processScannedFile(File(result.images!.first));
-        }
+    if (!status.isGranted) {
+      status = await Permission.camera.request();
+    }
 
-        await documentScanner.close();
+    // 2. Only proceed if granted
+    if (status.isGranted) {
+      try {
+        if (Platform.isAndroid) {
+          // --- KEEPING YOUR WORKING ANDROID ML KIT CODE ---
+          final options = DocumentScannerOptions(
+            documentFormats: {DocumentFormat.jpeg},
+            mode: ScannerMode.full,
+            isGalleryImport: false,
+            pageLimit: 1,
+          );
 
-      } else if (Platform.isIOS) {
-        // --- iOS: APPLE VISIONKIT (Using flutter_doc_scanner) ---
-        // This launches the native iOS scanner with the yellow box edge detection.
-        final result = await FlutterDocScanner().getScanDocuments();
+          final documentScanner = DocumentScanner(options: options);
+          final result = await documentScanner.scanDocument();
 
-        if (result != null && result.containsKey('images')) {
-          List<dynamic> images = result['images'];
-          if (images.isNotEmpty) {
-            // The result returns the path as a string in the first index
-            _processScannedFile(File(images.first.toString()));
+          if (result.images != null && result.images!.isNotEmpty) {
+            _processScannedFile(File(result.images!.first));
+          }
+          await documentScanner.close();
+
+        } else if (Platform.isIOS) {
+          // --- REPLACING ONLY iOS WITH CUNNING ---
+          List<String>? pictures = await CunningDocumentScanner.getPictures(
+            noOfPages: 1,
+            isGalleryImportAllowed: true,
+          );
+
+          if (pictures != null && pictures.isNotEmpty) {
+            String rawPath = pictures.first;
+
+            // Clean and Decode for iOS path safety
+            String cleanedPath = rawPath.startsWith('file://')
+                ? rawPath.replaceFirst('file://', '')
+                : rawPath;
+
+            cleanedPath = Uri.decodeFull(cleanedPath);
+
+            _processScannedFile(File(cleanedPath));
           }
         }
+      } catch (e) {
+        debugPrint("Scanner Error: $e");
+        if (!e.toString().toLowerCase().contains("cancel")) {
+          Utils.toastMessage("Could not launch camera");
+        }
       }
-    } catch (e) {
-      debugPrint("Document Scanner Error: $e");
-      // Show a user-friendly message if the scanner fails or user cancels
-      if (e.toString().contains("cancel")) {
-        debugPrint("User cancelled the scan");
-      } else {
-        Utils.toastMessage("Could not launch camera");
-      }
+    } else {
+      Utils.toastMessage("Camera permission is required to scan receipts");
     }
   }
-
-  void _processScannedFile(File file) {
+  void _processScannedFile(File file) async {
     if (!mounted) return;
 
-    setState(() {
-      localPickedImage = file;
-      elapsedSeconds = 0;
-      currentTextIndex = 0;
-      isAutoScanning = true;
-    });
+    // IMPORTANT: Keep this retry logic. Even with Cunning,
+    // iOS needs a millisecond to release the file handle.
+    int retry = 0;
+    while (!await file.exists() && retry < 5) {
+      await Future.delayed(const Duration(milliseconds: 200));
+      retry++;
+    }
 
-    // These are your existing methods for the Stora Tax receipt logic
-    startTextCycle();
-    startAutoScan(file);
+    if (await file.exists()) {
+      setState(() {
+        localPickedImage = file;
+        isAutoScanning = true;
+        elapsedSeconds = 0; // Reset timer for the "Thinking..." animation
+      });
+
+      startTextCycle(); // Start your "Planning to move next..." text
+      startAutoScan(file); // Start your 3-second countdown and API call
+    } else {
+      Utils.toastMessage("Error: Scanned file not found.");
+    }
   }
 
 
