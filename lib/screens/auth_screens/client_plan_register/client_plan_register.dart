@@ -163,7 +163,7 @@ class _ClientPlanRegisterState extends State<ClientPlanRegister> {
                                     context,
                                   )!.translate("emailText") ??
                                   '',
-                              textInputType: TextInputType.name,
+                              textInputType: TextInputType.emailAddress,
                             ),
                             SizedBox(height: 12),
                             _label(
