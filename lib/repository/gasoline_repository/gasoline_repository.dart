@@ -10,6 +10,8 @@ import 'package:storatax/models/get_transaction_report_model/get_transaction_rep
 import '../../data/network/base_api_service.dart';
 import '../../data/network/network_api_service.dart';
 import '../../res/app_url.dart';
+import '../../utils/scan_flow_log.dart';
+import '../../utils/scan_upload_file.dart';
 import 'package:http/http.dart' as http;
 
 class GasolineRepository {
@@ -64,16 +66,42 @@ class GasolineRepository {
 
   Future<dynamic> scanFile({File? filesPath}) async {
     try {
+      File? upload = filesPath;
+      if (filesPath != null) {
+        gasolineScanLog(
+          'scanFile repo: incoming path=${filesPath.path}',
+        );
+        upload = await normalizeScanUploadToJpegIfNeeded(
+          filesPath,
+          logFlow: 'GasolineBasic',
+        );
+        try {
+          final len = await upload.length();
+          final parts = upload.path.split('.');
+          final ext = parts.length > 1 ? parts.last : '?';
+          gasolineScanLog(
+            'scanFile repo: after normalize path=${upload.path} ext=$ext bytes=$len '
+            '(multipart field image → ${AppUrl.scanFileEndPoint})',
+          );
+        } catch (e, st) {
+          gasolineScanLog('scanFile repo: post-normalize inspect error: $e');
+          debugPrint('$st');
+        }
+      } else {
+        gasolineScanLog('scanFile repo: filesPath is null, skip upload');
+      }
+
       dynamic response = await baseApiServices.multipartPostRequest(
         AppUrl.scanFileEndPoint,
-        files: filesPath != null ? {'image': filesPath} : null,
+        files: upload != null ? {'image': upload} : null,
       );
 
       debugPrint("Raw API response JSON: $response");
       debugPrint("Api url: ${AppUrl.scanFileEndPoint}");
       return response;
-    } catch (e) {
-      debugPrint(e.toString());
+    } catch (e, st) {
+      gasolineScanLog('scanFile repo ERROR: $e');
+      debugPrint('$st');
       rethrow;
     }
   }
@@ -85,17 +113,36 @@ class GasolineRepository {
     File? avatarFile,
   }) async {
     try {
+      File? upload = avatarFile;
+      if (avatarFile != null) {
+        gasolineScanLog(
+          'gasolineCreateRepo: incoming image path=${avatarFile.path}',
+        );
+        upload = await normalizeScanUploadToJpegIfNeeded(
+          avatarFile,
+          logFlow: 'GasolineCreate',
+        );
+        try {
+          final len = await upload.length();
+          gasolineScanLog(
+            'gasolineCreateRepo: after normalize path=${upload.path} '
+            'bytes=$len → ${AppUrl.gasolineEndPoint}',
+          );
+        } catch (_) {}
+      }
+
       dynamic response = await baseApiServices.multipartPostRequest(
         AppUrl.gasolineEndPoint,
         fields: fields,
-        files: avatarFile != null ? {'image': avatarFile} : null,
+        files: upload != null ? {'image': upload} : null,
       );
 
       debugPrint("Raw API response JSON: $response");
       debugPrint("Api url: ${AppUrl.gasolineEndPoint}");
       return response;
-    } catch (e) {
-      debugPrint(e.toString());
+    } catch (e, st) {
+      gasolineScanLog('gasolineCreateRepo ERROR: $e');
+      debugPrint('$st');
       rethrow;
     }
   }
@@ -126,17 +173,35 @@ class GasolineRepository {
     try {
       final String url = '${AppUrl.gasolineEndPoint}/$id';
 
+      File? upload = avatarFile;
+      if (avatarFile != null) {
+        gasolineScanLog(
+          'updateGasolineRepo: incoming image path=${avatarFile.path}',
+        );
+        upload = await normalizeScanUploadToJpegIfNeeded(
+          avatarFile,
+          logFlow: 'GasolineUpdate',
+        );
+        try {
+          final len = await upload.length();
+          gasolineScanLog(
+            'updateGasolineRepo: after normalize path=${upload.path} bytes=$len → $url',
+          );
+        } catch (_) {}
+      }
+
       dynamic response = await baseApiServices.multipartPostRequest(
         url,
         fields: fields,
-        files: avatarFile != null ? {'image': avatarFile} : null,
+        files: upload != null ? {'image': upload} : null,
       );
       debugPrint("response$response");
       debugPrint("Api url: $url");
 
       return response;
-    } catch (e) {
-      debugPrint(e.toString());
+    } catch (e, st) {
+      gasolineScanLog('updateGasolineRepo ERROR: $e');
+      debugPrint('$st');
       rethrow;
     }
   }

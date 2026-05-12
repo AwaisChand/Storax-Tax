@@ -20,6 +20,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:open_file/open_file.dart';
 import 'package:storatax/screens/files/get_personal_info/get_personal_info_screen.dart';
 
+import '../../utils/scan_flow_log.dart';
 import '../../utils/utils.dart';
 import '../auth_view_model/auth_view_model.dart';
 
@@ -419,11 +420,33 @@ class TaxManagerViewModel extends ChangeNotifier {
     notifyListeners();
 
     try {
-      debugPrint("files path: ${avatarFile?.path}");
+      if (avatarFile != null && await avatarFile.exists()) {
+        taxManagerScanLog(
+          'scanTaxManagerApi VM: dispatch path=${avatarFile.path} bytes=${await avatarFile.length()}',
+        );
+      } else {
+        taxManagerScanLog(
+          'scanTaxManagerApi VM: file missing or null path=${avatarFile?.path}',
+        );
+      }
 
       final response = await taxManagerRepository.scanTaxManagerRepo(
         filesPath: avatarFile,
       );
+
+      if (response == null) {
+        taxManagerScanLog(
+          'scanTaxManagerApi VM: response null (check [ScanUpload][TaxManager] and multipart errors)',
+        );
+      } else if (response is Map) {
+        taxManagerScanLog(
+          'scanTaxManagerApi VM: status=${response["status"]} keys=${response.keys.toList()}',
+        );
+      } else {
+        taxManagerScanLog(
+          'scanTaxManagerApi VM: unexpected type ${response.runtimeType}',
+        );
+      }
 
       if (kDebugMode) {
         debugPrint("Scan TaxManager API Response: $response");
@@ -431,7 +454,8 @@ class TaxManagerViewModel extends ChangeNotifier {
 
       return response;
     } catch (e, stackTrace) {
-      debugPrint("Scan TaxManager error: $e $stackTrace");
+      taxManagerScanLog('scanTaxManagerApi VM ERROR: $e');
+      debugPrintStack(stackTrace: stackTrace);
       return null;
     } finally {
       loading = false;

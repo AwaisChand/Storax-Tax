@@ -10,6 +10,7 @@ import 'package:storatax/screens/bottom_nav_bar/bottom_nav_bar_screens/uber_queb
 import 'package:storatax/screens/bottom_nav_bar/bottom_nav_bar_screens/uber_quebec/uber_quebec_screens/quebec_create_screens/rides_gross_screen.dart';
 
 import '../../models/quebec_model/quebec_model.dart';
+import '../../utils/scan_flow_log.dart';
 import '../../utils/utils.dart';
 import '../auth_view_model/auth_view_model.dart';
 
@@ -237,11 +238,33 @@ class QuebecViewModel extends ChangeNotifier {
   Future<void> scanQuebecApi(BuildContext context, File? avatarFile) async {
     loading = true;
     try {
-      debugPrint("files path: ${avatarFile?.path}");
+      if (avatarFile != null && await avatarFile.exists()) {
+        quebecScanLog(
+          'scanQuebecApi VM: dispatch path=${avatarFile.path} bytes=${await avatarFile.length()}',
+        );
+      } else {
+        quebecScanLog(
+          'scanQuebecApi VM: file missing or null path=${avatarFile?.path}',
+        );
+      }
 
       final response = await quebecRepository.scanQuebecRepo(
         filesPath: avatarFile,
       );
+
+      if (response == null) {
+        quebecScanLog(
+          'scanQuebecApi VM: response null (check [ScanUpload][Quebec] and multipart errors)',
+        );
+      } else if (response is Map) {
+        quebecScanLog(
+          'scanQuebecApi VM: status=${response["status"]} keys=${response.keys.toList()}',
+        );
+      } else {
+        quebecScanLog(
+          'scanQuebecApi VM: unexpected type ${response.runtimeType}',
+        );
+      }
       final auth = Provider.of<AuthViewModel>(context, listen: false);
 
       if (response["status"].toString() == "1") {
@@ -277,7 +300,8 @@ class QuebecViewModel extends ChangeNotifier {
         debugPrint("Create File API Response: $response");
       }
     } catch (e, stackTrace) {
-      debugPrint("Scan Quebec error: $e $stackTrace");
+      quebecScanLog('scanQuebecApi VM ERROR: $e');
+      debugPrintStack(stackTrace: stackTrace);
       Utils.toastMessage("Error: ${e.toString()}");
     } finally {
       loading = false;

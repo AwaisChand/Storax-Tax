@@ -12,12 +12,13 @@ import 'package:provider/provider.dart';
 
 import '../../../../../../../res/app_assets.dart';
 import '../../../../../../../res/components/app_localization.dart';
-import '../../../../../../../res/ios_scanner.dart';
+import '../../../../../../../utils/doc_scanner_ios_result.dart';
 import '../../../../../../../utils/app_colors.dart';
 import '../../../../../../../utils/utils.dart';
 import 'add_receipt_data_screen.dart';
 import 'package:storatax/view_models/auth_view_model/auth_view_model.dart';
 import 'package:storatax/view_models/gasoline_view_model/gasoline_view_model.dart';
+import 'package:storatax/utils/scan_flow_log.dart';
 
 class AddReceiptScanScreen extends StatefulWidget {
   const AddReceiptScanScreen({super.key});
@@ -29,6 +30,10 @@ class AddReceiptScanScreen extends StatefulWidget {
 class _AddReceiptScanScreenState extends State<AddReceiptScanScreen>
     with SingleTickerProviderStateMixin {
   File? localPickedImage;
+
+  /// `gallery_crop` | `doc_scanner` (for tracing iOS PNG vs JPG paths).
+  String _receiptImageSource = 'unknown';
+
   int elapsedSeconds = 0;
   bool isAutoScanning = false;
 
@@ -94,6 +99,11 @@ class _AddReceiptScanScreenState extends State<AddReceiptScanScreen>
   // }
 
   Future<void> startSmartCameraCapture() async {
+    gasolineScanLog('UI: opening document scanner / smart camera capture');
+    docScannerLog(
+      'GasolineAddReceipt',
+      'startSmartCameraCapture begin os=${Platform.operatingSystem}',
+    );
     try {
       if (Platform.isAndroid) {
         // --- ANDROID: GOOGLE ML KIT (Fixed for your TECNO) ---
@@ -106,9 +116,16 @@ class _AddReceiptScanScreenState extends State<AddReceiptScanScreen>
 
         final documentScanner = DocumentScanner(options: options);
         final result = await documentScanner.scanDocument();
+        final n = result.images?.length ?? 0;
+        docScannerLog('GasolineAddReceipt', 'Android ML Kit scan finished imageCount=$n');
 
         if (result.images != null && result.images!.isNotEmpty) {
           _processScannedFile(File(result.images!.first));
+        } else {
+          docScannerLog(
+            'GasolineAddReceipt',
+            'Android ML Kit: no images, not calling _processScannedFile',
+          );
         }
 
         await documentScanner.close();
@@ -116,20 +133,27 @@ class _AddReceiptScanScreenState extends State<AddReceiptScanScreen>
         // --- iOS: APPLE VISIONKIT (Using flutter_doc_scanner) ---
         // This launches the native iOS scanner with the yellow box edge detection.
         final result = await FlutterDocScanner().getScanDocuments();
-
-        if (result != null && result.containsKey('images')) {
-          List<dynamic> images = result['images'];
-          if (images.isNotEmpty) {
-            // The result returns the path as a string in the first index
-            _processScannedFile(File(images.first.toString()));
-          }
+        final paths = pathsFromIosDocScannerResult(
+          result,
+          flow: 'GasolineAddReceipt',
+        );
+        if (paths.isNotEmpty) {
+          _processScannedFile(File(paths.first));
+        } else {
+          docScannerLog(
+            'GasolineAddReceipt',
+            'iOS doc scan: normalized paths empty, not calling _processScannedFile',
+          );
         }
       }
-    } catch (e) {
-      debugPrint("Document Scanner Error: $e");
-      // Show a user-friendly message if the scanner fails or user cancels
+    } catch (e, st) {
+      docScannerLog('GasolineAddReceipt', 'startSmartCameraCapture error: $e');
+      debugPrintStack(stackTrace: st);
       if (e.toString().contains("cancel")) {
-        debugPrint("User cancelled the scan");
+        docScannerLog(
+          'GasolineAddReceipt',
+          'user cancelled scan (message matched)',
+        );
       } else {
         Utils.toastMessage("Could not launch camera");
       }
@@ -137,6 +161,15 @@ class _AddReceiptScanScreenState extends State<AddReceiptScanScreen>
   }
 
   void _processScannedFile(File file) {
+    _receiptImageSource = 'doc_scanner';
+    gasolineScanLog(
+      'UI: _processScannedFile source=doc_scanner path=${file.path} '
+      'ext=${path.extension(file.path)} exists=${file.existsSync()} mounted=$mounted',
+    );
+    docScannerLog(
+      'GasolineAddReceipt',
+      '_processScannedFile path=${file.path} exists=${file.existsSync()} mounted=$mounted',
+    );
     if (!mounted) return;
 
     setState(() {
@@ -159,9 +192,15 @@ class _AddReceiptScanScreenState extends State<AddReceiptScanScreen>
 
   /// Pick image, crop, and start auto-scan
   Future<void> handleImage(File image) async {
+    _receiptImageSource = 'gallery_crop';
+    gasolineScanLog(
+      'UI: handleImage begin source=gallery_crop path=${image.path} exists=${await image.exists()}',
+    );
     try {
-      print("Camera image path: ${image.path}");
-      print("File exists: ${await image.exists()}");
+      docScannerLog(
+        'GasolineAddReceipt',
+        'handleImage start path=${image.path} exists=${await image.exists()}',
+      );
 
       await Future.delayed(const Duration(milliseconds: 300));
 
@@ -180,14 +219,16 @@ class _AddReceiptScanScreenState extends State<AddReceiptScanScreen>
         ],
       );
 
-      print("Cropped file: $croppedFile");
-
       if (croppedFile == null) {
-        print("Crop cancelled or failed");
+        docScannerLog('GasolineAddReceipt', 'handleImage crop cancelled or null');
         return;
       }
 
       final croppedImage = File(croppedFile.path);
+      docScannerLog(
+        'GasolineAddReceipt',
+        'handleImage cropped path=${croppedImage.path} exists=${await croppedImage.exists()}',
+      );
 
       if (!mounted) return;
 
@@ -198,10 +239,12 @@ class _AddReceiptScanScreenState extends State<AddReceiptScanScreen>
         isAutoScanning = true;
       });
 
+      docScannerLog('GasolineAddReceipt', 'handleImage starting AI timer');
       startTextCycle();
       startAutoScan(croppedImage);
-    } catch (e) {
-      print("ImageCropper error: $e");
+    } catch (e, st) {
+      docScannerLog('GasolineAddReceipt', 'handleImage / ImageCropper error: $e');
+      debugPrintStack(stackTrace: st);
       Utils.toastMessage("Failed to crop image.");
     }
   }
@@ -220,9 +263,17 @@ class _AddReceiptScanScreenState extends State<AddReceiptScanScreen>
   }
 
   void startAutoScan(File image) {
+    gasolineScanLog(
+      'UI: startAutoScan begin source=$_receiptImageSource '
+      '(filter [GasolineScan]: UI → VM → repo → [ScanUpload][GasolineBasic])',
+    );
     scanTimer?.cancel();
     elapsedSeconds = 0;
 
+    docScannerLog(
+      'GasolineAddReceipt',
+      'startAutoScan will call scanFileApi after 3s path=${image.path}',
+    );
     scanTimer = Timer.periodic(const Duration(seconds: 1), (timer) async {
       if (!mounted) {
         timer.cancel();
@@ -238,6 +289,14 @@ class _AddReceiptScanScreenState extends State<AddReceiptScanScreen>
         final auth = Provider.of<AuthViewModel>(context, listen: false);
 
         try {
+          gasolineScanLog(
+            'UI: invoking scanFileApi (3s elapsed) source=$_receiptImageSource '
+            'file=${image.path}',
+          );
+          docScannerLog(
+            'GasolineAddReceipt',
+            'startAutoScan calling scanFileApi path=${image.path} exists=${await image.exists()}',
+          );
           final response = await gasoline.scanFileApi(image);
 
           if (!mounted) return;
@@ -246,11 +305,23 @@ class _AddReceiptScanScreenState extends State<AddReceiptScanScreen>
           setState(() => isAutoScanning = false);
           textCycleTimer?.cancel();
 
+          if (response != null) {
+            docScannerLog(
+              'GasolineAddReceipt',
+              'scanFileApi status=${response["status"]} hasData=${response["data"] != null} keys=${response.keys.toList()}',
+            );
+          } else {
+            docScannerLog('GasolineAddReceipt', 'scanFileApi returned null');
+          }
+
           // 4. CHECK FOR DATA: If response or data is null, navigation will crash.
           if (response != null && response["data"] != null) {
             if (response["status"].toString() == "1") {
               // Critical check before Push
               if (mounted) {
+                gasolineScanLog(
+                  'UI: scan success, push AddReceiptDataScreen source=$_receiptImageSource',
+                );
                 Navigator.push(
                   context,
                   MaterialPageRoute(
@@ -275,8 +346,9 @@ class _AddReceiptScanScreenState extends State<AddReceiptScanScreen>
               message: response?["success"] ?? "Scan failed.",
             );
           }
-        } catch (e) {
-          debugPrint("AutoScan error: $e");
+        } catch (e, st) {
+          docScannerLog('GasolineAddReceipt', 'startAutoScan / scanFileApi error: $e');
+          debugPrintStack(stackTrace: st);
           if (mounted) {
             setState(() => isAutoScanning = false);
             Utils.showErrorDialog(

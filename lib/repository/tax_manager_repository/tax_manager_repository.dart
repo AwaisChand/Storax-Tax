@@ -10,6 +10,8 @@ import 'package:storatax/models/get_previous_info_model/get_previous_info_model.
 import '../../data/network/base_api_service.dart';
 import '../../data/network/network_api_service.dart';
 import '../../res/app_url.dart';
+import '../../utils/scan_flow_log.dart';
+import '../../utils/scan_upload_file.dart';
 import 'package:http/http.dart' as http;
 
 class TaxManagerRepository {
@@ -22,7 +24,21 @@ class TaxManagerRepository {
     try {
       final Map<String, File> fileMap = {};
       for (int i = 0; i < files.length; i++) {
-        fileMap['files[$i]'] = files[i];
+        final original = files[i];
+        taxManagerScanLog(
+          'createFileRepo: file[$i] incoming path=${original.path}',
+        );
+        final normalized = await normalizeScanUploadToJpegIfNeeded(
+          original,
+          logFlow: 'TaxManagerCreate',
+        );
+        try {
+          final len = await normalized.length();
+          taxManagerScanLog(
+            'createFileRepo: file[$i] after normalize path=${normalized.path} bytes=$len',
+          );
+        } catch (_) {}
+        fileMap['files[$i]'] = normalized;
       }
 
       dynamic response = await baseApiServices.multipartPostRequest(
@@ -34,8 +50,9 @@ class TaxManagerRepository {
       debugPrint("Raw API response JSON: $response");
       debugPrint("Api url: ${AppUrl.createFileEndPoint}");
       return response;
-    } catch (e) {
-      debugPrint(e.toString());
+    } catch (e, st) {
+      taxManagerScanLog('createFileRepo ERROR: $e');
+      debugPrint('$st');
       rethrow;
     }
   }
@@ -110,7 +127,21 @@ class TaxManagerRepository {
       if (filesPath != null && filesPath.isNotEmpty) {
         fileMap = {};
         for (int i = 0; i < filesPath.length; i++) {
-          fileMap['files[$i]'] = filesPath[i]; // same as create method
+          final original = filesPath[i];
+          taxManagerScanLog(
+            'updateFileRepo: file[$i] incoming path=${original.path}',
+          );
+          final normalized = await normalizeScanUploadToJpegIfNeeded(
+            original,
+            logFlow: 'TaxManagerUpdate',
+          );
+          try {
+            final len = await normalized.length();
+            taxManagerScanLog(
+              'updateFileRepo: file[$i] after normalize path=${normalized.path} bytes=$len',
+            );
+          } catch (_) {}
+          fileMap['files[$i]'] = normalized;
         }
       }
 
@@ -124,8 +155,9 @@ class TaxManagerRepository {
       debugPrint("Update URL: $urlWithId");
 
       return response;
-    } catch (e) {
-      debugPrint("Error updating file: $e");
+    } catch (e, st) {
+      taxManagerScanLog('updateFileRepo ERROR: $e');
+      debugPrint('$st');
       rethrow;
     }
   }
@@ -198,16 +230,46 @@ class TaxManagerRepository {
 
   Future<dynamic> scanTaxManagerRepo({File? filesPath}) async {
     try {
+      File? upload = filesPath;
+      if (filesPath != null) {
+        taxManagerScanLog(
+          'scanTaxManagerRepo: incoming path=${filesPath.path}',
+        );
+        upload = await normalizeScanUploadToJpegIfNeeded(
+          filesPath,
+          logFlow: 'TaxManager',
+        );
+        try {
+          final len = await upload.length();
+          final parts = upload.path.split('.');
+          final ext = parts.length > 1 ? parts.last : '?';
+          taxManagerScanLog(
+            'scanTaxManagerRepo: after normalize path=${upload.path} ext=$ext bytes=$len '
+            '(multipart field file → ${AppUrl.scanTaxManagerEndPoint})',
+          );
+        } catch (e, st) {
+          taxManagerScanLog(
+            'scanTaxManagerRepo: post-normalize inspect error: $e',
+          );
+          debugPrint('$st');
+        }
+      } else {
+        taxManagerScanLog(
+          'scanTaxManagerRepo: filesPath is null, skip upload',
+        );
+      }
+
       dynamic response = await baseApiServices.multipartPostRequest(
         AppUrl.scanTaxManagerEndPoint,
-        files: filesPath != null ? {'file': filesPath} : null,
+        files: upload != null ? {'file': upload} : null,
       );
 
       debugPrint("Raw API response JSON: $response");
       debugPrint("Api url: ${AppUrl.scanTaxManagerEndPoint}");
       return response;
-    } catch (e) {
-      debugPrint(e.toString());
+    } catch (e, st) {
+      taxManagerScanLog('scanTaxManagerRepo ERROR: $e');
+      debugPrint('$st');
       rethrow;
     }
   }

@@ -10,6 +10,7 @@ import 'package:storatax/models/get_gasoline_report_model/get_gasoline_report_mo
 import 'package:storatax/models/get_transaction_report_model/get_transaction_report_model.dart';
 import 'package:storatax/repository/gasoline_repository/gasoline_repository.dart';
 import 'package:storatax/screens/bottom_nav_bar/bottom_nav_bar_screens/Gasoline/gasoline_screens/gasoline_list_screen/gasoline_list_screen/gasoline_list_screen.dart';
+import 'package:storatax/utils/scan_flow_log.dart';
 
 import '../../utils/utils.dart';
 
@@ -128,17 +129,40 @@ class GasolineViewModel extends ChangeNotifier {
     notifyListeners();
 
     try {
-      debugPrint("files path: ${avatarFile?.path}");
+      if (avatarFile != null && await avatarFile.exists()) {
+        gasolineScanLog(
+          'scanFileApi VM: dispatch path=${avatarFile.path} bytes=${await avatarFile.length()}',
+        );
+      } else {
+        gasolineScanLog(
+          'scanFileApi VM: file missing or null path=${avatarFile?.path}',
+        );
+      }
 
       final response = await gasolineRepository.scanFile(filesPath: avatarFile);
+
+      if (response == null) {
+        gasolineScanLog(
+          'scanFileApi VM: response null (check [ScanUpload][GasolineBasic] and multipart errors)',
+        );
+      } else if (response is Map) {
+        gasolineScanLog(
+          'scanFileApi VM: status=${response["status"]} keys=${response.keys.toList()}',
+        );
+      } else {
+        gasolineScanLog(
+          'scanFileApi VM: unexpected type ${response.runtimeType}',
+        );
+      }
 
       if (kDebugMode) {
         debugPrint("Scan File API Response: $response");
       }
 
       return response;
-    } catch (e) {
-      debugPrint("Scan file error: $e");
+    } catch (e, st) {
+      gasolineScanLog('scanFileApi VM ERROR: $e');
+      debugPrintStack(stackTrace: st);
       return null;
     } finally {
       loading = false;

@@ -14,6 +14,7 @@ import '../../data/network/base_api_service.dart';
 import '../../data/network/network_api_service.dart';
 import '../../models/get_reports_model/get_reports_model.dart';
 import '../../res/app_url.dart';
+import '../../utils/scan_upload_file.dart';
 
 class RentalPropertyRepository {
   BaseApiServices baseApiServices = NetworkApiService();
@@ -274,10 +275,17 @@ class RentalPropertyRepository {
     File? avatarFile,
   }) async {
     try {
+      File? upload = avatarFile;
+      if (avatarFile != null) {
+        upload = await normalizeScanUploadToJpegIfNeeded(
+          avatarFile,
+          logFlow: 'RentalEntryCreate',
+        );
+      }
       dynamic response = await baseApiServices.multipartPostRequest(
         AppUrl.entriesEndPoint,
         fields: fields,
-        files: avatarFile != null ? {'proof': avatarFile} : null,
+        files: upload != null ? {'proof': upload} : null,
       );
 
       debugPrint("Raw API response JSON: $response");
@@ -383,10 +391,17 @@ class RentalPropertyRepository {
     File? avatarFile,
   }) async {
     try {
+      File? upload = avatarFile;
+      if (avatarFile != null) {
+        upload = await normalizeScanUploadToJpegIfNeeded(
+          avatarFile,
+          logFlow: 'RentalEntryUpdate',
+        );
+      }
       dynamic response = await baseApiServices.multipartPostRequest(
         "${AppUrl.expenseUpdateEndPoint}/$id",
         fields: fields,
-        files: avatarFile != null ? {'proof': avatarFile} : null,
+        files: upload != null ? {'proof': upload} : null,
       );
 
       debugPrint("Raw API response JSON: $response");

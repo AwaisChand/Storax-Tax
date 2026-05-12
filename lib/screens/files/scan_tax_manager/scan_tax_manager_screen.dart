@@ -15,6 +15,8 @@ import 'package:storatax/view_models/tax_manager_view_model/tax_manager_view_mod
 import '../../../../../../../res/app_assets.dart';
 import '../../../../../../../res/components/app_localization.dart';
 import '../../../../../../../utils/app_colors.dart';
+import '../../../../../../../utils/doc_scanner_ios_result.dart';
+import '../../../../../../../utils/scan_flow_log.dart';
 import '../../../../../../../utils/utils.dart';
 import 'package:storatax/view_models/auth_view_model/auth_view_model.dart';
 import 'package:storatax/view_models/gasoline_view_model/gasoline_view_model.dart';
@@ -30,6 +32,10 @@ class _ScanTaxManagerScreenState extends State<ScanTaxManagerScreen>
     with SingleTickerProviderStateMixin {
   bool scanWithAi = true;
   File? localPickedImage;
+
+  /// `gallery_crop` | `doc_scanner` (for tracing iOS PNG vs JPG paths).
+  String _receiptImageSource = 'unknown';
+
   int elapsedSeconds = 0;
   bool isAutoScanning = false;
 
@@ -65,9 +71,16 @@ class _ScanTaxManagerScreenState extends State<ScanTaxManagerScreen>
 
   /// Pick image, crop, and start auto-scan
   Future<void> handleImage(File image) async {
+    _receiptImageSource = 'gallery_crop';
+    taxManagerScanLog(
+      'UI: handleImage begin source=gallery_crop path=${image.path} '
+      'exists=${await image.exists()} scanWithAi=$scanWithAi',
+    );
     try {
-      print("Camera image path: ${image.path}");
-      print("File exists: ${await image.exists()}");
+      docScannerLog(
+        'TaxManager',
+        'handleImage start path=${image.path} exists=${await image.exists()} scanWithAi=$scanWithAi',
+      );
 
       await Future.delayed(const Duration(milliseconds: 300));
 
@@ -86,9 +99,16 @@ class _ScanTaxManagerScreenState extends State<ScanTaxManagerScreen>
         ],
       );
 
-      if (croppedFile == null) return;
+      if (croppedFile == null) {
+        docScannerLog('TaxManager', 'handleImage crop cancelled or null');
+        return;
+      }
 
       final croppedImage = File(croppedFile.path);
+      docScannerLog(
+        'TaxManager',
+        'handleImage cropped path=${croppedImage.path} exists=${await croppedImage.exists()}',
+      );
 
       if (!mounted) return;
 
@@ -100,12 +120,16 @@ class _ScanTaxManagerScreenState extends State<ScanTaxManagerScreen>
       });
 
       if (scanWithAi) {
+        docScannerLog('TaxManager', 'handleImage starting AI timer');
         startTextCycle();
         startAutoScan(croppedImage, scanWithAI: true);
+      } else {
+        docScannerLog('TaxManager', 'handleImage scanWithAi=false, skipping API scan');
       }
 
-    } catch (e) {
-      print("ImageCropper error: $e");
+    } catch (e, st) {
+      docScannerLog('TaxManager', 'handleImage / ImageCropper error: $e');
+      debugPrintStack(stackTrace: st);
       Utils.toastMessage("Failed to crop image.");
     }
   }
@@ -123,13 +147,22 @@ class _ScanTaxManagerScreenState extends State<ScanTaxManagerScreen>
   }
 
   void startAutoScan(File image, {bool scanWithAI = true}) {
+    taxManagerScanLog(
+      'UI: startAutoScan begin source=$_receiptImageSource '
+      '(filter [TaxManagerScan]: UI → VM → repo → [ScanUpload][TaxManager])',
+    );
     scanTimer?.cancel();
     elapsedSeconds = 0;
 
     if (!scanWithAI) {
+      docScannerLog('TaxManager', 'startAutoScan skipped (scanWithAI=false)');
       return;
     }
 
+    docScannerLog(
+      'TaxManager',
+      'startAutoScan will call scanTaxManagerApi after 3s for path=${image.path}',
+    );
     // AI scanning enabled
     scanTimer = Timer.periodic(const Duration(seconds: 1), (timer) async {
       if (!mounted) {
@@ -144,6 +177,14 @@ class _ScanTaxManagerScreenState extends State<ScanTaxManagerScreen>
         final auth = Provider.of<AuthViewModel>(context, listen: false);
 
         try {
+          taxManagerScanLog(
+            'UI: invoking scanTaxManagerApi (3s elapsed) source=$_receiptImageSource '
+            'file=${image.path}',
+          );
+          docScannerLog(
+            'TaxManager',
+            'startAutoScan calling scanTaxManagerApi path=${image.path} exists=${await image.exists()}',
+          );
           final response = await gasoline.scanTaxManagerApi(image);
 
           if (!mounted) return;
@@ -152,8 +193,15 @@ class _ScanTaxManagerScreenState extends State<ScanTaxManagerScreen>
           textCycleTimer?.cancel();
 
           if (response != null) {
+            docScannerLog(
+              'TaxManager',
+              'scanTaxManagerApi response status=${response["status"]} keys=${response.keys.toList()}',
+            );
             if (response["status"].toString() == "1") {
               // Success
+              taxManagerScanLog(
+                'UI: scan success, push CreateTaxManagerScreen source=$_receiptImageSource',
+              );
               Utils.toastMessage(response["success"] ?? "Scan successful");
 
               Navigator.push(
@@ -178,6 +226,7 @@ class _ScanTaxManagerScreenState extends State<ScanTaxManagerScreen>
               Utils.showErrorDialog(context: context, message: apiMessage);
             }
           } else {
+            docScannerLog('TaxManager', 'scanTaxManagerApi returned null response');
             // Null response fallback
             Utils.showErrorDialog(
               context: context,
@@ -185,8 +234,9 @@ class _ScanTaxManagerScreenState extends State<ScanTaxManagerScreen>
                   "Unable to scan the document. Please try again or enter manually.",
             );
           }
-        } catch (e) {
-          debugPrint("AutoScan error: $e");
+        } catch (e, st) {
+          docScannerLog('TaxManager', 'startAutoScan / scanTaxManagerApi error: $e');
+          debugPrintStack(stackTrace: st);
           Utils.showErrorDialog(
             context: context,
             message:
@@ -254,6 +304,7 @@ class _ScanTaxManagerScreenState extends State<ScanTaxManagerScreen>
   // }
 
   Future<void> startSmartCameraCapture() async {
+    docScannerLog('TaxManager', 'startSmartCameraCapture begin os=${Platform.operatingSystem}');
     try {
       if (Platform.isAndroid) {
         // --- ANDROID: GOOGLE ML KIT (Fixed for your TECNO) ---
@@ -266,9 +317,16 @@ class _ScanTaxManagerScreenState extends State<ScanTaxManagerScreen>
 
         final documentScanner = DocumentScanner(options: options);
         final result = await documentScanner.scanDocument();
+        final n = result.images?.length ?? 0;
+        docScannerLog('TaxManager', 'Android ML Kit scan finished imageCount=$n');
 
         if (result.images != null && result.images!.isNotEmpty) {
           _processScannedFile(File(result.images!.first));
+        } else {
+          docScannerLog(
+            'TaxManager',
+            'Android ML Kit: no images, not calling _processScannedFile',
+          );
         }
 
         await documentScanner.close();
@@ -277,20 +335,22 @@ class _ScanTaxManagerScreenState extends State<ScanTaxManagerScreen>
         // --- iOS: APPLE VISIONKIT (Using flutter_doc_scanner) ---
         // This launches the native iOS scanner with the yellow box edge detection.
         final result = await FlutterDocScanner().getScanDocuments();
-
-        if (result != null && result.containsKey('images')) {
-          List<dynamic> images = result['images'];
-          if (images.isNotEmpty) {
-            // The result returns the path as a string in the first index
-            _processScannedFile(File(images.first.toString()));
-          }
+        final paths = pathsFromIosDocScannerResult(result, flow: 'TaxManager');
+        if (paths.isNotEmpty) {
+          _processScannedFile(File(paths.first));
+        } else {
+          docScannerLog(
+            'TaxManager',
+            'iOS doc scan: normalized paths empty, not calling _processScannedFile',
+          );
         }
       }
-    } catch (e) {
-      debugPrint("Document Scanner Error: $e");
+    } catch (e, st) {
+      docScannerLog('TaxManager', 'startSmartCameraCapture error: $e');
+      debugPrintStack(stackTrace: st);
       // Show a user-friendly message if the scanner fails or user cancels
       if (e.toString().contains("cancel")) {
-        debugPrint("User cancelled the scan");
+        docScannerLog('TaxManager', 'user cancelled scan (message matched)');
       } else {
         Utils.toastMessage("Could not launch camera");
       }
@@ -298,6 +358,15 @@ class _ScanTaxManagerScreenState extends State<ScanTaxManagerScreen>
   }
 
   void _processScannedFile(File file) {
+    _receiptImageSource = 'doc_scanner';
+    taxManagerScanLog(
+      'UI: _processScannedFile source=doc_scanner path=${file.path} '
+      'ext=${path.extension(file.path)} exists=${file.existsSync()} mounted=$mounted',
+    );
+    docScannerLog(
+      'TaxManager',
+      '_processScannedFile path=${file.path} exists=${file.existsSync()} scanWithAi=$scanWithAi mounted=$mounted',
+    );
     if (!mounted) return;
 
     setState(() {

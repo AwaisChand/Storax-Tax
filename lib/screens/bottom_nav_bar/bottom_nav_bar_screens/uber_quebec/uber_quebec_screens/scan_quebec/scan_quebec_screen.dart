@@ -12,6 +12,8 @@ import 'package:storatax/view_models/quebec_view_model/quebec_view_model.dart';
 
 import '../../../../../../../res/app_assets.dart';
 import '../../../../../../../utils/app_colors.dart';
+import '../../../../../../../utils/doc_scanner_ios_result.dart';
+import '../../../../../../../utils/scan_flow_log.dart';
 import '../../../../../../../utils/utils.dart';
 import '../../../../../../res/components/app_localization.dart';
 import '../quebec_create_screens/rides_gross_screen.dart';
@@ -26,7 +28,15 @@ class ScanQuebecScreen extends StatefulWidget {
 class _ScanQuebecScreenState extends State<ScanQuebecScreen> {
   File? pickedFile;
 
+  /// `gallery` | `pdf` | `doc_scanner` (for tracing iOS PNG vs JPG/PDF paths).
+  String _receiptSource = 'unknown';
+
   Future<void> startSmartQuebecCameraCapture() async {
+    quebecScanLog('UI: opening document scanner / smart camera capture');
+    docScannerLog(
+      'QuebecScan',
+      'startSmartQuebecCameraCapture begin os=${Platform.operatingSystem}',
+    );
     try {
       if (Platform.isAndroid) {
         // --- ANDROID: Google ML Kit Scanner ---
@@ -39,15 +49,27 @@ class _ScanQuebecScreenState extends State<ScanQuebecScreen> {
 
         final documentScanner = DocumentScanner(options: options);
         final result = await documentScanner.scanDocument();
+        final n = result.images?.length ?? 0;
+        docScannerLog('QuebecScan', 'Android ML Kit scan finished imageCount=$n');
 
         if (result.images != null && result.images!.isNotEmpty) {
           final File capturedFile = File(result.images!.first);
 
           if (!mounted) return;
 
+          _receiptSource = 'doc_scanner';
+          quebecScanLog(
+            'UI: pickedFile set source=doc_scanner (Android ML Kit) path=${capturedFile.path}',
+          );
+          docScannerLog(
+            'QuebecScan',
+            'pickedFile set from ML Kit path=${capturedFile.path} exists=${capturedFile.existsSync()}',
+          );
           setState(() {
             pickedFile = capturedFile;
           });
+        } else {
+          docScannerLog('QuebecScan', 'Android ML Kit: no images returned');
         }
 
         await documentScanner.close();
@@ -55,26 +77,36 @@ class _ScanQuebecScreenState extends State<ScanQuebecScreen> {
       } else if (Platform.isIOS) {
         // --- iOS: VisionKit via flutter_doc_scanner ---
         final result = await FlutterDocScanner().getScanDocuments();
+        final paths = pathsFromIosDocScannerResult(result, flow: 'QuebecScan');
+        if (paths.isNotEmpty) {
+          final File capturedFile = File(paths.first);
 
-        if (result != null && result.containsKey('images')) {
-          List<dynamic> images = result['images'];
+          if (!mounted) return;
 
-          if (images.isNotEmpty) {
-            final File capturedFile = File(images.first.toString());
-
-            if (!mounted) return;
-
-            setState(() {
-              pickedFile = capturedFile;
-            });
-          }
+          _receiptSource = 'doc_scanner';
+          quebecScanLog(
+            'UI: pickedFile set source=doc_scanner (iOS VisionKit) path=${capturedFile.path}',
+          );
+          docScannerLog(
+            'QuebecScan',
+            'pickedFile set from iOS doc scan path=${capturedFile.path} exists=${capturedFile.existsSync()}',
+          );
+          setState(() {
+            pickedFile = capturedFile;
+          });
+        } else {
+          docScannerLog(
+            'QuebecScan',
+            'iOS doc scan: normalized paths empty',
+          );
         }
       }
-    } catch (e) {
-      debugPrint("Document Scanner Error: $e");
+    } catch (e, st) {
+      docScannerLog('QuebecScan', 'startSmartQuebecCameraCapture error: $e');
+      debugPrintStack(stackTrace: st);
 
       if (e.toString().toLowerCase().contains("cancel")) {
-        debugPrint("User cancelled the scan");
+        docScannerLog('QuebecScan', 'user cancelled scan (message matched)');
       } else {
         Utils.toastMessage("Could not launch camera");
       }
@@ -193,9 +225,18 @@ class _ScanQuebecScreenState extends State<ScanQuebecScreen> {
                                                           await authViewModel
                                                               .pickImageFromGallery();
                                                       if (file != null) {
+                                                        _receiptSource =
+                                                            'gallery';
+                                                        quebecScanLog(
+                                                          'UI: pickedFile set source=gallery path=${file.path}',
+                                                        );
                                                         setState(() {
                                                           pickedFile = file;
                                                         });
+                                                      } else {
+                                                        quebecScanLog(
+                                                          'UI: gallery picker returned null',
+                                                        );
                                                       }
                                                     },
                                                   ),
@@ -220,9 +261,17 @@ class _ScanQuebecScreenState extends State<ScanQuebecScreen> {
                                                           await authViewModel
                                                               .pickPdfFile();
                                                       if (file != null) {
+                                                        _receiptSource = 'pdf';
+                                                        quebecScanLog(
+                                                          'UI: pickedFile set source=pdf path=${file.path}',
+                                                        );
                                                         setState(() {
                                                           pickedFile = file;
                                                         });
+                                                      } else {
+                                                        quebecScanLog(
+                                                          'UI: pdf picker returned null',
+                                                        );
                                                       }
                                                     },
                                                   ),
@@ -412,10 +461,17 @@ class _ScanQuebecScreenState extends State<ScanQuebecScreen> {
                                     '',
                                 onPressed: () {
                                   if (pickedFile == null) {
+                                    quebecScanLog(
+                                      'UI: Next pressed with no pickedFile, blocked',
+                                    );
                                     Utils.toastMessage(
                                       "Please choose receipt (image or pdf)",
                                     );
                                   } else {
+                                    quebecScanLog(
+                                      'UI: invoking scanQuebecApi source=$_receiptSource '
+                                      'file=${pickedFile!.path}',
+                                    );
                                     quebec.scanQuebecApi(context, pickedFile);
                                   }
                                 },

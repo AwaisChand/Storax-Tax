@@ -318,9 +318,14 @@ class _GetFilesScreenState extends State<GetFilesScreen> {
                                                           comments:
                                                               file.comments ??
                                                               '',
-                                                          filePaths: file.uploads
-                                                              ?.map((e) => e.filePath ?? '')
-                                                              .toList(),
+                                                          filePaths:
+                                                              file.uploads
+                                                                  ?.map(
+                                                                    (e) =>
+                                                                        e.filePath ??
+                                                                        '',
+                                                                  )
+                                                                  .toList(),
                                                         );
                                                         break;
                                                     }

@@ -7,6 +7,8 @@ import 'package:storatax/models/gst_qst_reporting_model/gst_qst_reporting_model.
 import '../../data/network/base_api_service.dart';
 import '../../data/network/network_api_service.dart';
 import '../../res/app_url.dart';
+import '../../utils/scan_flow_log.dart';
+import '../../utils/scan_upload_file.dart';
 
 class QuebecRepository {
   BaseApiServices baseApiServices = NetworkApiService();
@@ -174,16 +176,42 @@ class QuebecRepository {
 
   Future<dynamic> scanQuebecRepo({File? filesPath}) async {
     try {
+      File? upload = filesPath;
+      if (filesPath != null) {
+        quebecScanLog(
+          'scanQuebecRepo: incoming path=${filesPath.path}',
+        );
+        upload = await normalizeScanUploadToJpegIfNeeded(
+          filesPath,
+          logFlow: 'Quebec',
+        );
+        try {
+          final len = await upload.length();
+          final parts = upload.path.split('.');
+          final ext = parts.length > 1 ? parts.last : '?';
+          quebecScanLog(
+            'scanQuebecRepo: after normalize path=${upload.path} ext=$ext bytes=$len '
+            '(multipart field file → ${AppUrl.quebecScanEndPoint})',
+          );
+        } catch (e, st) {
+          quebecScanLog('scanQuebecRepo: post-normalize inspect error: $e');
+          debugPrint('$st');
+        }
+      } else {
+        quebecScanLog('scanQuebecRepo: filesPath is null, skip upload');
+      }
+
       dynamic response = await baseApiServices.multipartPostRequest(
         AppUrl.quebecScanEndPoint,
-        files: filesPath != null ? {'file': filesPath} : null,
+        files: upload != null ? {'file': upload} : null,
       );
 
       debugPrint("Raw API response JSON: $response");
       debugPrint("Api url: ${AppUrl.quebecScanEndPoint}");
       return response;
-    } catch (e) {
-      debugPrint(e.toString());
+    } catch (e, st) {
+      quebecScanLog('scanQuebecRepo ERROR: $e');
+      debugPrint('$st');
       rethrow;
     }
   }

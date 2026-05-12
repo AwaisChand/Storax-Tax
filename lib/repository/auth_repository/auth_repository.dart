@@ -6,6 +6,7 @@ import 'package:storatax/models/get_user_profile/get_user_profile.dart';
 import '../../data/network/base_api_service.dart';
 import '../../data/network/network_api_service.dart';
 import '../../res/app_url.dart' show AppUrl;
+import '../../utils/scan_upload_file.dart';
 
 class AuthRepository{
   BaseApiServices baseApiServices = NetworkApiService();
@@ -161,11 +162,18 @@ class AuthRepository{
     File? avatarFile,
   }) async {
     try {
+      File? upload = avatarFile;
+      if (avatarFile != null) {
+        upload = await normalizeScanUploadToJpegIfNeeded(
+          avatarFile,
+          logFlow: 'ProfileAvatar',
+        );
+      }
       // Use multipart post request instead of JSON
       dynamic response = await baseApiServices.multipartPostRequest(
         AppUrl.updateProfileEndPoint,
         fields: fields,
-        files: avatarFile != null ? {'avatar': avatarFile} : null,
+        files: upload != null ? {'avatar': upload} : null,
       );
 
       debugPrint("Raw API response JSON: $response");
