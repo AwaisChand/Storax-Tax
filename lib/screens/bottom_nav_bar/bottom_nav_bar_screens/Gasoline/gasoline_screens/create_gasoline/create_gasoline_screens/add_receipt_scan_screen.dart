@@ -1,19 +1,20 @@
 import 'dart:async';
 import 'dart:io' hide Context;
 
+import 'package:cunning_document_scanner/cunning_document_scanner.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_doc_scanner/flutter_doc_scanner.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:google_mlkit_document_scanner/google_mlkit_document_scanner.dart';
 import 'package:image_cropper/image_cropper.dart';
 import 'package:path/path.dart' as path;
 import 'package:path_provider/path_provider.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
 
 import '../../../../../../../res/app_assets.dart';
 import '../../../../../../../res/components/app_localization.dart';
-import '../../../../../../../utils/doc_scanner_ios_result.dart';
 import '../../../../../../../utils/app_colors.dart';
+import '../../../../../../../utils/doc_scanner_ios_result.dart';
 import '../../../../../../../utils/utils.dart';
 import 'add_receipt_data_screen.dart';
 import 'package:storatax/view_models/auth_view_model/auth_view_model.dart';
@@ -98,69 +99,179 @@ class _AddReceiptScanScreenState extends State<AddReceiptScanScreen>
   //   }
   // }
 
+  //
+  // Future<void> startSmartCameraCapture() async {
+  //   // 1. Request/Check Permission
+  //   var status = await Permission.camera.status;
+  //
+  //   if (status.isPermanentlyDenied) {
+  //     // The user opted to never see the prompt again, send them to app settings
+  //     openAppSettings();
+  //     return;
+  //   }
+  //
+  //   if (!status.isGranted) {
+  //     status = await Permission.camera.request();
+  //   }
+  //
+  //   // 2. Only proceed if granted
+  //   if (status.isGranted) {
+  //     try {
+  //       if (Platform.isAndroid) {
+  //         final options = DocumentScannerOptions(
+  //           documentFormats: {DocumentFormat.jpeg},
+  //           mode: ScannerMode.full,
+  //           isGalleryImport: false,
+  //           pageLimit: 1,
+  //         );
+  //
+  //         final documentScanner = DocumentScanner(options: options);
+  //         final result = await documentScanner.scanDocument();
+  //
+  //         if (result.images != null && result.images!.isNotEmpty) {
+  //           _processScannedFile(File(result.images!.first));
+  //         }
+  //         await documentScanner.close();
+  //
+  //       } else if (Platform.isIOS) {
+  //         final result = await FlutterDocScanner().getScanDocuments();
+  //         if (result != null && result.containsKey('images')) {
+  //           List<dynamic> images = result['images'];
+  //           if (images.isNotEmpty) {
+  //             String rawPath = images.first.toString();
+  //             String cleanedPath = rawPath.startsWith('file://')
+  //                 ? rawPath.replaceFirst('file://', '')
+  //                 : rawPath;
+  //
+  //             _processScannedFile(File(cleanedPath));
+  //           }
+  //         }
+  //       }
+  //     } catch (e) {
+  //       debugPrint("Scanner Error: $e");
+  //       if (!e.toString().contains("cancel")) {
+  //         Utils.toastMessage("Could not launch camera");
+  //       }
+  //     }
+  //   } else {
+  //     // Handle the case where the user denied permission just now
+  //     Utils.toastMessage("Camera permission is required to scan receipts");
+  //   }
+  // }
+  // void _processScannedFile(File file) async {
+  //   if (!mounted) return;
+  //
+  //   // IMPORTANT: iOS might still be writing the file to disk
+  //   int retry = 0;
+  //   while (!await file.exists() && retry < 5) {
+  //     await Future.delayed(const Duration(milliseconds: 200));
+  //     retry++;
+  //   }
+  //
+  //   if (await file.exists()) {
+  //     setState(() {
+  //       localPickedImage = file;
+  //       isAutoScanning = true;
+  //     });
+  //     startAutoScan(file);
+  //   } else {
+  //     Utils.toastMessage("Error: Scanned file not found.");
+  //   }
+  // }
+
+
+
   Future<void> startSmartCameraCapture() async {
-    gasolineScanLog('UI: opening document scanner / smart camera capture');
-    docScannerLog(
-      'GasolineAddReceipt',
-      'startSmartCameraCapture begin os=${Platform.operatingSystem}',
-    );
-    try {
-      if (Platform.isAndroid) {
-        // --- ANDROID: GOOGLE ML KIT (Fixed for your TECNO) ---
-        final options = DocumentScannerOptions(
-          documentFormats: {DocumentFormat.jpeg},
-          mode: ScannerMode.full,
-          isGalleryImport: false,
-          pageLimit: 1,
-        );
+    // 1. Request/Check Permission
+    var status = await Permission.camera.status;
 
-        final documentScanner = DocumentScanner(options: options);
-        final result = await documentScanner.scanDocument();
-        final n = result.images?.length ?? 0;
-        docScannerLog('GasolineAddReceipt', 'Android ML Kit scan finished imageCount=$n');
+    if (status.isPermanentlyDenied) {
+      openAppSettings();
+      return;
+    }
 
-        if (result.images != null && result.images!.isNotEmpty) {
-          _processScannedFile(File(result.images!.first));
-        } else {
-          docScannerLog(
-            'GasolineAddReceipt',
-            'Android ML Kit: no images, not calling _processScannedFile',
+    if (!status.isGranted) {
+      status = await Permission.camera.request();
+    }
+
+    // 2. Only proceed if granted
+    if (status.isGranted) {
+      gasolineScanLog('UI: opening document scanner / smart camera capture');
+      docScannerLog(
+        'GasolineAddReceipt',
+        'startSmartCameraCapture begin os=${Platform.operatingSystem}',
+      );
+      try {
+        if (Platform.isAndroid) {
+          // --- ANDROID: GOOGLE ML KIT (Fixed for your TECNO) ---
+          final options = DocumentScannerOptions(
+            documentFormats: {DocumentFormat.jpeg},
+            mode: ScannerMode.full,
+            isGalleryImport: false,
+            pageLimit: 1,
           );
-        }
 
-        await documentScanner.close();
-      } else if (Platform.isIOS) {
-        // --- iOS: APPLE VISIONKIT (Using flutter_doc_scanner) ---
-        // This launches the native iOS scanner with the yellow box edge detection.
-        final result = await FlutterDocScanner().getScanDocuments();
-        final paths = pathsFromIosDocScannerResult(
-          result,
-          flow: 'GasolineAddReceipt',
-        );
-        if (paths.isNotEmpty) {
-          _processScannedFile(File(paths.first));
-        } else {
-          docScannerLog(
-            'GasolineAddReceipt',
-            'iOS doc scan: normalized paths empty, not calling _processScannedFile',
+          final documentScanner = DocumentScanner(options: options);
+          final result = await documentScanner.scanDocument();
+          final n = result.images?.length ?? 0;
+          docScannerLog('GasolineAddReceipt', 'Android ML Kit scan finished imageCount=$n');
+
+          if (result.images != null && result.images!.isNotEmpty) {
+            _processScannedFile(File(result.images!.first));
+          } else {
+            docScannerLog(
+              'GasolineAddReceipt',
+              'Android ML Kit: no images, not calling _processScannedFile',
+            );
+          }
+
+          await documentScanner.close();
+        } else if (Platform.isIOS) {
+          // --- iOS: CUNNING DOCUMENT SCANNER (RECOMMENDED) ---
+          List<String>? pictures = await CunningDocumentScanner.getPictures(
+            noOfPages: 1,
+            isGalleryImportAllowed: true,
           );
+
+          if (pictures != null && pictures.isNotEmpty) {
+            String rawPath = pictures.first;
+
+            // Clean and Decode for iOS path safety
+            String cleanedPath = rawPath.startsWith('file://')
+                ? rawPath.replaceFirst('file://', '')
+                : rawPath;
+
+            cleanedPath = Uri.decodeFull(cleanedPath);
+
+            _processScannedFile(File(cleanedPath));
+          } else {
+            docScannerLog(
+              'GasolineAddReceipt',
+              'iOS doc scan: no images, not calling _processScannedFile',
+            );
+          }
         }
-      }
-    } catch (e, st) {
-      docScannerLog('GasolineAddReceipt', 'startSmartCameraCapture error: $e');
-      debugPrintStack(stackTrace: st);
-      if (e.toString().contains("cancel")) {
+      } catch (e, st) {
         docScannerLog(
           'GasolineAddReceipt',
-          'user cancelled scan (message matched)',
+          'startSmartCameraCapture error: $e',
         );
-      } else {
-        Utils.toastMessage("Could not launch camera");
+        debugPrintStack(stackTrace: st);
+        if (e.toString().toLowerCase().contains("cancel")) {
+          docScannerLog(
+            'GasolineAddReceipt',
+            'user cancelled scan (message matched)',
+          );
+        } else {
+          Utils.toastMessage("Could not launch camera");
+        }
       }
+    } else {
+      Utils.toastMessage("Camera permission is required to scan receipts");
     }
   }
 
-  void _processScannedFile(File file) {
+  void _processScannedFile(File file) async {
     _receiptImageSource = 'doc_scanner';
     gasolineScanLog(
       'UI: _processScannedFile source=doc_scanner path=${file.path} '
@@ -172,18 +283,27 @@ class _AddReceiptScanScreenState extends State<AddReceiptScanScreen>
     );
     if (!mounted) return;
 
-    setState(() {
-      localPickedImage = file;
-      elapsedSeconds = 0;
-      currentTextIndex = 0;
-      isAutoScanning = true;
-    });
+    // IMPORTANT: Keep this retry logic. Even with Cunning,
+    // iOS needs a millisecond to release the file handle.
+    int retry = 0;
+    while (!await file.exists() && retry < 5) {
+      await Future.delayed(const Duration(milliseconds: 200));
+      retry++;
+    }
 
-    // These are your existing methods for the Stora Tax receipt logic
-    startTextCycle();
-    startAutoScan(file);
+    if (await file.exists()) {
+      setState(() {
+        localPickedImage = file;
+        isAutoScanning = true;
+        elapsedSeconds = 0; // Reset timer for the "Thinking..." animation
+      });
+
+      startTextCycle(); // Start your "Planning to move next..." text
+      startAutoScan(file); // Start your 3-second countdown and API call
+    } else {
+      Utils.toastMessage("Error: Scanned file not found.");
+    }
   }
-
   Future<File> copyToTemp(File original) async {
     final tempDir = await getTemporaryDirectory();
     final newPath = '${tempDir.path}/${path.basename(original.path)}';
@@ -577,6 +697,21 @@ class _AddReceiptScanScreenState extends State<AddReceiptScanScreen>
                                         fit: BoxFit.fill,
                                         width: double.infinity,
                                         height: double.infinity,
+                                        errorBuilder: (
+                                          context,
+                                          error,
+                                          stackTrace,
+                                        ) {
+                                          debugPrint(
+                                            "Image Render Error: $error",
+                                          );
+                                          return const Center(
+                                            child: Icon(
+                                              Icons.broken_image,
+                                              color: Colors.red,
+                                            ),
+                                          );
+                                        },
                                       ),
                                     ),
                                     if (isAutoScanning)
