@@ -11,6 +11,7 @@ import 'package:storatax/view_models/tax_manager_view_model/tax_manager_view_mod
 import '../../../res/app_assets.dart';
 import '../../../res/components/app_localization.dart';
 import '../../../utils/app_colors.dart';
+import '../../../utils/camera_permission.dart';
 import '../../../utils/utils.dart';
 import '../../../view_models/pricing_plans_view_model/pricing_plans_view_model.dart';
 
@@ -500,6 +501,11 @@ class _CreateTaxManagerScreenState extends State<CreateTaxManagerScreen> {
                                   ),
                                   onTap: () async {
                                     Navigator.pop(context);
+                                    if (!await ensureCameraPermission(
+                                      context,
+                                    )) {
+                                      return;
+                                    }
                                     await authProvider
                                         .pickSingleImageFromCamera();
                                   },

@@ -324,13 +324,21 @@ Future<void> saveAppleSubscriptionFlow({
     }
 
     // 🔥 STEP 2: Get Product Details
-    debugPrint("🚀 STEP 2: Fetch Product");
+    debugPrint("🚀 STEP 2: Fetch Product id=$productId");
 
     final ProductDetailsResponse response =
     await iap.queryProductDetails({productId});
 
+    debugPrint(
+      "🔍 IAP query result: found=${response.productDetails.map((p) => p.id).toList()} "
+      "notFound=${response.notFoundIDs} error=${response.error}",
+    );
+
     if (response.notFoundIDs.isNotEmpty) {
-      Utils.toastMessage("Product not found");
+      Utils.toastMessage(
+        "This subscription isn't available on the App Store yet. "
+        "Please try again later.",
+      );
       return;
     }
 

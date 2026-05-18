@@ -15,6 +15,7 @@ import '../../../../../../../res/app_assets.dart';
 import '../../../../../../../res/components/app_localization.dart';
 import '../../../../../../../res/components/drop_down_widget.dart';
 import '../../../../../../../utils/app_colors.dart';
+import '../../../../../../../utils/camera_permission.dart';
 import '../../../../../../../utils/utils.dart';
 import '../../rental_property_addressing/widget/increment_decrement_double_widget.dart';
 import '../../rental_property_tab_screen/rental_property_tab_screen.dart';
@@ -682,6 +683,11 @@ class _UpdateEntryScreenState extends State<UpdateEntryScreen> {
                                     ),
                                     onTap: () async {
                                       Navigator.pop(context);
+                                      if (!await ensureCameraPermission(
+                                        context,
+                                      )) {
+                                        return;
+                                      }
                                       final picked =
                                           await authProvider
                                               .pickSingleImageFromCamera();

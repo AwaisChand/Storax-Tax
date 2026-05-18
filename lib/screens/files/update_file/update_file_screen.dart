@@ -13,6 +13,7 @@ import '../../../models/get_category_model/get_category_model.dart';
 import '../../../res/app_assets.dart';
 import '../../../res/components/app_localization.dart';
 import '../../../utils/app_colors.dart';
+import '../../../utils/camera_permission.dart';
 import '../../../utils/utils.dart';
 import '../../../view_models/pricing_plans_view_model/pricing_plans_view_model.dart';
 
@@ -577,6 +578,11 @@ class _UpdateFileScreenState extends State<UpdateFileScreen> {
                                   ),
                                   onTap: () async {
                                     Navigator.pop(context);
+                                    if (!await ensureCameraPermission(
+                                      context,
+                                    )) {
+                                      return;
+                                    }
                                     await authProvider
                                         .pickSingleImageFromCamera();
                                   },

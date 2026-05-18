@@ -15,6 +15,7 @@ import 'package:storatax/view_models/tax_manager_view_model/tax_manager_view_mod
 import '../../../../../../../res/app_assets.dart';
 import '../../../../../../../res/components/app_localization.dart';
 import '../../../../../../../utils/app_colors.dart';
+import '../../../../../../../utils/camera_permission.dart';
 import '../../../../../../../utils/doc_scanner_ios_result.dart';
 import '../../../../../../../utils/scan_flow_log.dart';
 import '../../../../../../../utils/utils.dart';
@@ -366,12 +367,19 @@ class _ScanTaxManagerScreenState extends State<ScanTaxManagerScreen>
 
 
   Future<void> startSmartCameraCapture() async {
-    // Camera permission is handled natively by each scanner:
-    // - iOS: VisionKit (CunningDocumentScanner) shows the system prompt and a
-    //   built-in "Camera access denied" screen with a Settings button if the
-    //   user has previously denied access.
-    // - Android: Google ML Kit Document Scanner runs in Google Play Services
-    //   (out of process); it manages its own permission flow.
+    // `cunning_document_scanner` calls `Permission.camera.request()`
+    // internally and throws "Permission not granted" if iOS returns a cached
+    // denial (iOS shows the system prompt only once). Pre-handle here to give
+    // the user a clear "Open Settings" path.
+    final granted = await ensureCameraPermission(context);
+    if (!granted) {
+      docScannerLog(
+        'TaxManager',
+        'startSmartCameraCapture aborted (camera permission not granted)',
+      );
+      return;
+    }
+
     docScannerLog(
       'TaxManager',
       'startSmartCameraCapture begin os=${Platform.operatingSystem}',

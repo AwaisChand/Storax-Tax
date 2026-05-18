@@ -13,6 +13,7 @@ import 'package:provider/provider.dart';
 import '../../../../../../../res/app_assets.dart';
 import '../../../../../../../res/components/app_localization.dart';
 import '../../../../../../../utils/app_colors.dart';
+import '../../../../../../../utils/camera_permission.dart';
 import '../../../../../../../utils/doc_scanner_ios_result.dart';
 import '../../../../../../../utils/utils.dart';
 import 'add_receipt_data_screen.dart';
@@ -181,12 +182,19 @@ class _AddReceiptScanScreenState extends State<AddReceiptScanScreen>
 
 
   Future<void> startSmartCameraCapture() async {
-    // Camera permission is handled natively by each scanner:
-    // - iOS: VisionKit (CunningDocumentScanner) shows the system prompt and a
-    //   built-in "Camera access denied" screen with a Settings button if the
-    //   user has previously denied access.
-    // - Android: Google ML Kit Document Scanner runs in Google Play Services
-    //   (out of process); it manages its own permission flow.
+    // `cunning_document_scanner` calls `Permission.camera.request()`
+    // internally and throws "Permission not granted" if iOS returns a cached
+    // denial (iOS shows the system prompt only once). Pre-handle here to give
+    // the user a clear "Open Settings" path.
+    final granted = await ensureCameraPermission(context);
+    if (!granted) {
+      docScannerLog(
+        'GasolineAddReceipt',
+        'startSmartCameraCapture aborted (camera permission not granted)',
+      );
+      return;
+    }
+
     gasolineScanLog('UI: opening document scanner / smart camera capture');
     docScannerLog(
       'GasolineAddReceipt',

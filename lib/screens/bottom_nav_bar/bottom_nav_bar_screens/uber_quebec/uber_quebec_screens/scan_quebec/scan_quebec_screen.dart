@@ -12,6 +12,7 @@ import 'package:storatax/view_models/quebec_view_model/quebec_view_model.dart';
 
 import '../../../../../../../res/app_assets.dart';
 import '../../../../../../../utils/app_colors.dart';
+import '../../../../../../../utils/camera_permission.dart';
 import '../../../../../../../utils/doc_scanner_ios_result.dart';
 import '../../../../../../../utils/scan_flow_log.dart';
 import '../../../../../../../utils/utils.dart';
@@ -32,6 +33,17 @@ class _ScanQuebecScreenState extends State<ScanQuebecScreen> {
   String _receiptSource = 'unknown';
 
   Future<void> startSmartQuebecCameraCapture() async {
+    // Camera permission must be granted before any iOS/Android doc-scanner.
+    // See `ensureCameraPermission` for the full state machine and rationale.
+    final granted = await ensureCameraPermission(context);
+    if (!granted) {
+      docScannerLog(
+        'QuebecScan',
+        'startSmartQuebecCameraCapture aborted (camera permission not granted)',
+      );
+      return;
+    }
+
     quebecScanLog('UI: opening document scanner / smart camera capture');
     docScannerLog(
       'QuebecScan',
