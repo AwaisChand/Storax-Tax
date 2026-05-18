@@ -8,7 +8,6 @@ import 'package:google_mlkit_document_scanner/google_mlkit_document_scanner.dart
 import 'package:image_cropper/image_cropper.dart';
 import 'package:path/path.dart' as path;
 import 'package:path_provider/path_provider.dart';
-import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
 
 import '../../../../../../../res/app_assets.dart';
@@ -182,92 +181,82 @@ class _AddReceiptScanScreenState extends State<AddReceiptScanScreen>
 
 
   Future<void> startSmartCameraCapture() async {
-    // 1. Request/Check Permission
-    var status = await Permission.camera.status;
+    // Camera permission is handled natively by each scanner:
+    // - iOS: VisionKit (CunningDocumentScanner) shows the system prompt and a
+    //   built-in "Camera access denied" screen with a Settings button if the
+    //   user has previously denied access.
+    // - Android: Google ML Kit Document Scanner runs in Google Play Services
+    //   (out of process); it manages its own permission flow.
+    gasolineScanLog('UI: opening document scanner / smart camera capture');
+    docScannerLog(
+      'GasolineAddReceipt',
+      'startSmartCameraCapture begin os=${Platform.operatingSystem}',
+    );
+    try {
+      if (Platform.isAndroid) {
+        // --- ANDROID: GOOGLE ML KIT ---
+        final options = DocumentScannerOptions(
+          documentFormats: {DocumentFormat.jpeg},
+          mode: ScannerMode.full,
+          isGalleryImport: false,
+          pageLimit: 1,
+        );
 
-    if (status.isPermanentlyDenied) {
-      openAppSettings();
-      return;
-    }
-
-    if (!status.isGranted) {
-      status = await Permission.camera.request();
-    }
-
-    // 2. Only proceed if granted
-    if (status.isGranted) {
-      gasolineScanLog('UI: opening document scanner / smart camera capture');
-      docScannerLog(
-        'GasolineAddReceipt',
-        'startSmartCameraCapture begin os=${Platform.operatingSystem}',
-      );
-      try {
-        if (Platform.isAndroid) {
-          // --- ANDROID: GOOGLE ML KIT (Fixed for your TECNO) ---
-          final options = DocumentScannerOptions(
-            documentFormats: {DocumentFormat.jpeg},
-            mode: ScannerMode.full,
-            isGalleryImport: false,
-            pageLimit: 1,
-          );
-
-          final documentScanner = DocumentScanner(options: options);
-          final result = await documentScanner.scanDocument();
-          final n = result.images?.length ?? 0;
-          docScannerLog('GasolineAddReceipt', 'Android ML Kit scan finished imageCount=$n');
-
-          if (result.images != null && result.images!.isNotEmpty) {
-            _processScannedFile(File(result.images!.first));
-          } else {
-            docScannerLog(
-              'GasolineAddReceipt',
-              'Android ML Kit: no images, not calling _processScannedFile',
-            );
-          }
-
-          await documentScanner.close();
-        } else if (Platform.isIOS) {
-          // --- iOS: CUNNING DOCUMENT SCANNER (RECOMMENDED) ---
-          List<String>? pictures = await CunningDocumentScanner.getPictures(
-            noOfPages: 1,
-            isGalleryImportAllowed: true,
-          );
-
-          if (pictures != null && pictures.isNotEmpty) {
-            String rawPath = pictures.first;
-
-            // Clean and Decode for iOS path safety
-            String cleanedPath = rawPath.startsWith('file://')
-                ? rawPath.replaceFirst('file://', '')
-                : rawPath;
-
-            cleanedPath = Uri.decodeFull(cleanedPath);
-
-            _processScannedFile(File(cleanedPath));
-          } else {
-            docScannerLog(
-              'GasolineAddReceipt',
-              'iOS doc scan: no images, not calling _processScannedFile',
-            );
-          }
-        }
-      } catch (e, st) {
+        final documentScanner = DocumentScanner(options: options);
+        final result = await documentScanner.scanDocument();
+        final n = result.images?.length ?? 0;
         docScannerLog(
           'GasolineAddReceipt',
-          'startSmartCameraCapture error: $e',
+          'Android ML Kit scan finished imageCount=$n',
         );
-        debugPrintStack(stackTrace: st);
-        if (e.toString().toLowerCase().contains("cancel")) {
+
+        if (result.images != null && result.images!.isNotEmpty) {
+          _processScannedFile(File(result.images!.first));
+        } else {
           docScannerLog(
             'GasolineAddReceipt',
-            'user cancelled scan (message matched)',
+            'Android ML Kit: no images, not calling _processScannedFile',
           );
+        }
+
+        await documentScanner.close();
+      } else if (Platform.isIOS) {
+        // --- iOS: CUNNING DOCUMENT SCANNER (VisionKit) ---
+        List<String>? pictures = await CunningDocumentScanner.getPictures(
+          noOfPages: 1,
+          isGalleryImportAllowed: true,
+        );
+
+        if (pictures != null && pictures.isNotEmpty) {
+          String rawPath = pictures.first;
+
+          // Clean and decode for iOS path safety.
+          String cleanedPath =
+              rawPath.startsWith('file://')
+                  ? rawPath.replaceFirst('file://', '')
+                  : rawPath;
+
+          cleanedPath = Uri.decodeFull(cleanedPath);
+
+          _processScannedFile(File(cleanedPath));
         } else {
-          Utils.toastMessage("Could not launch camera");
+          docScannerLog(
+            'GasolineAddReceipt',
+            'iOS doc scan: no images, not calling _processScannedFile',
+          );
         }
       }
-    } else {
-      Utils.toastMessage("Camera permission is required to scan receipts");
+    } catch (e, st) {
+      docScannerLog('GasolineAddReceipt', 'startSmartCameraCapture error: $e');
+      debugPrintStack(stackTrace: st);
+      if (e.toString().toLowerCase().contains("cancel")) {
+        docScannerLog(
+          'GasolineAddReceipt',
+          'user cancelled scan (message matched)',
+        );
+      } else {
+        Utils.toastMessage("Could not launch camera");
+      }
     }
   }
 
