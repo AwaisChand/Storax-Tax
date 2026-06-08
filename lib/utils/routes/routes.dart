@@ -14,6 +14,9 @@ import 'package:storatax/screens/bottom_nav_bar/bottom_nav_bar_screens/team_memb
 import 'package:storatax/screens/bottom_nav_bar/bottom_nav_bar_screens/uber_quebec/uber_quebec_screens/quebec_create_screens/form_submitted_screen.dart';
 import 'package:storatax/screens/bottom_nav_bar/bottom_nav_bar_screens/viewrs_permission/create_new_viewrs_permission/create_new_viewrs_permission.dart';
 import 'package:storatax/screens/bottom_nav_bar/bottom_nav_bar_screens/viewrs_permission/view_list_permission/view_list_permission_screen.dart';
+import 'package:storatax/screens/instructions/instructions_screens/gas_receipt_manager_screen.dart';
+import 'package:storatax/screens/instructions/instructions_screens/rental_property_manager_screen.dart';
+import 'package:storatax/screens/instructions/instructions_screens/uber_screen.dart';
 import 'package:storatax/screens/plan_summary_screen/my_plans_screen.dart';
 import 'package:storatax/screens/dashboard/dashboard_screen.dart';
 import 'package:storatax/screens/plan_summary_screen/more_plan_summary_screen.dart';
@@ -22,8 +25,11 @@ import 'package:storatax/screens/select_tax_professional/select_tax_professional
 import 'package:storatax/screens/files/create_tax_manager/create_tax_manager_screen.dart';
 import 'package:storatax/screens/files/get_files/get_files_screen.dart';
 import 'package:storatax/screens/splash_screen/splash_screen.dart';
+import 'package:storatax/screens/support_tickets/create_ticket/create_ticket_screen.dart';
+import 'package:storatax/screens/support_tickets/support_tickets_list_screen/support_tickets_list_screen.dart';
 
 import '../../screens/bottom_nav_bar/bottom_nav_bar_screens/rental_property/rental_property_screens/entry/entry_screens/all_regular_entry_screen.dart';
+import '../../screens/instructions/instructions_screens/tax_manager_screen.dart';
 
 final GlobalKey<NavigatorState> rootNavigatorKey = GlobalKey<NavigatorState>();
 
@@ -202,6 +208,36 @@ class AppRouter {
         path: '/form-submitted',
         name: 'formSubmitted',
         builder: (context, state) => FormSubmittedScreen(),
+      ),
+      GoRoute(
+        path: '/ticket-list-system',
+        name: 'ticket-list-system',
+        builder: (context, state) => SupportTicketsListScreen(),
+      ),
+      GoRoute(
+        path: '/create-ticket-system',
+        name: 'create-ticket-system',
+        builder: (context, state) => CreateTicketScreen(),
+      ),
+      GoRoute(
+        path: '/inst-gas-receipt',
+        name: 'inst-gas-receipt',
+        builder: (context, state) => GasReceiptManagerScreen(),
+      ),
+      GoRoute(
+        path: '/uber',
+        name: 'uber',
+        builder: (context, state) => UberScreen(),
+      ),
+      GoRoute(
+        path: '/tax-manager',
+        name: 'tax-manager',
+        builder: (context, state) => TaxManagerScreen(),
+      ),
+      GoRoute(
+        path: '/rental',
+        name: 'rental',
+        builder: (context, state) => RentalPropertyManagerScreen(),
       ),
     ],
     errorBuilder:

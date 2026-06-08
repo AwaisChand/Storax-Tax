@@ -62,6 +62,7 @@ class Data {
   String? reference;
   String? text;
   String? image;
+  String? imageUrl;
   Null capturedImageBase64;
   String? date;
   String? year;
@@ -90,6 +91,7 @@ class Data {
         this.reference,
         this.text,
         this.image,
+        this.imageUrl,
         this.capturedImageBase64,
         this.date,
         this.year,
@@ -118,6 +120,7 @@ class Data {
     reference = json['reference'];
     text = json['text'];
     image = json['image'];
+    imageUrl = json['image_url'];
     capturedImageBase64 = json['captured_image_base64'];
     date = json['date'];
     year = json['year'];
@@ -150,6 +153,7 @@ class Data {
     data['reference'] = reference;
     data['text'] = text;
     data['image'] = image;
+    data['image_url'] = imageUrl;
     data['captured_image_base64'] = capturedImageBase64;
     data['date'] = date;
     data['year'] = year;

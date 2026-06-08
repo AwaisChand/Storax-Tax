@@ -210,10 +210,16 @@ class _CreateTeamMemberScreenState extends State<CreateTeamMemberScreen> {
                           // ✅ Collect selected teams in a list
                           List<String> selectedTeams = [];
                           if (isBusinessTaxManagerChecked) {
-                            selectedTeams.add("Business Tax Manager");
+                            selectedTeams.add(AppLocalizations.of(
+                              context,
+                            )!.translate("buisTaxManText") ??
+                                '');
                           }
                           if (isGasolineChecked) {
-                            selectedTeams.add("Gasoline Enterprise");
+                            selectedTeams.add(AppLocalizations.of(
+                              context,
+                            )!.translate("gasEnterpriseText") ??
+                                '');
                           }
 
                           if (selectedTeams.isEmpty) {

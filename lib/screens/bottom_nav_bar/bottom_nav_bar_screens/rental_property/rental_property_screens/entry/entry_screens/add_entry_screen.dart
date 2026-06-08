@@ -51,12 +51,12 @@ class _AddEntryScreenState extends State<AddEntryScreen> {
     ExpenseType(
       key: 'Professional fees',
       en: 'Professional fees',
-      fr: 'Honoraires professionnels',
+      fr: 'Honoraires professionnels (comprend les frais juridiques et comptables)',
     ),
     ExpenseType(
       key: 'Management and administration fees',
       en: 'Management and administration fees',
-      fr: 'Frais de gestion et d’administration',
+      fr: "Frais de gestion et d'administration",
     ),
     ExpenseType(
       key: 'Repairs and maintenance',
@@ -66,24 +66,24 @@ class _AddEntryScreenState extends State<AddEntryScreen> {
     ExpenseType(
       key: 'Salaries wages and benefits',
       en: 'Salaries wages and benefits',
-      fr: 'Salaires, traitements et avantages sociaux',
+      fr: "Salaires, traitements et avantages sociaux(y compris les cotisations de l'employeur)",
     ),
     ExpenseType(
       key: 'Property taxes',
       en: 'Property taxes',
       fr: 'Impôts fonciers',
     ),
-    ExpenseType(key: 'Travel', en: 'Travel', fr: 'Déplacements'),
+    ExpenseType(key: 'Travel', en: 'Travel', fr: 'Frais de déplacement'),
     ExpenseType(key: 'Utilities', en: 'Utilities', fr: 'Services publics'),
     ExpenseType(
       key: 'Motor vehicle expenses',
       en: 'Motor vehicle expenses',
-      fr: 'Frais de véhicule à moteur',
+      fr: 'Dépenses liées aux véhicules à moteur (sans la déduction pour amortissement)',
     ),
     ExpenseType(
       key: 'Other expenses (BusAuto)',
       en: 'Other expenses (BusAuto)',
-      fr: 'Autres dépenses (véhicule d’entreprise)',
+      fr: 'Autres dépenses (AutoEntreprise)',
     ),
     ExpenseType(
       key: 'Other expenses',
@@ -97,7 +97,7 @@ class _AddEntryScreenState extends State<AddEntryScreen> {
     ExpenseType(
       key: 'Auto and travel (see instructions)',
       en: 'Auto and travel (see instructions)',
-      fr: 'Automobile et déplacements (voir instructions)',
+      fr: 'Auto et voyages (voir instructions)',
     ),
     ExpenseType(
       key: 'Cleaning and maintenance',
@@ -109,7 +109,7 @@ class _AddEntryScreenState extends State<AddEntryScreen> {
     ExpenseType(
       key: 'Legal and other professional fees',
       en: 'Legal and other professional fees',
-      fr: 'Frais juridiques et autres honoraires professionnels',
+      fr: 'Frais juridiques et autres frais professionnels',
     ),
     ExpenseType(
       key: 'Management fees',
@@ -133,12 +133,12 @@ class _AddEntryScreenState extends State<AddEntryScreen> {
     ExpenseType(
       key: 'Depreciation expense or depletion',
       en: 'Depreciation expense or depletion',
-      fr: 'Charge d’amortissement ou épuisement',
+      fr: "Dépenses d'amortissement ou d'épuisement",
     ),
     ExpenseType(
       key: 'Other (list)',
       en: 'Other (list)',
-      fr: 'Autre (à préciser)',
+      fr: 'Autre (Liste)',
     ),
   ];
 

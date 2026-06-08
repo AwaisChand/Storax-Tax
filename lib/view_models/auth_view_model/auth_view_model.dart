@@ -104,6 +104,12 @@ class AuthViewModel extends ChangeNotifier {
     }
   }
 
+  ///Remove pikced image
+  void removeImage(int index) {
+    _pickedImages.removeAt(index);
+    notifyListeners();
+  }
+
   ///Pick image from gallery
   Future<File?> pickImageFromGallery() async {
     try {

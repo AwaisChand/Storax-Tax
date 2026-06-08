@@ -46,39 +46,67 @@ class Data {
   });
 
   factory Data.fromJson(Map<String, dynamic> json) {
-    Map<String, GroupedTransactionData>? groupedTx;
+    final groupedJson = json['grouped_transactions'];
 
-    if (json['grouped_transactions'] is Map<String, dynamic>) {
-      groupedTx =
-          (json['grouped_transactions'] as Map<String, dynamic>).map(
-                (key, value) {
-              return MapEntry(
-                key,
-                GroupedTransactionData.fromJson(value),
-              );
-            },
+    Map<String, GroupedTransactionData>? groupedTx = {};
+
+    if (groupedJson is Map<String, dynamic>) {
+      groupedTx = groupedJson.map((key, value) {
+        if (value is Map<String, dynamic>) {
+          return MapEntry(
+            key,
+            GroupedTransactionData.fromJson(value),
           );
+        }
+        else if (value is List) {
+          return MapEntry(
+            key,
+            GroupedTransactionData(
+              transactions: value
+                  .map((e) => Transactions.fromJson(e))
+                  .toList(),
+            ),
+          );
+        }
+        else {
+          return MapEntry(
+            key,
+            GroupedTransactionData(transactions: []),
+          );
+        }
+      });
+    }
+    else if (groupedJson is List) {
+      groupedTx = {
+        "default": GroupedTransactionData(
+          transactions: groupedJson
+              .map((e) => Transactions.fromJson(e))
+              .toList(),
+        )
+      };
     }
 
     return Data(
       summary:
       json['summary'] != null ? Summary.fromJson(json['summary']) : null,
       kpiStats:
-      json['kpi_stats'] != null ? KpiStats.fromJson(json['kpi_stats']) : null,
+      json['kpi_stats'] != null
+          ? KpiStats.fromJson(json['kpi_stats'])
+          : null,
       transactions: (json['transactions'] as List?)
           ?.map((e) => Transactions.fromJson(e))
           .toList(),
-      charts: json['charts'] != null ? Charts.fromJson(json['charts']) : null,
+      charts:
+      json['charts'] != null ? Charts.fromJson(json['charts']) : null,
       groupedTransactions: groupedTx,
-      client: json['client'] != null ? Client.fromJson(json['client']) : null,
+      client:
+      json['client'] != null ? Client.fromJson(json['client']) : null,
       teams: json['teams'] ?? [],
-      filters:
-      json['filters'] is Map<String, dynamic>
+      filters: json['filters'] is Map<String, dynamic>
           ? Filters.fromJson(json['filters'])
           : null,
     );
   }
-
   Map<String, dynamic> toJson() => {
     'summary': summary?.toJson(),
     'kpi_stats': kpiStats != null
@@ -436,17 +464,21 @@ class MerchantDistribution {
   String? merchant;
   double? total;
   int? count;
+  String? color;
 
   MerchantDistribution.fromJson(Map<String, dynamic> json) {
     merchant = json['merchant'];
     total = (json['total'] as num?)?.toDouble();
     count = json['count'];
+    color = json['color'];
+
   }
 
   Map<String, dynamic> toJson() => {
     'merchant': merchant,
     'total': total,
     'count': count,
+    'color': color,
   };
 }
 

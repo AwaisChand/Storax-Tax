@@ -453,19 +453,21 @@ class GasolineViewModel extends ChangeNotifier {
   ///Get Transaction report api
 
   Future<void> getTransactionReportApi(
-    BuildContext context, {
-    String? year,
-    String? month,
-    String? fromDate,
-    String? toDate,
-    String? sortBy,
-    String? sortOrder,
-  }) async {
+      BuildContext context, {
+        String? language, // 👈 add this
+        String? year,
+        String? month,
+        String? fromDate,
+        String? toDate,
+        String? sortBy,
+        String? sortOrder,
+      }) async {
     loading = true;
     notifyListeners();
 
     try {
       final response = await gasolineRepository.getTransactionReportRepo(
+        language: language, // 👈 pass it
         year: year,
         month: month,
         fromDate: fromDate,
@@ -482,9 +484,7 @@ class GasolineViewModel extends ChangeNotifier {
         );
       }
 
-      if (kDebugMode) {
-        debugPrint("Get transaction report Data API Response: $response");
-      }
+      debugPrint("Get transaction report Data API Response: $response");
     } catch (e, stackTrace) {
       debugPrint("Get transaction report data error: $e $stackTrace");
       Utils.toastMessage("Error: ${e.toString()}");

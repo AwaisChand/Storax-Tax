@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 import 'package:storatax/utils/app_colors.dart';
 
 import '../res/app_assets.dart';
+import '../res/components/app_localization.dart';
 
 class Utils {
   static toastMessage(String message) {
@@ -67,97 +68,111 @@ class Utils {
     return "Strong";
   }
 
+  /// Hex to color
+  static Color hexToColor(String hex) {
+    hex = hex.replaceAll("#", "");
+    if (hex.length == 6) {
+      hex = "FF$hex";
+    }
+    return Color(int.parse(hex, radix: 16));
+  }
+
   static showPasswordInfoDialog(context) {
     return showDialog(
       context: context,
       builder:
           (context) => AlertDialog(
-        backgroundColor: Colors.black87,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(15),
-        ),
-        title: Text(
-          "Password requirements",
-          style: GoogleFonts.montserrat(
-            color: Colors.white,
-            fontWeight: FontWeight.bold,
-            fontSize: 15,
-          ),
-        ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              "At least 8 characters",
+            backgroundColor: Colors.black87,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(15),
+            ),
+            title: Text(
+              AppLocalizations.of(context)!.translate("passwordReqText") ?? '',
               style: GoogleFonts.montserrat(
                 color: Colors.white,
-                fontWeight: FontWeight.w400,
-                fontSize: 13,
-              ),
-            ),
-            SizedBox(height: 4),
-            Text(
-              "Include an uppercase letter (A–Z)",
-              style: GoogleFonts.montserrat(
-                color: Colors.white,
-                fontWeight: FontWeight.w400,
-                fontSize: 13,
-              ),
-            ),
-            SizedBox(height: 4),
-            Text(
-              "Include a lowercase letter (a–z)",
-              style: GoogleFonts.montserrat(
-                color: Colors.white,
-                fontWeight: FontWeight.w400,
-                fontSize: 13,
-              ),
-            ),
-            SizedBox(height: 4),
-            Text(
-              "Include a number (0–9)",
-              style: GoogleFonts.montserrat(
-                color: Colors.white,
-                fontWeight: FontWeight.w400,
-                fontSize: 13,
-              ),
-            ),
-            SizedBox(height: 4),
-            Text(
-              "Include a special character (e.g. !@#\$)",
-              style: GoogleFonts.montserrat(
-                color: Colors.white,
-                fontWeight: FontWeight.w400,
-                fontSize: 13,
-              ),
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text(
-              "OK",
-              style: GoogleFonts.montserrat(
-                color: Colors.blue,
-                fontWeight: FontWeight.w400,
+                fontWeight: FontWeight.bold,
                 fontSize: 15,
               ),
             ),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  AppLocalizations.of(context)!.translate("atLeastCharText") ??
+                      '',
+                  style: GoogleFonts.montserrat(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w400,
+                    fontSize: 13,
+                  ),
+                ),
+                SizedBox(height: 4),
+                Text(
+                  AppLocalizations.of(context)!.translate("incUpperText") ??
+                      '',
+                  style: GoogleFonts.montserrat(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w400,
+                    fontSize: 13,
+                  ),
+                ),
+                SizedBox(height: 4),
+                Text(
+                  AppLocalizations.of(context)!.translate("incLowerText") ??
+                      '',
+                  style: GoogleFonts.montserrat(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w400,
+                    fontSize: 13,
+                  ),
+                ),
+                SizedBox(height: 4),
+                Text(
+                  AppLocalizations.of(context)!.translate("incNumText") ??
+                      '',
+                  style: GoogleFonts.montserrat(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w400,
+                    fontSize: 13,
+                  ),
+                ),
+                SizedBox(height: 4),
+                Text(
+                  AppLocalizations.of(context)!.translate("incSpecialChar") ??
+                      '',
+                  style: GoogleFonts.montserrat(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w400,
+                    fontSize: 13,
+                  ),
+                ),
+              ],
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: Text(
+                  "OK",
+                  style: GoogleFonts.montserrat(
+                    color: Colors.blue,
+                    fontWeight: FontWeight.w400,
+                    fontSize: 15,
+                  ),
+                ),
+              ),
+            ],
           ),
-        ],
-      ),
     );
   }
 
   static Widget buildAppBar(
-      BuildContext context,
-      String text1,
-      String text2, [
-        String? receiptText,
-        VoidCallback? onTap,
-      ]) {
+    BuildContext context,
+    String text1,
+    String text2, [
+    String? receiptText,
+    VoidCallback? onTap,
+  ]) {
     return Container(
       height: Utils.setHeight(context) * 0.15,
       padding: EdgeInsets.only(
@@ -234,63 +249,61 @@ class Utils {
       context: context,
       builder:
           (dialogContext) => AlertDialog(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-        ),
-        contentPadding: const EdgeInsets.all(20),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(Icons.error_outline, size: 50, color: Colors.orangeAccent),
-            const SizedBox(height: 10),
-            Text(
-              title,
-              style: GoogleFonts.montserrat(
-                fontSize: 16,
-                fontWeight: FontWeight.w500,
-                color: AppColors.blackColor,
-              ),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
             ),
-            const SizedBox(height: 10),
-            Text(
-              message,
-              textAlign: TextAlign.center,
-              style: GoogleFonts.montserrat(
-                fontSize: 14,
-                fontWeight: FontWeight.w500,
-                color: AppColors.blackColor,
-              ),
-            ),
-            const SizedBox(height: 15),
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.goldenOrangeColor,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadiusGeometry.circular(10),
+            contentPadding: const EdgeInsets.all(20),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(Icons.error_outline, size: 50, color: Colors.orangeAccent),
+                const SizedBox(height: 10),
+                Text(
+                  title,
+                  style: GoogleFonts.montserrat(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w500,
+                    color: AppColors.blackColor,
+                  ),
                 ),
-              ),
-              onPressed: () {
-                Navigator.of(dialogContext).pop();
-              },
-              child: Text(
-                "OK",
-                style: GoogleFonts.montserrat(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w500,
-                  color: AppColors.whiteColor,
+                const SizedBox(height: 10),
+                Text(
+                  message,
+                  textAlign: TextAlign.center,
+                  style: GoogleFonts.montserrat(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                    color: AppColors.blackColor,
+                  ),
                 ),
-              ),
+                const SizedBox(height: 15),
+                ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.goldenOrangeColor,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadiusGeometry.circular(10),
+                    ),
+                  ),
+                  onPressed: () {
+                    Navigator.of(dialogContext).pop();
+                  },
+                  child: Text(
+                    "OK",
+                    style: GoogleFonts.montserrat(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w500,
+                      color: AppColors.whiteColor,
+                    ),
+                  ),
+                ),
+              ],
             ),
-          ],
-        ),
-      ),
+          ),
     );
   }
 
   // static String publishKey =
   //     "pk_live_51QWhgzAX1dkfLpyeIbA3me7rYfvXcQUxUnzWwCDvgc2DFG1n2vn0y7kxew5cBlDHT8DD4DFL1iq7pnI5hGHvdVhs00MPf4A5l6";
-
-
 }
 
 class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
@@ -406,6 +419,4 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
       ),
     );
   }
-
-
 }

@@ -387,6 +387,7 @@ class GasolineRepository {
   ///Get Transaction Report Repo
 
   Future<GetTransactionReportModel> getTransactionReportRepo({
+    String? language, // 👈 add this
     String? year,
     String? month,
     String? fromDate,
@@ -395,11 +396,13 @@ class GasolineRepository {
     String? sortOrder,
   }) async {
     try {
-      // Base URL
       String url = AppUrl.getTransactionReportReportEndPoint;
 
-      // Add query parameters if filters are provided
       Map<String, String> queryParams = {};
+
+      // ✅ Always send language (default = en)
+      queryParams['language'] = language ?? 'en';
+
       if (year != null) queryParams['year'] = year;
       if (month != null) queryParams['month'] = month;
       if (fromDate != null) queryParams['from_date'] = fromDate;
@@ -407,20 +410,11 @@ class GasolineRepository {
       if (sortBy != null) queryParams['sort_by'] = sortBy;
       if (sortOrder != null) queryParams['sort_order'] = sortOrder;
 
-      // if (uploadedByProfessional != null) {
-      //   queryParams['uploaded_by_professional'] =
-      //       uploadedByProfessional.toString();
-      // }
-
-      // If query parameters exist, build full query string
-      if (queryParams.isNotEmpty) {
-        final uri = Uri.parse(url).replace(queryParameters: queryParams);
-        url = uri.toString();
-      }
+      final uri = Uri.parse(url).replace(queryParameters: queryParams);
+      url = uri.toString();
 
       debugPrint("Final URL: $url");
 
-      // Call API
       final response = await baseApiServices.getRequestToken(url);
       debugPrint("API Response: $response");
 

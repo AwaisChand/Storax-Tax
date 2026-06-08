@@ -23,8 +23,14 @@ class _TransactionReportScreenState extends State<TransactionReportScreen> {
   @override
   void initState() {
     super.initState();
+
     Future.microtask(() {
-      context.read<GasolineViewModel>().getTransactionReportApi(context);
+      final langCode = Localizations.localeOf(context).languageCode;
+
+      context.read<GasolineViewModel>().getTransactionReportApi(
+        context,
+        language: langCode,
+      );
     });
   }
 
@@ -87,7 +93,6 @@ class _TransactionReportScreenState extends State<TransactionReportScreen> {
                   ),
                 );
               }
-
               return TransactionReportContentWidget(
                 gasoline: gasoline,
                 isFreeGasPlan: isFreeGasPlan,

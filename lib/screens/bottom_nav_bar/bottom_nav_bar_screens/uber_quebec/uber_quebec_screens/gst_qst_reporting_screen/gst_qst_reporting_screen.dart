@@ -450,7 +450,7 @@ class _GstQstReportingScreenState extends State<GstQstReportingScreen> {
                                                   AppLocalizations.of(
                                                         context,
                                                       )!.translate(
-                                                        "viewText",
+                                                        "viewFromText",
                                                       ) ??
                                                       '',
                                                 ),

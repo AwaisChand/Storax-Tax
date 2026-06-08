@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:storatax/models/get_gasoline_list_model/get_gasoline_list_model.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../../../../../../res/app_assets.dart';
 import '../../../../../../res/components/app_localization.dart';
@@ -13,8 +14,22 @@ class ViewGasolineDetailScreen extends StatelessWidget {
 
   final Data gasolineData;
 
+  bool isPdf(String url) {
+    return url.toLowerCase().endsWith('.pdf');
+  }
+
+  Future<void> _openFile(BuildContext context, String url) async {
+    final Uri uri = Uri.parse(url);
+
+    if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Could not open file')),
+      );
+    }
+  }
   @override
   Widget build(BuildContext context) {
+    final fileUrl = gasolineData.image ?? "";
     return Scaffold(
       body: Stack(
         children: [
@@ -94,43 +109,50 @@ class ViewGasolineDetailScreen extends StatelessWidget {
                   ),
                 ),
 
+
                 Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 20,
-                    vertical: 10,
-                  ),
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(8),
-                    child: CachedNetworkImage(
-                      imageUrl: gasolineData.image ?? "",
-                      height: Utils.setHeight(context) * 0.3,
-                      width: double.infinity,
-                      fit: BoxFit.cover,
-                      placeholder:
-                          (context, url) => Container(
-                            height: Utils.setHeight(context) * 0.3,
-                            color: Colors.grey.shade300,
-                            child: SizedBox(
-                              height: 25,
-                              width: 25,
-                              child: Center(
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2,
-                                  color: AppColors.blackColor,
-                                ),
+                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                  child: GestureDetector(
+                    onTap: () {
+                      _openFile(context, fileUrl);
+                    },
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(8),
+                      child: isPdf(fileUrl)
+                          ? Container(
+                        height: Utils.setHeight(context) * 0.3,
+                        width: double.infinity,
+                        color: Colors.grey.shade200,
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children:  [
+                            Icon(Icons.picture_as_pdf, size: 60, color: Colors.red),
+                            SizedBox(height: 10),
+                            Text("Tap to open PDF",  style: GoogleFonts.poppins(
+                              textStyle:  TextStyle(
+                                fontWeight: FontWeight.w400,
+                                fontSize: 14,
                               ),
                             ),
-                          ),
-                      errorWidget:
-                          (context, url, error) => Container(
-                            height: Utils.setHeight(context) * 0.3,
-                            color: Colors.grey.shade300,
-                            child: const Icon(Icons.broken_image, size: 50),
-                          ),
+                            ),
+                          ],
+                        ),
+                      )
+                          : CachedNetworkImage(
+                        imageUrl: fileUrl,
+                        height: Utils.setHeight(context) * 0.3,
+                        width: double.infinity,
+                        fit: BoxFit.cover,
+                        placeholder: (context, url) => Container(
+                          color: Colors.grey.shade300,
+                          child: const Center(child: CircularProgressIndicator()),
+                        ),
+                        errorWidget: (context, url, error) =>
+                        const Icon(Icons.broken_image, size: 50),
+                      ),
                     ),
                   ),
                 ),
-
                 // Gasoline Info
                 Flexible(
                   child: Align(

@@ -153,10 +153,13 @@ class _AddReceiptDataScreenState extends State<AddReceiptDataScreen> {
 
       // Parse the stored date
       if (dateReceivedValue.isNotEmpty) {
-        selectedDate = DateTime.tryParse(dateReceivedValue);
+        try {
+          selectedDate = DateFormat("yyyy/MM/dd").parse(dateReceivedValue);
+        } catch (e) {
+          selectedDate = DateTime.now();
+        }
       }
 
-      // Set the text for editable date field
       dateController.text =
           selectedDate != null
               ? displayDateFormat.format(selectedDate!)

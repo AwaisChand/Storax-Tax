@@ -132,7 +132,7 @@
   "printText": "Print",
   "emailReportText": "Email Report",
   "totalTransText": "Total Transactions",
-  "beforeTText": "Before Tax",
+  "beforeTText": "Before Tax Amount",
   "emailTransReportText": "Email Transaction Report",
   "recipientEmail": "Recipient Email",
   "encryptPassText": "Password to encrypt te PDF file",
@@ -149,7 +149,7 @@
   "fromDateText": "From Date",
   "toDateText": "To Date",
   "selectMonthText": "Select Month",
-  "filter": "Filter",
+  "filter": "Search",
   "resetText": "Reset",
   "ascText": "Ascending",
   "descendingText": "Descending",
@@ -174,6 +174,7 @@
   "cateText": "Category",
   "yearText": "Year",
   "viewText": "View",
+  "viewFromText": "View Form",
   "editText": "Edit",
   "downFileText": "Download File",
   "taxManagerListText": "Taxes manager list",
@@ -219,8 +220,8 @@
   "englishText": "English",
   "yesText": "Yes",
   "noText": "No",
-  "provinceResidenceText": "Province of residence on December 31 2025 *",
-  "maritalStatusText": "Marital Status as of December 31, 2025 *",
+  "provinceResidenceText": "Province of residence on December 31 *",
+  "maritalStatusText": "Marital Status as of December 31 *",
   "singleText": "Single",
   "marriedText": "Married",
   "divorcedText": "Divorced",
@@ -459,5 +460,66 @@
   "onlyForRental": "Only For Rental",
   "incomeType": "Income Type",
   "amount": "Amount",
-  "yearText1": "year"
+  "yearText1": "year",
+
+
+  "passwordReqText": "Password requirements",
+  "atLeastCharText": "At least 8 characters",
+  "incUpperText": "Include an uppercase letter (A-Z)",
+  "incLowerText": "Include a lowercase letter (a-z)",
+  "incNumText": "Include a number (0-9)",
+  "incSpecialChar": "Include special character(e.g. !@#$)",
+
+  "gasEnterpriseText": "Gasoline Enterprise",
+  "buisTaxManText": "Business Tax Manager",
+
+  "supportingTicketsText": "Support Tickets",
+  "descTicketText": "Create and track your support requests",
+  "createTicketText": "Create Ticket",
+  "featureText": "Feature",
+  "assignedText": "Assigned To",
+  "lastReplyText": "Last Reply",
+  "createTicketSText": "Create Support Ticket",
+  "ticketText": "Ticket #",
+  "sendReplyText": "Send Reply",
+  "replyText": "Reply",
+  "conversationDescText": "Newest messages appear at the bottom",
+  "attachmentsText": "Attachments",
+  "noAttachmentsText": "No Attachments",
+  "submitTicketText": "Submit Ticket",
+  "creaBTicket": "Create Ticket",
+  "otherFeatureText": "Other Feature",
+  "selectFeatureText": "Select a feature",
+
+  "feature1": "Taxes Manager",
+  "feature2": "Business Tax Manager",
+  "feature3": "Gas Receipts Manager",
+  "feature4": "Rental Property Manager",
+  "feature5": "UBER GST/QST Reporting",
+  "feature6": "Client Management",
+  "feature7": "Billing / Subscription",
+  "feature8": "Login / Access",
+  "feature9": "Mobile App",
+  "feature10": "Other",
+
+
+  "gasReceiptManagerText": "Gas Receipts Manager",
+  "uberText": "UBER GST/QST",
+  "taxManText": "Tax Manager",
+  "rentalText": "Rental Property Management",
+
+
+
+
+  "gasTitleText": "Gas Receipts Manager - Instruction Guide",
+  "quebecTitleText": "Uber GST/QST Reporting - Simplified Guide",
+  "tmTitleText": "Tax Manager - AI Simplified Guide",
+  "rentalTitleText": "Rental property manager"
+
+
+
+
+
+
+
 }

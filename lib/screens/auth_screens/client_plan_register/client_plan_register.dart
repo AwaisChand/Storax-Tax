@@ -129,7 +129,10 @@ class _ClientPlanRegisterState extends State<ClientPlanRegister> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            _label("First Name / Business Name"),
+                            _label( AppLocalizations.of(
+                              context,
+                            )!.translate("firstBusinessNameText") ??
+                                ''),
                             SizedBox(height: 5),
                             AppTextField(
                               controller: firstNameController,
@@ -141,7 +144,10 @@ class _ClientPlanRegisterState extends State<ClientPlanRegister> {
                               textInputType: TextInputType.name,
                             ),
                             SizedBox(height: 12),
-                            _label("Last Name(Optional)"),
+                            _label( AppLocalizations.of(
+                              context,
+                            )!.translate("lastBusinessNameText") ??
+                                ''),
                             SizedBox(height: 5),
                             AppTextField(
                               controller: lastNameController,
@@ -257,7 +263,10 @@ class _ClientPlanRegisterState extends State<ClientPlanRegister> {
                               ],
                             ),
                             SizedBox(height: 15),
-                            _label("Confirm Password"),
+                            _label( AppLocalizations.of(
+                              context,
+                            )!.translate("confirmPasswordText") ??
+                                ''),
                             SizedBox(height: 5),
                             AppTextField(
                               controller: confirmPasswordController,

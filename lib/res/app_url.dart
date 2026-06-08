@@ -4,8 +4,6 @@ class AppUrl {
   // static var baseUrl = 'http://stora.thetechnologies.net/';
   static var baseUrl = 'https://storatax.com/';
 
-
-
   ///Auth End Points
 
   static var loginEndPoint = '${baseUrl}api/auth/signin';
@@ -97,17 +95,16 @@ class AppUrl {
   static var reportScheduleEndPoint = '${baseUrl}api/report/pdf';
   static var allRegularEntriesPrintEndPoint =
       '${baseUrl}api/regular-entry/print';
-  static var printT776EndPoint =
-      '${baseUrl}api/report/T776/print';
-  static var printF1040EndPoint =
-      '${baseUrl}api/report/F1040/print';
+  static var printT776EndPoint = '${baseUrl}api/report/T776/print';
+  static var printF1040EndPoint = '${baseUrl}api/report/F1040/print';
 
   ///Uber GST/QST Reporting(Quebec) End Points
   static var quebecEndPoint = '${baseUrl}api/quebec';
   static var quebecScanEndPoint = '${baseUrl}api/quebec/ocr-scan-uber';
-  static var forwardGrossIncomeEndPoint = '${baseUrl}api/quebec/gross-income-report/forward';
-  static var forwardGSTQSTEndPoint = '${baseUrl}api/quebec/quebec-report/forward';
-
+  static var forwardGrossIncomeEndPoint =
+      '${baseUrl}api/quebec/gross-income-report/forward';
+  static var forwardGSTQSTEndPoint =
+      '${baseUrl}api/quebec/quebec-report/forward';
 
   ///Viewrs End Points
   static var viewrsEndPoint = '${baseUrl}api/viewers';
@@ -118,18 +115,33 @@ class AppUrl {
   ///Dashboard End Points
   static var dashboardEndPoint = '${baseUrl}api/client-dashboard';
 
+  ///Ticket Support End Point
+
+  static var listTicketSupportEndPoint = '${baseUrl}api/client/support-tickets';
+  static var createTicketEndPoint = '${baseUrl}api/client/support-tickets';
+  static String replyTicket(int ticketId) {
+    return '${baseUrl}api/client/support-tickets/$ticketId/reply';
+  }
+
+  /// Instructions End Point
+
+  static var instructionsEndPoint = '${baseUrl}api/client/instructions';
+
+
+
   ///Stripe Integration End Points
 
-  static var createPaymentIntentEndPoint = '${baseUrl}api/stripe/payment-intent/create';
-  static var createSetupIntentEndPoint = '${baseUrl}api/stripe/setup-intent/create';
-  static var createSubscriptionEndPoint = '${baseUrl}api/stripe/subscription/create';
+  static var createPaymentIntentEndPoint =
+      '${baseUrl}api/stripe/payment-intent/create';
+  static var createSetupIntentEndPoint =
+      '${baseUrl}api/stripe/setup-intent/create';
+  static var createSubscriptionEndPoint =
+      '${baseUrl}api/stripe/subscription/create';
 
   ///Apple IAP End Points
 
   static var verifyPurchaseApiEndPoint = '${baseUrl}api/iap/verify';
   static var subStatusEndPoint = '${baseUrl}api/iap/subscription-status';
-
-
 
   static var customerEndPoint = "https://api.stripe.com/v1/customers";
   static var paymentAttachmentEndPoint =

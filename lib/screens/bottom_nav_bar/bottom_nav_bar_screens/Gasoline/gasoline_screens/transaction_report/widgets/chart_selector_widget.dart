@@ -68,7 +68,7 @@ class _ChartSelectorState extends State<ChartSelectorWidget> {
           height:
               (!showTotal && !showTax)
                   ? Utils.setHeight(context) * 0.16
-                  : Utils.setHeight(context) * 0.46,
+                  : Utils.setHeight(context) * 0.5,
           width: double.infinity,
           padding: EdgeInsets.only(top: 20, right: 20, left: 20),
           decoration: BoxDecoration(
@@ -96,7 +96,7 @@ class _ChartSelectorState extends State<ChartSelectorWidget> {
                           _rowWidget(
                             AppLocalizations.of(
                                   context,
-                                )!.translate("taxAmountText") ??
+                                )!.translate("totalTaxText") ??
                                 '',
                             AppColors.goldenOrangeColor,
                             showTax,
@@ -117,7 +117,7 @@ class _ChartSelectorState extends State<ChartSelectorWidget> {
                           _rowWidgetForBar(
                             AppLocalizations.of(
                                   context,
-                                )!.translate("taxAmountText") ??
+                                )!.translate("totalTaxText") ??
                                 '',
                             AppColors.goldenOrangeColor,
                             showTax,
@@ -149,20 +149,27 @@ class _ChartSelectorState extends State<ChartSelectorWidget> {
                   : MonthlyBarChart(showTotal: showTotal, showTax: showTax),
 
               Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  _monthlyInsightsWidget(
-                    AppLocalizations.of(context)!.translate("hMonthText") ?? '',
-                    "${widget.gasoline.getTransactionReportModel?.data?.charts?.monthlyInsights?.highestMonth}",
+                  Expanded(
+                    child: _monthlyInsightsWidget(
+                      AppLocalizations.of(context)!.translate("hMonthText") ??
+                          '',
+                      "${widget.gasoline.getTransactionReportModel?.data?.charts?.monthlyInsights?.highestMonth}",
+                    ),
                   ),
-                  _monthlyInsightsWidget(
-                    AppLocalizations.of(context)!.translate("mAverageText") ??
-                        '',
-                    "\$${widget.gasoline.getTransactionReportModel?.data?.charts?.monthlyInsights?.monthlyAverage}",
+                  Expanded(
+                    child: _monthlyInsightsWidget(
+                      AppLocalizations.of(context)!.translate("mAverageText") ??
+                          '',
+                      "\$${widget.gasoline.getTransactionReportModel?.data?.charts?.monthlyInsights?.monthlyAverage}",
+                    ),
                   ),
-                  _monthlyInsightsWidget(
-                    AppLocalizations.of(context)!.translate("trendText") ?? '',
-                    "${widget.gasoline.getTransactionReportModel?.data?.charts?.monthlyInsights?.trend}",
+                  Expanded(
+                    child: _monthlyInsightsWidget(
+                      AppLocalizations.of(context)!.translate("trendText") ??
+                          '',
+                      "${widget.gasoline.getTransactionReportModel?.data?.charts?.monthlyInsights?.trend}",
+                    ),
                   ),
                 ],
               ),
@@ -234,7 +241,8 @@ class _ChartSelectorState extends State<ChartSelectorWidget> {
                   ),
                   Expanded(
                     child: _topMerchantWidget(
-                      AppLocalizations.of(context)!.translate("transText") ?? '',
+                      AppLocalizations.of(context)!.translate("transText") ??
+                          '',
                       "${widget.gasoline.getTransactionReportModel?.data?.charts?.topMerchant?.transactionCount ?? 0}",
                     ),
                   ),
@@ -376,6 +384,9 @@ class _ChartSelectorState extends State<ChartSelectorWidget> {
         ),
         Text(
           text2,
+          overflow: TextOverflow.ellipsis,
+          maxLines: 2,
+          textAlign: TextAlign.center,
           style: GoogleFonts.montserrat(
             fontWeight: FontWeight.w600,
             fontSize: 12,

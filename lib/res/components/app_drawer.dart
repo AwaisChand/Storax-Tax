@@ -15,15 +15,6 @@ import 'app_localization.dart';
 class AppDrawer extends StatelessWidget {
   const AppDrawer({super.key});
 
-  final List<String> rentalTypes = const [
-    'Property Address Setting',
-    'Property Owner',
-    'Income Type',
-    'Add Entry',
-    'All Regular Entries',
-    'Database',
-  ];
-
   @override
   Widget build(BuildContext context) {
     final authProvider = context.watch<AuthViewModel>();
@@ -63,7 +54,6 @@ class AppDrawer extends StatelessWidget {
                 AppLocalizations.of(context)!.translate("dashboardText") ?? '',
             iconPath: AppAssets.gasolineIcon,
             onTap: () {
-              // Close drawer
               Scaffold.of(context).closeDrawer();
               Future.microtask(() {
                 context.goNamed('bottomNavBar');
@@ -117,6 +107,90 @@ class AppDrawer extends StatelessWidget {
               },
               color: AppColors.blackColor,
             ),
+
+          /// Support Tickets
+          _buildDrawerIconItem(
+            context,
+            title:
+                AppLocalizations.of(
+                  context,
+                )!.translate("supportingTicketsText") ??
+                '',
+            icon: Icons.help_outline,
+            onTap: () {
+              Scaffold.of(context).closeDrawer();
+              context.pushNamed('ticket-list-system');
+            },
+          ),
+
+          /// --- NEWLY ADDED: INSTRUCTIONS COLLAPSIBLE DROPDOWN ---
+          Theme(
+            data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              child: ExpansionTile(
+                tilePadding: const EdgeInsets.symmetric(horizontal: 12),
+                leading: Icon(
+                  Icons.assignment_outlined,
+                  color: AppColors.blackColor,
+                ),
+                title: Text(
+                  "Instructions",
+                  style: GoogleFonts.poppins(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w500,
+                    color: Colors.grey.shade700,
+                  ),
+                ),
+                iconColor: Colors.blue,
+                collapsedIconColor: Colors.blue,
+                childrenPadding: const EdgeInsets.only(left: 24),
+                children: [
+                  _buildSubMenuBulletItem(
+                    context,
+                    title:
+                        AppLocalizations.of(
+                          context,
+                        )!.translate("gasReceiptManagerText") ??
+                        '',
+                    onTap: () {
+                      context.pushNamed("inst-gas-receipt");
+                    },
+                  ),
+                  _buildSubMenuBulletItem(
+                    context,
+                    title:
+                        AppLocalizations.of(context)!.translate("uberText") ??
+                        '',
+                    onTap: () {
+                      context.pushNamed("uber");
+
+                    },
+                  ),
+                  _buildSubMenuBulletItem(
+                    context,
+                    title:
+                        AppLocalizations.of(context)!.translate("taxManText") ??
+                        '',
+                    onTap: () {
+                      context.pushNamed("tax-manager");
+
+                    },
+                  ),
+                  _buildSubMenuBulletItem(
+                    context,
+                    title:
+                        AppLocalizations.of(context)!.translate("rentalText") ?? '',
+                    onTap: () {
+                      context.pushNamed("rental");
+
+                    },
+                  ),
+                ],
+              ),
+            ),
+          ),
+
           if (authProvider.user?.role != 'viewer' &&
               authProvider.user?.role != 'team' &&
               authProvider.user?.regCountry.toLowerCase() != 'us')
@@ -181,6 +255,32 @@ class AppDrawer extends StatelessWidget {
         title: Text(title, style: GoogleFonts.poppins(fontSize: 13)),
         onTap: onTap,
       ),
+    );
+  }
+
+  /// Helper widget to build the sub-items with custom bullet points matching the image
+  Widget _buildSubMenuBulletItem(
+    BuildContext context, {
+    required String title,
+    required VoidCallback onTap,
+  }) {
+    return ListTile(
+      dense: true,
+      contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 0),
+      leading: Container(
+        width: 6,
+        height: 6,
+        decoration: const BoxDecoration(
+          color: Colors.grey,
+          shape: BoxShape.circle,
+        ),
+      ),
+      horizontalTitleGap: 8,
+      title: Text(
+        title,
+        style: GoogleFonts.poppins(fontSize: 13, color: Colors.grey.shade600),
+      ),
+      onTap: onTap,
     );
   }
 }
