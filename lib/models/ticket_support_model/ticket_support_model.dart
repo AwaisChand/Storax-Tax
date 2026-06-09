@@ -1,6 +1,6 @@
 class ListTicketModel {
   int? status;
-  bool? success;
+  String? success;
   List<TicketSupport>? data;
   Meta? meta;
 

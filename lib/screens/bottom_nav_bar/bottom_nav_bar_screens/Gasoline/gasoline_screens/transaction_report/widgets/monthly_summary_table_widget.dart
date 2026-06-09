@@ -168,6 +168,7 @@ class MonthlyTransactionTable extends StatelessWidget {
   DataCell _cell(String text) => DataCell(
     Text(
       text,
+      maxLines: 2,
       style: GoogleFonts.montserrat(fontSize: 13),
       overflow: TextOverflow.ellipsis,
     ),
@@ -176,6 +177,7 @@ class MonthlyTransactionTable extends StatelessWidget {
   DataCell _boldCell(String text) => DataCell(
     Text(
       text,
+      maxLines: 2,
       style: GoogleFonts.montserrat(
         fontSize: 13,
         fontWeight: FontWeight.w600,

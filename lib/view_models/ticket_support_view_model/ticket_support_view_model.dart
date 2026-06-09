@@ -42,9 +42,9 @@ class TicketSupportViewModel extends ChangeNotifier {
           _ticketSupport.addAll(response.data ?? []);
         }
 
-        Utils.toastMessage(response.success.toString());
+        Utils.toastMessage(response.success!);
       } else {
-        Utils.toastMessage(response.success.toString());
+        Utils.toastMessage(response.success!);
       }
 
       if (kDebugMode) {

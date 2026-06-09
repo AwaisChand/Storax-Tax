@@ -1,6 +1,6 @@
 class InstructionsModel {
   int? status;
-  bool? success;
+  String? success;
   List<InstructionData>? data;
 
   InstructionsModel({this.status, this.success, this.data});

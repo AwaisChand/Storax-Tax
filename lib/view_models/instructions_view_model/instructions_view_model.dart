@@ -29,9 +29,9 @@ class InstructionsViewModel extends ChangeNotifier {
 
       if (response.status == 1) {
         _instructions = response.data!;
-        Utils.toastMessage(response.success.toString());
+        Utils.toastMessage(response.success!);
       } else {
-        Utils.toastMessage(response.success.toString());
+        Utils.toastMessage(response.success!);
       }
 
       if (kDebugMode) {
