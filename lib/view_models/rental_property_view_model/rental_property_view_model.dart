@@ -150,7 +150,7 @@ class RentalPropertyViewModel extends ChangeNotifier {
       }
     } catch (e, stackTrace) {
       debugPrint("Get Rental Property Plan Data Error: $e $stackTrace");
-      Utils.toastMessage("Error: ${e.toString()}");
+      Utils.toastMessage(e.toString());
     } finally {
       loading = false;
     }

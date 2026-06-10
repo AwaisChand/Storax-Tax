@@ -56,7 +56,7 @@
   "noSubscribePlanText": "Vous n'avez aucun abonnement actif",
 
   "dashboardText": "Tableau de bord",
-  "viewAccessText": "Voir l'accès",
+  "viewAccessText": "Gestion Des Utilisateurs en Lecture Seule",
   "teamManagementText": "Gestion de l'équipe",
   "plansText": "Forfaits",
   "filesTotalText": "Nombre total de\nfichiers",
@@ -84,7 +84,7 @@
   "selectAccountantText": "Veuillez choisir un comptable",
   "gasolineEnterpriseText": "Gasoline Entreprise",
   "gasolineProText": "Gasoline Pro",
-  "gasolineBasicText": "Gasoline Basique",
+  "gasolineBasicText": "Gastionnare de reçu d'essence - (Basic)",
   "taxManagerText": "Gestionnaire fiscal",
   "businessTaxManagerText": "Gestionnaire fiscal d’entreprise",
   "quebecText": "Québec",
@@ -175,8 +175,8 @@
   "viewFormText": "Voir le formulaire",
   "editText": "Corriger",
   "downFileText": "Télécharger",
-  "taxManagerListText": "Liste des gestionnaires de taxes",
-  "manageTaxesText": "Gérez votre gestionnaire de taxes",
+  "taxManagerListText": "Liste des fichiers",
+  "manageTaxesText": "Gérez vos fichiers",
   "fromText": "De",
   "toText": "À",
 
@@ -416,8 +416,8 @@
   "updateDescText": "Mettez à jour les détails du membre de l'équipe.",
 
 
-  "viewersTitleText": "Voir la liste des autorisations des spectateurs",
-  "manageViewersText": "Gérer les autorisations des spectateurs",
+  "viewersTitleText": "Voir la liste des utilisateurs en lecture seule",
+  "manageViewersText": "Gestion des utilisateurs en lecture seule",
   "noViewersText": "La liste des spectateurs est vide",
 
   "addViewersText": "Ajouter des utilisateurs en lecture seule",
@@ -519,7 +519,13 @@
   "gasTitleText": "Gas Receipts Manager - Guide d'instructions",
   "quebecTitleText": "Uber GST/QST Reporting - Guide simplifié",
   "tmTitleText": "Tax Manager - Guide simplifié IA",
-  "rentalTitleText": "Gestionnaire de propriétés locatives"
+  "rentalTitleText": "Gestionnaire de propriétés locatives",
+
+  "ticketUnavailableText": "Billets de support indisponibles",
+  "ticketdetailText": "Les billets de support sont disponibles uniquement avec les forfaits payants.",
+  "viewPlanText": "Voir les forfaits"
+
+
 
 
 

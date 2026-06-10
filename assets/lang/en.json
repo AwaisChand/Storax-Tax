@@ -57,7 +57,7 @@
   "noSubscribePlanText": "You have no subscribed plans",
 
   "dashboardText": "Dashboard",
-  "viewAccessText": "View Access",
+  "viewAccessText": "View Access Management",
   "teamManagementText": "Team Management",
   "plansText": "Plans",
   "filesTotalText": "Total No of Files",
@@ -85,7 +85,7 @@
   "selectAccountantText": "Please select an accountant",
   "gasolineEnterpriseText": "Gasoline Enterprise",
   "gasolineProText": "Gasoline Pro",
-  "gasolineBasicText": "Gasoline Basic",
+  "gasolineBasicText": "Gas Receipts Manager - (Basic)",
   "taxManagerText": "Tax Manager",
   "businessTaxManagerText": "Business Tax Manager",
   "quebecText": "Quebec",
@@ -514,7 +514,13 @@
   "gasTitleText": "Gas Receipts Manager - Instruction Guide",
   "quebecTitleText": "Uber GST/QST Reporting - Simplified Guide",
   "tmTitleText": "Tax Manager - AI Simplified Guide",
-  "rentalTitleText": "Rental property manager"
+  "rentalTitleText": "Rental property manager",
+
+  "ticketUnavailableText": "Support Tickets Unavailable",
+  "ticketdetailText": "Support tickets are only available on paid plans.",
+  "viewPlanText": "View Plans"
+
+
 
 
 

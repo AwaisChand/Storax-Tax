@@ -100,6 +100,7 @@ class _ViewTeamMembersScreenState extends State<ViewTeamMembersScreen> {
                                       context,
                                     )!.translate("noTeamMembersText") ??
                                     '',
+                                textAlign: TextAlign.center,
                                 style: GoogleFonts.poppins(
                                   fontSize: 16,
                                   fontWeight: FontWeight.w600,

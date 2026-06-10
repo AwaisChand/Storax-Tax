@@ -32,6 +32,9 @@ class AppDrawer extends StatelessWidget {
     final canShowTeamManagement =
         userRole != "team" && (isBusinessTaxManager || isGasReceiptsEnterprise);
 
+    final isFreeGasPlan = planNames.any(
+      (n) => n.contains('free version') || n.contains('basic'),
+    );
     return Drawer(
       child: ListView(
         padding: EdgeInsets.zero,
@@ -119,7 +122,12 @@ class AppDrawer extends StatelessWidget {
             icon: Icons.help_outline,
             onTap: () {
               Scaffold.of(context).closeDrawer();
-              context.pushNamed('ticket-list-system');
+
+              if (isFreeGasPlan) {
+                _showUpgradeDialog(context);
+              } else {
+                context.pushNamed('ticket-list-system');
+              }
             },
           ),
 
@@ -164,7 +172,6 @@ class AppDrawer extends StatelessWidget {
                         '',
                     onTap: () {
                       context.pushNamed("uber");
-
                     },
                   ),
                   _buildSubMenuBulletItem(
@@ -174,16 +181,15 @@ class AppDrawer extends StatelessWidget {
                         '',
                     onTap: () {
                       context.pushNamed("tax-manager");
-
                     },
                   ),
                   _buildSubMenuBulletItem(
                     context,
                     title:
-                        AppLocalizations.of(context)!.translate("rentalText") ?? '',
+                        AppLocalizations.of(context)!.translate("rentalText") ??
+                        '',
                     onTap: () {
                       context.pushNamed("rental");
-
                     },
                   ),
                 ],
@@ -283,4 +289,104 @@ class AppDrawer extends StatelessWidget {
       onTap: onTap,
     );
   }
+}
+
+void _showUpgradeDialog(BuildContext context) {
+  showDialog(
+    context: context,
+    barrierDismissible: false,
+    builder: (context) {
+      return Dialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              /// Icon
+              CircleAvatar(
+                radius: 30,
+                backgroundColor: Colors.blue.shade50,
+                child: Icon(Icons.info_outline, size: 30, color: Colors.blue),
+              ),
+
+              const SizedBox(height: 16),
+
+              /// Title
+              Text(
+                AppLocalizations.of(context)!.translate("ticketUnavailableText") ?? '',
+                style: GoogleFonts.poppins(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                ),
+                textAlign: TextAlign.center,
+              ),
+
+              const SizedBox(height: 8),
+
+              /// Subtitle
+              Text(
+                AppLocalizations.of(context)!.translate("ticketdetailText") ?? '',
+                style: GoogleFonts.poppins(fontSize: 13, color: Colors.grey),
+                textAlign: TextAlign.center,
+              ),
+
+              const SizedBox(height: 20),
+
+              /// Buttons
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  /// View Plans Button
+                  ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.goldenOrangeColor,
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 20,
+                        vertical: 10,
+                      ),
+                    ),
+                    onPressed: () {
+                      Navigator.pop(context);
+                      context.pushNamed('myPlansNested');
+                    },
+                    child: Text(
+                      AppLocalizations.of(context)!.translate("viewPlanText") ?? '',
+                      style: GoogleFonts.poppins(
+                        fontSize: 13,
+                        color: AppColors.whiteColor,
+                      ),
+                    ),
+                  ),
+
+                  const SizedBox(width: 10),
+
+                  /// Cancel Button
+                  ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.grey,
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 20,
+                        vertical: 10,
+                      ),
+                    ),
+                    onPressed: () {
+                      Navigator.pop(context);
+                    },
+                    child: Text(
+                      AppLocalizations.of(context)!.translate("cancelText") ?? '',
+                      style: GoogleFonts.poppins(
+                        fontSize: 13,
+                        color: AppColors.whiteColor,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      );
+    },
+  );
 }
