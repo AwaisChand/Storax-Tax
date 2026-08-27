@@ -3,6 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:month_picker_dialog/month_picker_dialog.dart';
 import 'package:provider/provider.dart';
+import 'package:storatax/screens/bottom_nav_bar/bottom_nav_bar_screens/Gasoline/gasoline_screens/all_trips_screen/all_trips_screen.dart';
 import 'package:storatax/view_models/gasoline_view_model/gasoline_view_model.dart';
 
 import '../../../../../../../res/app_assets.dart';
@@ -11,7 +12,6 @@ import '../../../../../../../utils/app_colors.dart';
 import '../../../../../../../utils/utils.dart';
 import '../../../../../../../view_models/pricing_plans_view_model/pricing_plans_view_model.dart';
 import 'gasoline_list_screen_dialog_box.dart';
-import '../../view_report/view_report_screen/view_report_screen.dart';
 
 List<int> selectedFileGasolineIds = [];
 
@@ -30,7 +30,7 @@ Widget buildGasolineFilterBar(BuildContext context) {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Text(
-            AppLocalizations.of(context)!.translate("filterText") ?? '',
+            AppLocalizations.of(context)!.translate("gasolineFilterText") ?? '',
             style: TextStyle(color: Colors.white, fontWeight: FontWeight.w500),
           ),
           const SizedBox(width: 5),
@@ -315,7 +315,6 @@ Future showFilterDialog(BuildContext context) async {
                               context,
                               year: selectedYear,
 
-                              // ✅ send month ONLY if selected
                               month: selectedMonth,
                               fromDate: fromDate,
                               toDate: toDate,
@@ -367,31 +366,33 @@ Widget buildForwardGasolineMultipleButton(BuildContext context) {
   );
   return Row(
     children: [
-      SizedBox(
-        width: Utils.setHeight(context) * 0.2,
-        child: MaterialButton(
-          color: AppColors.goldenOrangeColor,
-          height: 40,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-          child: Text(
-            AppLocalizations.of(context)!.translate("viewReportText") ?? '',
-            textAlign: TextAlign.center,
-            style: GoogleFonts.poppins(
-              color: AppColors.whiteColor,
-              fontSize: 17,
-              fontWeight: FontWeight.w500,
-            ),
-          ),
-          onPressed: () {
-            // Navigator.pushNamed(context, RoutesNames.createTaxManager);
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => ViewReportScreen()),
-            );
-          },
-        ),
-      ),
       if (!isFreeGasPlan) ...[
+        SizedBox(
+          width: Utils.setHeight(context) * 0.2,
+          child: MaterialButton(
+            color: AppColors.goldenOrangeColor,
+            height: 40,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Text(
+              AppLocalizations.of(context)!.translate("allTripsText") ?? '',
+              textAlign: TextAlign.center,
+              style: GoogleFonts.poppins(
+                color: AppColors.whiteColor,
+                fontSize: 17,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+            onPressed: () {
+              // Navigator.pushNamed(context, RoutesNames.createTaxManager);
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => AllTripsScreen()),
+              );
+            },
+          ),
+        ),
         SizedBox(width: 10),
         SizedBox(
           width: Utils.setHeight(context) * 0.2,
@@ -402,7 +403,7 @@ Widget buildForwardGasolineMultipleButton(BuildContext context) {
               borderRadius: BorderRadius.circular(8),
             ),
             child: Text(
-              AppLocalizations.of(context)!.translate("forwardFileText") ?? '',
+              AppLocalizations.of(context)!.translate("gasolineForwardFileText") ?? '',
               textAlign: TextAlign.center,
               style: GoogleFonts.poppins(
                 color: AppColors.whiteColor,

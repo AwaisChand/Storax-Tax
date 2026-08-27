@@ -13,6 +13,8 @@ class AppAssets {
   static const String subscriptionsImg = "assets/images/subscriptions_img.png";
   static const String circleImg = "assets/images/circle_image.png";
   static const String translatorImg = "assets/images/google_translator_img.png";
+  static const String carMarkerImg = "assets/images/car_marker.png";
+
 
 
 

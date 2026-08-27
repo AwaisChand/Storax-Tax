@@ -115,45 +115,69 @@ class _MyPlansScreenState extends State<MyPlansScreen> {
                                             child: Material(
                                               elevation: 4.0,
                                               color: AppColors.whiteColor,
-                                              borderRadius: BorderRadius.circular(15),
+                                              borderRadius:
+                                                  BorderRadius.circular(15),
                                               child: Container(
                                                 width: double.infinity,
-                                                padding: const EdgeInsets.symmetric(
-                                                  horizontal: 20,
-                                                  vertical: 10,
-                                                ),
+                                                padding:
+                                                    const EdgeInsets.symmetric(
+                                                      horizontal: 20,
+                                                      vertical: 10,
+                                                    ),
                                                 decoration: BoxDecoration(
                                                   color: AppColors.whiteColor,
-                                                  borderRadius: BorderRadius.circular(15),
+                                                  borderRadius:
+                                                      BorderRadius.circular(15),
                                                 ),
                                                 child: Column(
-                                                  mainAxisSize: MainAxisSize.min, // Important: let Column shrink-wrap content
-                                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                                  mainAxisSize:
+                                                      MainAxisSize
+                                                          .min, // Important: let Column shrink-wrap content
+                                                  crossAxisAlignment:
+                                                      CrossAxisAlignment.start,
                                                   children: [
                                                     Row(
-                                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                                      mainAxisAlignment:
+                                                          MainAxisAlignment
+                                                              .spaceBetween,
                                                       children: [
                                                         Expanded(
                                                           child: Text(
-                                                            locale == "fr" ? myPlan.nameFr ?? "" : myPlan.name ?? "",
-                                                            style: GoogleFonts.poppins(
-                                                              fontWeight: FontWeight.w500,
-                                                              fontSize: 13,
-                                                            ),
+                                                            locale == "fr"
+                                                                ? myPlan.nameFr ??
+                                                                    ""
+                                                                : myPlan.name ??
+                                                                    "",
+                                                            style:
+                                                                GoogleFonts.poppins(
+                                                                  fontWeight:
+                                                                      FontWeight
+                                                                          .w500,
+                                                                  fontSize: 13,
+                                                                ),
                                                           ),
                                                         ),
-                                                        const SizedBox(width: 10),
+                                                        const SizedBox(
+                                                          width: 10,
+                                                        ),
                                                         MaterialButton(
-                                                          color: AppColors.goldenOrangeColor,
+                                                          color:
+                                                              AppColors
+                                                                  .goldenOrangeColor,
                                                           height: 45,
                                                           shape: RoundedRectangleBorder(
-                                                            borderRadius: BorderRadius.circular(15),
+                                                            borderRadius:
+                                                                BorderRadius.circular(
+                                                                  15,
+                                                                ),
                                                           ),
                                                           onPressed: () async {
-                                                            bool success = await plans.unSubscribePlanApi(
-                                                              context,
-                                                              myPlan.id!,
-                                                            );
+                                                            bool
+                                                            success = await plans
+                                                                .unSubscribePlanApi(
+                                                                  context,
+                                                                  myPlan.id!,
+                                                                );
 
                                                             if (success) {
                                                               Utils.toastMessage(
@@ -162,13 +186,20 @@ class _MyPlansScreenState extends State<MyPlansScreen> {
                                                             }
                                                           },
                                                           child: Text(
-                                                            AppLocalizations.of(context)!
-                                                                .translate("unSubscribeText") ??
+                                                            AppLocalizations.of(
+                                                                  context,
+                                                                )!.translate(
+                                                                  "unSubscribeText",
+                                                                ) ??
                                                                 '',
                                                             style: GoogleFonts.poppins(
-                                                              fontWeight: FontWeight.w400,
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .w400,
                                                               fontSize: 12,
-                                                              color: AppColors.whiteColor,
+                                                              color:
+                                                                  AppColors
+                                                                      .whiteColor,
                                                             ),
                                                           ),
                                                         ),
@@ -176,17 +207,18 @@ class _MyPlansScreenState extends State<MyPlansScreen> {
                                                     ),
                                                     const SizedBox(height: 5),
                                                     Text(
-                                                      "\$${myPlan.price}",
-                                                      style: GoogleFonts.poppins(
-                                                        fontWeight: FontWeight.w500,
-                                                        fontSize: 13,
-                                                      ),
+                                                      "\$${(myPlan.price != null && myPlan.price.toString().isNotEmpty) ? myPlan.price : '0.00'}",
+                                                      style:
+                                                          GoogleFonts.poppins(
+                                                            fontWeight:
+                                                                FontWeight.w500,
+                                                            fontSize: 13,
+                                                          ),
                                                     ),
                                                   ],
                                                 ),
                                               ),
                                             ),
-
                                           );
                                         },
                                       ),

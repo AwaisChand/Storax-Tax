@@ -3,7 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'package:storatax/res/components/app_drawer.dart';
 import 'package:storatax/screens/bottom_nav_bar/bottom_nav_bar_screens/Gasoline/gasoline_screens/create_gasoline/create_gasoline_screens/add_receipt_scan_screen.dart';
-import 'package:storatax/screens/bottom_nav_bar/bottom_nav_bar_screens/Gasoline/gasoline_screens/transaction_report/transaction_report_screen/transaction_report_screen.dart';
+import 'package:storatax/screens/bottom_nav_bar/bottom_nav_bar_screens/Gasoline/gasoline_screens/gasoline_list_screen/widget/multiple_row_button.dart';
 import 'package:storatax/view_models/gasoline_view_model/gasoline_view_model.dart';
 import 'package:storatax/view_models/pricing_plans_view_model/pricing_plans_view_model.dart';
 
@@ -33,12 +33,11 @@ class _GasolineListScreenState extends State<GasolineListScreen> {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<GasolineViewModel>().getGasolineApi(context);
-      // context.read<PricingPlansViewModel>().myPlansApi(context);
     });
   }
 
-  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   @override
   Widget build(BuildContext context) {
     final plans = context.watch<PricingPlansViewModel>();
@@ -113,41 +112,15 @@ class _GasolineListScreenState extends State<GasolineListScreen> {
                         children: [
                           const SizedBox(height: 20),
                           buildGasolineFilterBar(context),
-                          const SizedBox(height: 15),
+                          const SizedBox(height: 5),
                           buildForwardGasolineMultipleButton(context),
                           SizedBox(height: 5),
-                          if (!isFreeGasPlan)
-                            SizedBox(
-                              width: double.infinity,
-                              child: MaterialButton(
-                                color: AppColors.goldenOrangeColor,
-                                height: 40,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(8),
-                                ),
-                                child: Text(
-                                  AppLocalizations.of(
-                                        context,
-                                      )!.translate("transactionReportText") ??
-                                      '',
-                                  style: GoogleFonts.poppins(
-                                    color: AppColors.whiteColor,
-                                    fontSize: 17,
-                                    fontWeight: FontWeight.w500,
-                                  ),
-                                ),
-                                onPressed: () {
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder:
-                                          (context) =>
-                                              TransactionReportScreen(),
-                                    ),
-                                  );
-                                },
-                              ),
-                            ),
+                          MultipleRowButton(
+                            onModeChanged: () {
+                              setState(() {});
+                            },
+                          ),
+                          const SizedBox(height: 8),
                           gasoline.isLoading
                               ? SizedBox(
                                 height: Utils.setHeight(context) * 0.5,
@@ -451,6 +424,47 @@ class _GasolineListScreenState extends State<GasolineListScreen> {
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildReportMenuItem({
+    required IconData icon,
+    required String number,
+    required String title,
+    required VoidCallback onTap,
+  }) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(8),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        child: Row(
+          children: [
+            Icon(icon, size: 20, color: Colors.black54),
+            const SizedBox(width: 15),
+            Text(
+              number,
+              style: GoogleFonts.poppins(
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+                color: Colors.black87,
+              ),
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Text(
+                title,
+                style: GoogleFonts.poppins(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w500,
+                  color: Colors.black87,
+                ),
+              ),
+            ),
+            const Icon(Icons.chevron_right, size: 18, color: Colors.black38),
+          ],
+        ),
       ),
     );
   }

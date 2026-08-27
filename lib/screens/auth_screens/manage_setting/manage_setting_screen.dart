@@ -229,7 +229,7 @@ class _ManageSettingScreenState extends State<ManageSettingScreen> {
                                           ),
                                         Text(
                                           "Minimum 8 Characters",
-                                          style: GoogleFonts.montserrat(
+                                          style: GoogleFonts.poppins(
                                             fontSize: 10,
                                             color: AppColors.blackColor,
                                             fontWeight: FontWeight.w500,
@@ -246,7 +246,7 @@ class _ManageSettingScreenState extends State<ManageSettingScreen> {
                                       decoration: BoxDecoration(
                                         borderRadius: BorderRadius.circular(2),
                                         color:
-                                            Colors.grey[200], // background gray
+                                            Colors.grey[200],
                                       ),
                                       child: LayoutBuilder(
                                         builder: (context, constraints) {
@@ -258,7 +258,7 @@ class _ManageSettingScreenState extends State<ManageSettingScreen> {
                                               ),
                                               width:
                                                   constraints.maxWidth *
-                                                  _passwordStrength, // fraction of parent
+                                                  _passwordStrength,
                                               decoration: BoxDecoration(
                                                 color: Utils.getStrengthColor(
                                                   _passwordStrength,
@@ -363,7 +363,7 @@ class _ManageSettingScreenState extends State<ManageSettingScreen> {
       children: [
         Text(
           text,
-          style: GoogleFonts.montserrat(
+          style: GoogleFonts.poppins(
             fontSize: 13,
             fontWeight: FontWeight.w500,
           ),

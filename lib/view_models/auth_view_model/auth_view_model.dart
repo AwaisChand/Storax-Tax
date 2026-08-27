@@ -253,7 +253,7 @@ class AuthViewModel extends ChangeNotifier {
   Future<void> verifyEmailApi(
     BuildContext context,
     dynamic data, {
-    bool fromLogin = false, // ✅ Add this flag
+    bool fromLogin = false,
   }) async {
     loading = true;
     try {
@@ -681,18 +681,19 @@ class AuthViewModel extends ChangeNotifier {
       final bool isLoggedIn = prefs.getBool('isLoggedIn') ?? false;
       final bool isOtpVerified = prefs.getBool('isOtpVerified') ?? false;
 
-      // No login
+      debugPrint("isLoggedIn: $isLoggedIn");
+      debugPrint("isOtpVerified: $isOtpVerified");
+      debugPrint("userJson: $userJson");
+
+      /// ❌ Not logged in
       if (!isLoggedIn || userJson == null || userJson.isEmpty) {
-        await Future.delayed(const Duration(seconds: 1));
         context.goNamed("login");
         return;
       }
 
-      // Logged in but OTP NOT verified
-      if (isLoggedIn && !isOtpVerified) {
+      /// ⚠️ OTP not verified
+      if (!isOtpVerified) {
         final user = User.fromJson(jsonDecode(userJson));
-
-        await Future.delayed(const Duration(seconds: 1));
 
         context.goNamed(
           "verifyOtp",
@@ -704,33 +705,37 @@ class AuthViewModel extends ChangeNotifier {
         return;
       }
 
-      // Fully authenticated
+      /// ✅ Fully logged in
       _user = User.fromJson(jsonDecode(userJson));
       notifyListeners();
 
-      await Future.delayed(const Duration(seconds: 1));
-
       context.goNamed("bottomNavBar");
       BottomNavBar.of(context)?.switchTab(0);
+
     } catch (e) {
       debugPrint("Splash handling error: $e");
       context.goNamed("login");
     }
   }
+
   Future<void> logout(BuildContext context) async {
     try {
       final prefs = await SharedPreferences.getInstance();
 
-      // 1. Backup language BEFORE clearing everything
+      // 1. Backup persistent app flags BEFORE clearing
       final savedLocale = prefs.getString('saved_locale');
+      final isFirstLaunch = prefs.getBool('firstLaunch') ?? false;
+
       await clearWebSession();
-      // 2. Clear all other user info
+
+      // 2. Clear all user info
       await prefs.clear();
 
-      // 3. Restore language back
+      // 3. Restore non-session app settings
       if (savedLocale != null) {
         await prefs.setString('saved_locale', savedLocale);
       }
+      await prefs.setBool('firstLaunch', isFirstLaunch);
 
       // Reset bottom nav state
       BottomNavBar.globalKey.currentState?.resetState();

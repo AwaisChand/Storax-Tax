@@ -186,7 +186,7 @@ class _VerifyOtpScreenState extends State<VerifyOtpScreen> {
                                   context,
                                 )!.translate("resendOtpText") ??
                                     '',
-                                    style: GoogleFonts.montserrat(
+                                    style: GoogleFonts.poppins(
                                       color: Colors.blue,
                                       fontSize: 16,
                                       fontWeight: FontWeight.w500,

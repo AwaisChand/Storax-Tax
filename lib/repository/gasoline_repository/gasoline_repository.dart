@@ -3,12 +3,17 @@ import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 import 'package:intl/intl.dart';
+import 'package:storatax/models/active_trip_model(auto)/active_trip_model.dart';
 import 'package:storatax/models/get_gasoline_list_model/get_gasoline_list_model.dart';
 import 'package:storatax/models/get_gasoline_report_model/get_gasoline_report_model.dart';
 import 'package:storatax/models/get_transaction_report_model/get_transaction_report_model.dart';
+import 'package:storatax/models/get_trip_detail_model/get_trip_detail_model.dart';
+import 'package:storatax/models/list_auto_trips_model/list_auto_trips_model.dart';
+import 'package:storatax/models/trip_details_model.dart';
 
 import '../../data/network/base_api_service.dart';
 import '../../data/network/network_api_service.dart';
+import '../../models/trip_report_model/trip_report_model.dart';
 import '../../res/app_url.dart';
 import '../../utils/scan_flow_log.dart';
 import '../../utils/scan_upload_file.dart';
@@ -35,14 +40,11 @@ class GasolineRepository {
       // Add query parameters if filters are provided
       final queryParams = <String, String>{
         if (year != null) 'year': year,
-    if (fromDate != null) 'from_date': DateFormat('yyyy-MM-dd').format(fromDate),
-    if (toDate != null) 'to_date': DateFormat('yyyy-MM-dd').format(toDate),
-    if (month != null) 'month': DateFormat('yyyy-MM').format(month),
-    // if (uploadedByProfessional != null) {
-    //   queryParams['uploaded_by_professional'] =
-    //       uploadedByProfessional.toString();
-    // }
-    };
+        if (fromDate != null)
+          'from_date': DateFormat('yyyy-MM-dd').format(fromDate),
+        if (toDate != null) 'to_date': DateFormat('yyyy-MM-dd').format(toDate),
+        if (month != null) 'month': DateFormat('yyyy-MM').format(month),
+      };
       // If query parameters exist, build full query string
       if (queryParams.isNotEmpty) {
         final uri = Uri.parse(url).replace(queryParameters: queryParams);
@@ -68,9 +70,7 @@ class GasolineRepository {
     try {
       File? upload = filesPath;
       if (filesPath != null) {
-        gasolineScanLog(
-          'scanFile repo: incoming path=${filesPath.path}',
-        );
+        gasolineScanLog('scanFile repo: incoming path=${filesPath.path}');
         upload = await normalizeScanUploadToJpegIfNeeded(
           filesPath,
           logFlow: 'GasolineBasic',
@@ -215,16 +215,9 @@ class GasolineRepository {
     try {
       final url = Uri.parse(
         AppUrl.multipleForwardGasolineEndPoint,
-      ).replace(
-        queryParameters: {
-          'language': language,
-        },
-      );
+      ).replace(queryParameters: {'language': language});
 
-      final response = await baseApiServices.postRequest(
-        url.toString(),
-        data,
-      );
+      final response = await baseApiServices.postRequest(url.toString(), data);
 
       debugPrint("response$response");
       debugPrint("Api url: $url");
@@ -243,7 +236,7 @@ class GasolineRepository {
     DateTime? month,
     DateTime? fromDate,
     DateTime? toDate,
-    String? language
+    String? language,
   }) async {
     try {
       // 1️⃣ Validate dates
@@ -256,10 +249,11 @@ class GasolineRepository {
       // Add query parameters if filters are provided
       final queryParams = <String, String>{
         if (year != null) 'year': year,
-        if (fromDate != null) 'from_date': DateFormat('yyyy-MM-dd').format(fromDate),
+        if (fromDate != null)
+          'from_date': DateFormat('yyyy-MM-dd').format(fromDate),
         if (toDate != null) 'to_date': DateFormat('yyyy-MM-dd').format(toDate),
         if (month != null) 'month': DateFormat('yyyy-MM').format(month),
-        if(language != null) 'language': language
+        if (language != null) 'language': language,
         // if (uploadedByProfessional != null) {
         //   queryParams['uploaded_by_professional'] =
         //       uploadedByProfessional.toString();
@@ -291,19 +285,12 @@ class GasolineRepository {
 
   ///Report forward gasoline
 
-  Future<dynamic> reportForwardRepo(
-      dynamic data,
-      String language,
-      ) async {
+  Future<dynamic> reportForwardRepo(dynamic data, String language) async {
     try {
       // ✅ Append language as query param
       final url = Uri.parse(
         AppUrl.gasolineReportForwardEndPoint,
-      ).replace(
-        queryParameters: {
-          'language': language,
-        },
-      );
+      ).replace(queryParameters: {'language': language});
 
       dynamic response = await baseApiServices.postRequest(
         url.toString(),
@@ -335,19 +322,16 @@ class GasolineRepository {
     }
 
     // Build query params
-    Map<String, String> queryParams = {
-      'language': language, // ✅ added
-    };
+    Map<String, String> queryParams = {'language': language};
 
     if (year != null) queryParams['year'] = year;
     if (month != null) queryParams['month'] = month;
     if (fromDate != null) queryParams['from_date'] = fromDate;
     if (toDate != null) queryParams['to_date'] = toDate;
 
-    // Attach query params to URL
-    final url = Uri.parse(AppUrl.printReportEndPoint).replace(
-      queryParameters: queryParams,
-    );
+    final url = Uri.parse(
+      AppUrl.printReportEndPoint,
+    ).replace(queryParameters: queryParams);
 
     debugPrint("📡 Calling print report API: $url");
 
@@ -382,12 +366,10 @@ class GasolineRepository {
     };
   }
 
-
-
   ///Get Transaction Report Repo
 
   Future<GetTransactionReportModel> getTransactionReportRepo({
-    String? language, // 👈 add this
+    String? language,
     String? year,
     String? month,
     String? fromDate,
@@ -400,7 +382,6 @@ class GasolineRepository {
 
       Map<String, String> queryParams = {};
 
-      // ✅ Always send language (default = en)
       queryParams['language'] = language ?? 'en';
 
       if (year != null) queryParams['year'] = year;
@@ -450,10 +431,10 @@ class GasolineRepository {
     if (sortOrder != null) queryParams['sort_order'] = sortOrder;
     if (language != null) queryParams['language'] = language;
 
-
     // ✅ Attach filters to URL
-    final uri = Uri.parse(AppUrl.printTransactionReportEndPoint)
-        .replace(queryParameters: queryParams);
+    final uri = Uri.parse(
+      AppUrl.printTransactionReportEndPoint,
+    ).replace(queryParameters: queryParams);
 
     debugPrint("📡 Print report URL: $uri");
 
@@ -467,12 +448,8 @@ class GasolineRepository {
 
     final contentType = response.headers['content-type'] ?? '';
 
-    if (response.statusCode == 200 &&
-        contentType.contains("application/pdf")) {
-      return {
-        "status": 1,
-        "fileBytes": response.bodyBytes,
-      };
+    if (response.statusCode == 200 && contentType.contains("application/pdf")) {
+      return {"status": 1, "fileBytes": response.bodyBytes};
     }
 
     if (contentType.contains("application/json")) {
@@ -489,23 +466,13 @@ class GasolineRepository {
     };
   }
 
-
-
   ///forward email report
 
-
-  Future<dynamic> forwardEmailReportRepo(
-      dynamic data,
-      String language,
-      ) async {
+  Future<dynamic> forwardEmailReportRepo(dynamic data, String language) async {
     try {
       final url = Uri.parse(
         AppUrl.forwardEmailReportEndPoint,
-      ).replace(
-        queryParameters: {
-          'language': language,
-        },
-      );
+      ).replace(queryParameters: {'language': language});
 
       dynamic response = await baseApiServices.postRequest(
         url.toString(),
@@ -520,5 +487,356 @@ class GasolineRepository {
       debugPrint(e.toString());
       rethrow;
     }
+  }
+
+  /// Start Trip Repo
+
+  Future<dynamic> startTripRepo({required dynamic data}) async {
+    try {
+      final url = Uri.parse(AppUrl.startTripEndPoint);
+
+      final response = await baseApiServices.postRequest(url.toString(), data);
+
+      debugPrint("response$response");
+      debugPrint("Api url: $url");
+
+      return response;
+    } catch (e) {
+      debugPrint(e.toString());
+      rethrow;
+    }
+  }
+
+  /// Trip Detail Repo
+
+  Future<ActiveTripModel> activeTripRepo(int userId) async {
+    try {
+      final String url = AppUrl.activeTripUrl(userId);
+      debugPrint("Fetching Trip Detail from: $url");
+
+      dynamic response = await baseApiServices.getRequestToken(url);
+
+      debugPrint("Raw API response JSON: $response");
+
+      return ActiveTripModel.fromJson(response);
+    } catch (e) {
+      debugPrint("Error in getTripDetailRepo: $e");
+      rethrow;
+    }
+  }
+
+  /// Live Location Update Repo
+
+  Future<dynamic> liveLocationUpdateRepo({required dynamic data}) async {
+    try {
+      final url = Uri.parse(AppUrl.liveLocationUpdateEndPoint);
+
+      final response = await baseApiServices.postRequest(url.toString(), data);
+
+      debugPrint("response$response");
+      debugPrint("Api url: $url");
+
+      return response;
+    } catch (e) {
+      debugPrint(e.toString());
+      rethrow;
+    }
+  }
+
+  /// stop trip repo
+
+  Future<dynamic> stopTripEndPoint({required dynamic data}) async {
+    try {
+      final url = Uri.parse(AppUrl.stopTripEndPoint);
+
+      final response = await baseApiServices.postRequest(url.toString(), data);
+
+      debugPrint("response$response");
+      debugPrint("Api url: $url");
+
+      return response;
+    } catch (e) {
+      debugPrint(e.toString());
+      rethrow;
+    }
+  }
+
+
+  /// Create Trip Repo
+
+  Future<dynamic> createTripRepo({required dynamic data}) async {
+    try {
+      final url = Uri.parse(AppUrl.createTripEndPoint);
+
+      final response = await baseApiServices.postRequest(url.toString(), data);
+
+      debugPrint("response$response");
+      debugPrint("Api url: $url");
+
+      return response;
+    } catch (e) {
+      debugPrint(e.toString());
+      rethrow;
+    }
+  }
+
+  ///Start Tracking Repo
+
+  Future<dynamic> startTrackingRepo({required dynamic data}) async {
+    try {
+      final url = Uri.parse(AppUrl.startTrackingEndPoint);
+
+      final response = await baseApiServices.postRequest(url.toString(), data);
+
+      debugPrint("response$response");
+      debugPrint("Api url: $url");
+
+      return response;
+    } catch (e) {
+      debugPrint(e.toString());
+      rethrow;
+    }
+  }
+
+  /// Get Trip Detail Repo
+
+  Future<GetTripDetailModel> getTripDetailRepo(int tripId, int userId) async {
+    try {
+      final String url = AppUrl.getTripDetailEndPoint(tripId, userId);
+      debugPrint("Fetching Trip Detail from: $url");
+
+      dynamic response = await baseApiServices.getRequestToken(url);
+
+      debugPrint("Raw API response JSON: $response");
+
+      return GetTripDetailModel.fromJson(response);
+    } catch (e) {
+      debugPrint("Error in getTripDetailModel: $e");
+      rethrow;
+    }
+  }
+
+  /// update tracking repo
+
+  Future<dynamic> updateTrackingRepo({required dynamic data}) async {
+    try {
+      final url = Uri.parse(AppUrl.updateTrackingEndPoint);
+
+      final response = await baseApiServices.postRequest(url.toString(), data);
+
+      debugPrint("response$response");
+      debugPrint("Api url: $url");
+
+      return response;
+    } catch (e) {
+      debugPrint(e.toString());
+      rethrow;
+    }
+  }
+
+  /// end trip repo
+
+  Future<dynamic> endTripRepo({required dynamic data}) async {
+    try {
+      final url = Uri.parse(AppUrl.endTripEndPoint);
+
+      final response = await baseApiServices.postRequest(url.toString(), data);
+
+      debugPrint("response$response");
+      debugPrint("Api url: $url");
+
+      return response;
+    } catch (e) {
+      debugPrint(e.toString());
+      rethrow;
+    }
+  }
+
+  /// Trip Report Repo
+
+  Future<TripReportModel> tripReportRepo({
+    String? tabMode,
+    String? language,
+    DateTime? fromDate,
+    DateTime? toDate,
+  }) async {
+    try {
+      if (fromDate != null && toDate != null && fromDate.isAfter(toDate)) {
+        throw Exception("From date cannot be after To date.");
+      }
+
+      // Base URL
+      String url = AppUrl.tripReportEndPoint;
+
+      final queryParams = <String, String>{
+        if (tabMode != null && tabMode.isNotEmpty)
+          'filter': tabMode.toLowerCase(),
+        if (language != null && language.isNotEmpty) 'lang': language,
+        if (fromDate != null)
+          'from_date': DateFormat('yyyy-MM-dd').format(fromDate),
+        if (toDate != null) 'to_date': DateFormat('yyyy-MM-dd').format(toDate),
+      };
+
+      if (queryParams.isNotEmpty) {
+        final uri = Uri.parse(url).replace(queryParameters: queryParams);
+        url = uri.toString();
+      }
+
+      debugPrint("Final Request URL: $url");
+
+      final response = await baseApiServices.getRequestToken(url);
+
+      if (kDebugMode) {
+        debugPrint("API Raw Response: $response");
+      }
+
+      return TripReportModel.fromJson(response);
+    } catch (e, stackTrace) {
+      debugPrint("Error in tripReport repository: $e");
+      debugPrint("Stack trace: $stackTrace");
+      rethrow;
+    }
+  }
+
+  /// export to pdf repo
+
+  Future<Map<String, dynamic>> exportToPdfRepo({
+    String? fromDate,
+    String? toDate,
+    required String language,
+    String? tabMode,
+  }) async {
+    final networkApiService = NetworkApiService();
+    final token = await networkApiService.getToken();
+
+    if (token == null) {
+      return {"status": 0, "success": "Authorization token not found"};
+    }
+
+    Map<String, String> queryParams = {'lang': language};
+    if (tabMode != null) queryParams['filter'] = tabMode.toLowerCase();
+    if (fromDate != null) queryParams['from_date'] = fromDate;
+    if (toDate != null) queryParams['to_date'] = toDate;
+
+    final url = Uri.parse(
+      AppUrl.tripReportDownloadPdfEndPoint,
+    ).replace(queryParameters: queryParams);
+
+    debugPrint("📡 Calling export to pdf report API: $url");
+
+    final response = await http.get(
+      url,
+      headers: {
+        'Accept': 'application/pdf, application/json',
+        'Authorization': 'Bearer $token',
+      },
+    );
+
+    final contentType = response.headers['content-type'] ?? '';
+    debugPrint("📑 Response status: ${response.statusCode}");
+    debugPrint("📑 Response headers: $contentType");
+
+    if (response.statusCode == 200 && contentType.contains("application/pdf")) {
+      return {"status": 1, "fileBytes": response.bodyBytes};
+    }
+
+    if (contentType.contains("application/json")) {
+      try {
+        final data = jsonDecode(response.body);
+        return data;
+      } catch (e) {
+        return {"status": 0, "success": "Invalid JSON response"};
+      }
+    }
+
+    return {
+      "status": 0,
+      "success": "Unexpected response (status: ${response.statusCode})",
+    };
+  }
+
+  ///Trip forward email report
+
+  Future<dynamic> tripForwardEmailReportRepo(
+    dynamic data,
+    String language,
+  ) async {
+    try {
+      final url = Uri.parse(
+        AppUrl.forwardTripReportEndPoint,
+      ).replace(queryParameters: {'lang': language});
+
+      dynamic response = await baseApiServices.postRequest(
+        url.toString(),
+        data,
+      );
+
+      debugPrint("response$response");
+      debugPrint("Api url: $url");
+
+      return response;
+    } catch (e) {
+      debugPrint(e.toString());
+      rethrow;
+    }
+  }
+
+  ///print trip report repo
+
+  Future<Map<String, dynamic>> printTripReportRepo({
+    String? fromDate,
+    String? toDate,
+    required String language,
+    String? tabMode
+  }) async {
+    final networkApiService = NetworkApiService();
+    final token = await networkApiService.getToken();
+
+    if (token == null) {
+      return {"status": 0, "success": "Authorization token not found"};
+    }
+
+    // Build query params
+    Map<String, String> queryParams = {'lang': language};
+
+    if (tabMode != null) queryParams['filter'] = tabMode.toLowerCase();
+    if (fromDate != null) queryParams['from_date'] = fromDate;
+    if (toDate != null) queryParams['to_date'] = toDate;
+
+    final url = Uri.parse(
+      AppUrl.printTripReportEndPoint,
+    ).replace(queryParameters: queryParams);
+
+    debugPrint("📡 Calling print report API: $url");
+
+    final response = await http.get(
+      url,
+      headers: {
+        'Accept': 'application/pdf, application/json',
+        'Authorization': 'Bearer $token',
+      },
+    );
+
+    final contentType = response.headers['content-type'] ?? '';
+    debugPrint("📑 Response status: ${response.statusCode}");
+    debugPrint("📑 Response headers: $contentType");
+
+    if (response.statusCode == 200 && contentType.contains("application/pdf")) {
+      return {"status": 1, "fileBytes": response.bodyBytes};
+    }
+
+    if (contentType.contains("application/json")) {
+      try {
+        final data = jsonDecode(response.body);
+        return data;
+      } catch (e) {
+        return {"status": 0, "success": "Invalid JSON response"};
+      }
+    }
+
+    return {
+      "status": 0,
+      "success": "Unexpected response (status: ${response.statusCode})",
+    };
   }
 }

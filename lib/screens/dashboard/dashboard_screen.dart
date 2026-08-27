@@ -10,6 +10,7 @@ import 'package:storatax/utils/app_colors.dart';
 import 'package:storatax/utils/utils.dart';
 import 'package:storatax/view_models/auth_view_model/auth_view_model.dart';
 import 'package:storatax/view_models/dashboard_view_model/dashboard_view_model.dart';
+import 'package:storatax/view_models/gasoline_view_model/gasoline_view_model.dart';
 import 'package:storatax/view_models/rental_property_view_model/rental_property_view_model.dart';
 import 'package:shimmer/shimmer.dart';
 
@@ -48,8 +49,47 @@ class _DashboardScreenState extends State<DashboardScreen>
       if (!mounted) return;
 
       final dashboard = context.read<DashboardViewModel>();
-      dashboard.getDashboardApi(context);
+      await dashboard.getDashboardApi(context);
+
+      if (!mounted) return;
+
+      await _loadActiveTrip(context);
     });
+  }
+
+
+  Future<void> _loadActiveTrip(BuildContext context) async {
+    final vm = context.read<GasolineViewModel>();
+    final authVM = context.read<AuthViewModel>();
+
+    final int? userId = (authVM.user?.role == 'team')
+        ? authVM.user?.userId
+        : authVM.user?.id;
+    await vm.activeTripApi(context, userId!);
+
+    final trip = vm.activeTripModel;
+
+    if (trip != null) {
+      final data = trip.data;
+
+      debugPrint("isTracking: ${data?.isTracking}");
+      debugPrint("trackingMode: ${data?.trackingMode}");
+      debugPrint("tripId: ${data?.tripId}");
+
+      // ✅ Only check tripId + not already running
+      if (data != null &&
+          data.tripId != null &&
+          !vm.isTrackingRunning) {
+
+        debugPrint("🔥 START LIVE TRACKING FROM APP LOAD");
+
+        // ✅ Set local state FIRST
+        vm.setTrackingRunning(true);
+
+        // ✅ Start tracking
+        vm.startLiveTracking(data.tripId!);
+      }
+    }
   }
 
   /// Pull-to-refresh for dashboard only
@@ -348,7 +388,7 @@ class _DashboardScreenState extends State<DashboardScreen>
 
                                 items.addAll([
                                   const PopupMenuDivider(),
-                                   PopupMenuItem(
+                                  PopupMenuItem(
                                     value: 4,
                                     child: Row(
                                       children: [
@@ -360,10 +400,8 @@ class _DashboardScreenState extends State<DashboardScreen>
                                         SizedBox(width: 8),
                                         Text(
                                           AppLocalizations.of(
-                                            context,
-                                          )!.translate(
-                                            "logoutText",
-                                          ) ??
+                                                context,
+                                              )!.translate("logoutText") ??
                                               '',
                                         ),
                                       ],
@@ -450,20 +488,13 @@ class _DashboardScreenState extends State<DashboardScreen>
         child: Stack(
           clipBehavior: Clip.hardEdge,
           children: [
-            Positioned(
-              right: 30,
-              top: 30,
-              child: Image.asset(img, height: 40),
-            ),
+            Positioned(right: 30, top: 30, child: Image.asset(img, height: 40)),
             Positioned(
               bottom: 16,
               left: 25,
               child: Text(
                 text,
-                style: GoogleFonts.poppins(
-                  fontSize: 13,
-                  color: Colors.white,
-                ),
+                style: GoogleFonts.poppins(fontSize: 13, color: Colors.white),
               ),
             ),
           ],

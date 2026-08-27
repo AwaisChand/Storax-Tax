@@ -104,33 +104,33 @@ class AppRouter {
         name: 'myPlans',
         builder: (context, state) => MyPlansScreen(),
       ),
-      GoRoute(
-        path: '/more-plan-summary',
-        name: 'morePlanSummary',
-        builder: (context, state) {
-          final args = state.extra as Map<String, dynamic>;
-          return MorePlanSummaryScreen(
-            planId: args['plan_id'],
-            couponId: args['coupon_code'],
-          );
-        },
-      ),
+      // GoRoute(
+      //   path: '/more-plan-summary',
+      //   name: 'morePlanSummary',
+      //   builder: (context, state) {
+      //     final args = state.extra as Map<String, dynamic>;
+      //     return MorePlanSummaryScreen(
+      //       planId: args['plan_id'],
+      //       couponId: args['coupon_code'],
+      //     );
+      //   },
+      // ),
 
-      GoRoute(
-        path: '/plan-summary',
-        builder: (context, state) {
-          final data = state.extra as Map<String, dynamic>?;
-
-          return MorePlanSummaryScreen(
-            planId: data?['planId'],
-            couponId: data?['couponId'],
-            discountedPrice: data?['discountedPrice'],
-            discountAmount: data?['discountAmount'],
-            code: data?['code'],
-            discountedValue: data?['discountedValue'],
-          );
-        },
-      ),
+      // GoRoute(
+      //   path: '/plan-summary',
+      //   builder: (context, state) {
+      //     final data = state.extra as Map<String, dynamic>?;
+      //
+      //     return MorePlanSummaryScreen(
+      //       planId: data?['planId'],
+      //       couponId: data?['couponId'],
+      //       discountedPrice: data?['discountedPrice'],
+      //       discountAmount: data?['discountAmount'],
+      //       code: data?['code'],
+      //       discountedValue: data?['discountedValue'],
+      //     );
+      //   },
+      // ),
       GoRoute(
         name: "allRegularEntries",
         path: '/regular-entries',

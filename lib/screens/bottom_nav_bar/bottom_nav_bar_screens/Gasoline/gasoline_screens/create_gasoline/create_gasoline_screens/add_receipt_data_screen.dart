@@ -29,7 +29,7 @@ class _AddReceiptDataScreenState extends State<AddReceiptDataScreen> {
   final TextEditingController beforeTaxController = TextEditingController();
   final TextEditingController referenceController = TextEditingController();
   late TextEditingController dateController;
-  final DateFormat displayDateFormat = DateFormat('dd/MM/yyyy');
+  final DateFormat displayDateFormat = DateFormat('yyyy-MM-dd');
 
   double gst = 0.0;
   double pst = 0.0;
@@ -119,57 +119,94 @@ class _AddReceiptDataScreenState extends State<AddReceiptDataScreen> {
     final data = widget.receiptData;
     final authViewModel = context.read<AuthViewModel>();
 
-    fileName =
-        widget.receiptFile != null
-            ? widget.receiptFile!.path.split('/').last
-            : 'No file chosen';
+    fileName = widget.receiptFile != null
+        ? widget.receiptFile!.path.split('/').last
+        : 'No file chosen';
 
     // Initialize controllers
     merchantController.text = '';
     beforeTaxController.text = '';
     referenceController.text = '';
 
-    // Date controller for editable field
     dateController = TextEditingController();
 
-    // Date format for display
-    final DateFormat displayDateFormat = DateFormat('dd/MM/yyyy');
+    /// 🔥 Helper: Flexible date parser
+    DateTime? parseDate(String? date) {
+      if (date == null || date.trim().isEmpty) return null;
+
+      date = date.trim();
+
+      final formats = [
+        "yyyy-MM-dd",   // 2015-03-24
+        "dd MMM yyyy",  // 23 Feb 2026
+        "dd/MM/yyyy",   // 24/03/2015
+        "MM/dd/yyyy",   // 03/24/2015
+        "dd-MM-yyyy",   // 24-03-2015
+      ];
+
+      for (final format in formats) {
+        try {
+          return DateFormat(format).parseStrict(date);
+        } catch (_) {}
+      }
+
+      return null;
+    }
 
     if (data != null) {
       merchantController.text = data['trader'] ?? 'No Merchant';
-      beforeTaxController.text = data['before_tax_amount']?.toString() ?? '';
+      beforeTaxController.text =
+          data['before_tax_amount']?.toString() ?? '';
       referenceController.text = data['invoice_no'] ?? '';
 
       totalAmount = (data['total'] ?? 0).toDouble();
       gst = (data['gst'] ?? 0).toDouble();
       pst = (data['pst'] ?? 0).toDouble();
       hst = (data['hst'] ?? 0).toDouble();
+
       gstActual = authViewModel.data?.gst?.toDouble() ?? 0.0;
       hstActual = authViewModel.data?.hst?.toDouble() ?? 0.0;
       pstActual = authViewModel.data?.pst?.toDouble() ?? 0.0;
 
       totalTaxesValue = (data['tax'] ?? 0).toDouble();
+
+      /// 🔥 FIXED DATE HANDLING
       dateReceivedValue = data['date'] ?? '';
 
-      // Parse the stored date
-      if (dateReceivedValue.isNotEmpty) {
-        try {
-          selectedDate = DateFormat("yyyy/MM/dd").parse(dateReceivedValue);
-        } catch (e) {
-          selectedDate = DateTime.now();
-        }
-      }
+      selectedDate = parseDate(dateReceivedValue) ?? DateTime.now();
 
-      dateController.text =
-          selectedDate != null
-              ? displayDateFormat.format(selectedDate!)
-              : displayDateFormat.format(DateTime.now());
+      /// Display format (UI)
+      dateController.text = displayDateFormat.format(selectedDate!);
+
+      /// Debug logs (optional)
+      debugPrint("Raw API date: $dateReceivedValue");
+      debugPrint("Parsed date: $selectedDate");
     } else {
-      // If no data, set today's date by default
+      /// Default case
       selectedDate = DateTime.now();
       dateController.text = displayDateFormat.format(selectedDate!);
     }
   }
+
+  // DateTime? parseDate(String date) {
+  //   try {
+  //     return DateFormat("yyyy-MM-dd").parse(date);
+  //   } catch (_) {}
+  //
+  //   try {
+  //     return DateFormat("dd MMM yyyy").parse(date);
+  //   } catch (_) {}
+  //
+  //   try {
+  //     return DateFormat("dd/MM/yyyy").parse(date);
+  //   } catch (_) {}
+  //
+  //   try {
+  //     return DateFormat("MM/dd/yyyy").parse(date);
+  //   } catch (_) {}
+  //
+  //   return null;
+  // }
 
   @override
   Widget build(BuildContext context) {

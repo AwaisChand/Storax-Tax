@@ -99,7 +99,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                           ),
                           child: Text(
                             emailController.text,
-                            style: GoogleFonts.montserrat(
+                            style: GoogleFonts.poppins(
                               fontSize: 16,
                               fontWeight: FontWeight.w600,
                               color: Colors.black,
@@ -154,7 +154,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                                   ),
                                 Text(
                                   "Minimum 8 Characters",
-                                  style: GoogleFonts.montserrat(
+                                  style: GoogleFonts.poppins(
                                     fontSize: 10,
                                     color: AppColors.blackColor,
                                     fontWeight: FontWeight.w500,
@@ -168,7 +168,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                                 height: 4,
                                 decoration: BoxDecoration(
                                   borderRadius: BorderRadius.circular(2),
-                                  color: Colors.grey[200], // background gray
+                                  color: Colors.grey[200],
                                 ),
                                 child: LayoutBuilder(
                                   builder: (context, constraints) {
@@ -180,7 +180,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                                         ),
                                         width:
                                             constraints.maxWidth *
-                                            _passwordStrength, // fraction of parent
+                                            _passwordStrength,
                                         decoration: BoxDecoration(
                                           color: Utils.getStrengthColor(
                                             _passwordStrength,
@@ -276,7 +276,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
       children: [
         Text(
           text,
-          style: GoogleFonts.montserrat(
+          style: GoogleFonts.poppins(
             fontSize: 13,
             fontWeight: FontWeight.w500,
           ),

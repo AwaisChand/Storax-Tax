@@ -420,7 +420,7 @@ class _ScanQuebecScreenState extends State<ScanQuebecScreen> {
                                                                   "viewPdfText",
                                                                 ) ??
                                                                 '',
-                                                            style: GoogleFonts.montserrat(
+                                                            style: GoogleFonts.poppins(
                                                               fontSize: 15,
                                                               color:
                                                                   AppColors

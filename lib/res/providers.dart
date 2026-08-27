@@ -8,6 +8,7 @@ import 'package:storatax/view_models/quebec_view_model/quebec_view_model.dart';
 import 'package:storatax/view_models/rental_property_view_model/rental_property_view_model.dart';
 import 'package:storatax/view_models/tax_manager_view_model/tax_manager_view_model.dart';
 import 'package:storatax/view_models/team_member_view_model/team_member_view_model.dart';
+import 'package:storatax/view_models/trip_view_model/trip_view_model.dart';
 import 'package:storatax/view_models/viewrs_view_model/viewrs_view_model.dart';
 
 import '../view_models/auth_view_model/auth_view_model.dart';
@@ -28,5 +29,7 @@ List<SingleChildWidget> independentProviders = [
   ChangeNotifierProvider(create: (_) => DashboardViewModel()),
   ChangeNotifierProvider(create: (_) => TicketSupportViewModel()),
   ChangeNotifierProvider(create: (_) => InstructionsViewModel()),
+  ChangeNotifierProvider(create: (_) => TripViewModel()),
+
 
 ];

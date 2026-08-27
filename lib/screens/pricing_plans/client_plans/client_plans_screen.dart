@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import 'package:storatax/res/app_assets.dart';
 import 'package:storatax/res/components/app_button.dart';
 import 'package:storatax/screens/auth_screens/client_plan_register/client_plan_register.dart';
+import 'package:storatax/screens/pricing_plans/client_plans/widget/billing_toggle_widget.dart';
 import 'package:storatax/utils/app_colors.dart';
 import 'package:storatax/view_models/pricing_plans_view_model/pricing_plans_view_model.dart';
 
@@ -35,6 +36,16 @@ class _ClientPlansScreenState extends State<ClientPlansScreen> {
     return Consumer<PricingPlansViewModel>(
       builder: (context, clientPlan, _) {
         return Scaffold(
+          appBar: CustomAppBar(
+            text1:
+                AppLocalizations.of(context)!.translate("pricingPlanText") ??
+                '',
+            text2:
+                AppLocalizations.of(context)!.translate("subscribePlanText") ??
+                '',
+            showBackButton: true,
+            onBackTap: () => Navigator.pop(context),
+          ),
           body: Padding(
             padding: EdgeInsets.only(
               top: Utils.setHeight(context) * 0.08,
@@ -43,36 +54,26 @@ class _ClientPlansScreenState extends State<ClientPlansScreen> {
             ),
             child: Column(
               children: [
-                Row(
-                  children: [
-                    InkWell(
-                      onTap: () {
-                        Navigator.of(context).pop();
-                      },
-                      child: const Icon(Icons.arrow_back_ios_new_outlined),
-                    ),
-                    Flexible(
-                      child: Align(
-                        alignment: Alignment.center,
-                        child: Text(
-                          AppLocalizations.of(
-                                context,
-                              )!.translate("pricingPlanText") ??
-                              '',
-                          style: GoogleFonts.poppins(
-                            fontWeight: FontWeight.w700,
-                            fontSize: 25,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
+                ClientBillingToggle(
+                  onChanged: (isYearly) {
+                    final pricingVM = context.read<PricingPlansViewModel>();
 
+                    pricingVM.getClientPlansApi(context);
+                  },
+                ),
                 Expanded(
                   child:
                       clientPlan.isLoading
-                          ? Center(child: CircularProgressIndicator())
+                          ? Center(
+                            child: SizedBox(
+                              height: 25,
+                              width: 25,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 4,
+                                color: AppColors.blackColor,
+                              ),
+                            ),
+                          )
                           : ListView.builder(
                             itemCount: clientPlan.clientPlans.length,
                             physics: BouncingScrollPhysics(),
@@ -128,7 +129,9 @@ class _ClientPlansScreenState extends State<ClientPlansScreen> {
                                           children: [
                                             TextSpan(
                                               text:
-                                                  '\$${clientPlanDetail.price}',
+                                                  clientPlan.isYearly
+                                                      ? '\$${clientPlanDetail.yearlyPrice}'
+                                                      : '\$${clientPlanDetail.monthlyPrice}',
                                               style: GoogleFonts.montserrat(
                                                 textStyle: TextStyle(
                                                   fontSize: 28,
@@ -139,7 +142,9 @@ class _ClientPlansScreenState extends State<ClientPlansScreen> {
                                             ),
                                             TextSpan(
                                               text:
-                                                  '/ ${AppLocalizations.of(context)!.translate("yearText1") ?? ''}',
+                                                  clientPlan.isYearly
+                                                      ? '/ ${AppLocalizations.of(context)!.translate("yearText1") ?? ''}'
+                                                      : '/ ${AppLocalizations.of(context)!.translate("monthText") ?? ''}',
                                               style: GoogleFonts.montserrat(
                                                 textStyle: TextStyle(
                                                   fontSize: 10,

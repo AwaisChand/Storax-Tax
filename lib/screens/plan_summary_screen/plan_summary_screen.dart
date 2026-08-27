@@ -51,15 +51,15 @@ class _PlanSummaryScreenState extends State<PlanSummaryScreen> {
             child:
                 planDetail.isLoading
                     ? Center(
-                  child: SizedBox(
-                    height: 25,
-                    width: 25,
-                    child: CircularProgressIndicator(
-                      color: AppColors.blackColor,
-                      strokeWidth: 4,
-                    ),
-                  ),
-                )
+                      child: SizedBox(
+                        height: 25,
+                        width: 25,
+                        child: CircularProgressIndicator(
+                          color: AppColors.blackColor,
+                          strokeWidth: 4,
+                        ),
+                      ),
+                    )
                     : Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -103,7 +103,9 @@ class _PlanSummaryScreenState extends State<PlanSummaryScreen> {
                         ),
                         const SizedBox(height: 5),
                         Text(
-                          "Then \$${planDetail.planDetailModel?.plan?.price} per year",
+                          Utils.isYearly
+                              ? "Then \$${planDetail.planDetailModel?.plan?.yearlyPrice} per year"
+                              : "Then \$${planDetail.planDetailModel?.plan?.monthlyPrice} per month",
                           style: GoogleFonts.poppins(
                             fontSize: 12,
                             color: AppColors.darkMidnightColor,
@@ -123,7 +125,9 @@ class _PlanSummaryScreenState extends State<PlanSummaryScreen> {
                         Align(
                           alignment: Alignment.topRight,
                           child: Text(
-                            "\$${planDetail.planDetailModel?.plan?.price}/ year after",
+                            Utils.isYearly
+                                ? "\$${planDetail.planDetailModel?.plan?.yearlyPrice}/ year after"
+                                : "\$${planDetail.planDetailModel?.plan?.monthlyPrice}/ month after",
                             style: GoogleFonts.poppins(
                               fontSize: 11,
                               color: AppColors.mediumGrayColor,
@@ -135,7 +139,9 @@ class _PlanSummaryScreenState extends State<PlanSummaryScreen> {
                         const SizedBox(height: 15),
                         _rowWidget(
                           "Subtotal",
-                          "\$${planDetail.planDetailModel?.plan?.price}",
+                          Utils.isYearly
+                              ? "\$${planDetail.planDetailModel?.plan?.yearlyPrice}"
+                              : "\$${planDetail.planDetailModel?.plan?.monthlyPrice}",
                         ),
                         const SizedBox(height: 15),
                         _rowWidget("Tax", "\$0.00"),
@@ -144,67 +150,87 @@ class _PlanSummaryScreenState extends State<PlanSummaryScreen> {
                         const SizedBox(height: 15),
                         _rowWidget(
                           "Total after trial",
-                          "\$${planDetail.planDetailModel?.plan?.price}",
+                          Utils.isYearly
+                              ? "\$${planDetail.planDetailModel?.plan?.yearlyPrice}"
+                              : "\$${planDetail.planDetailModel?.plan?.monthlyPrice}",
                         ),
                         _rowWidget("Total due today", "\$0.00"),
                         const Spacer(),
                         AppButton(
-                          btnText: _isProcessingPayment ? "Processing..." : "Start Trial",
+                          btnText:
+                              _isProcessingPayment
+                                  ? "Processing..."
+                                  : "Start Trial",
                           isLoading: _isProcessingPayment,
-                          onPressed: _isProcessingPayment
-                              ? null
-                              : () async {
-                            setState(() => _isProcessingPayment = true);
+                          onPressed:
+                              _isProcessingPayment
+                                  ? null
+                                  : () async {
+                                    setState(() => _isProcessingPayment = true);
 
-                            try {
-                              final provider = context.read<PricingPlansViewModel>();
-                              final authProvider = context.read<AuthViewModel>();
+                                    try {
+                                      final provider =
+                                          context.read<PricingPlansViewModel>();
+                                      final authProvider =
+                                          context.read<AuthViewModel>();
 
-                              final plan = provider.planDetailModel?.plan;
+                                      final plan =
+                                          provider.planDetailModel?.plan;
 
-                              if (plan == null) {
-                                Utils.toastMessage("Plan data not loaded");
-                                return;
-                              }
+                                      if (plan == null) {
+                                        Utils.toastMessage(
+                                          "Plan data not loaded",
+                                        );
+                                        return;
+                                      }
 
-                              final userId = authProvider.user?.id;
-                              if (userId == null) {
-                                Utils.toastMessage("User not found");
-                                return;
-                              }
+                                      final userId = authProvider.user?.id;
+                                      if (userId == null) {
+                                        Utils.toastMessage("User not found");
+                                        return;
+                                      }
 
-                              // 🔥 PLATFORM BASED FLOW
-                              if (Platform.isIOS) {
-                                debugPrint("🍎 iOS detected → Apple IAP flow");
+                                      // 🔥 PLATFORM BASED FLOW
+                                      if (Platform.isIOS) {
+                                        debugPrint(
+                                          "🍎 iOS detected → Apple IAP flow",
+                                        );
 
-                                await saveAppleSubscriptionFlow(
-                                  context: context,
-                                  userId: userId,
-                                  planId: plan.id!,
-                                  productId:
-                                      plan.appleProductId ?? "com.storatax.basic_plan",
-                                  provider: provider,
-                                );
-                              } else {
-                                debugPrint("🤖 Android detected → Stripe flow");
+                                        await saveAppleSubscriptionFlow(
+                                          context: context,
+                                          userId: userId,
+                                          planId: plan.id!,
+                                          productId:
+                                              Utils.isYearly
+                                                  ? plan.monthlyAppleProductId ??
+                                                      ''
+                                                  : plan.yearlyAppleProductId ??
+                                                      '',
+                                          provider: provider,
+                                        );
+                                      } else {
+                                        debugPrint(
+                                          "🤖 Android detected → Stripe flow",
+                                        );
 
-                                await startSubscriptionFlow(
-                                  context,
-                                  widget.userId!,
-                                  plan.id!,
-                                  provider,
-                                );
-                              }
-
-                            } catch (e, s) {
-                              debugPrint("❌ Payment error: $e\n$s");
-                              Utils.toastMessage("Payment failed");
-                            } finally {
-                              if (mounted) {
-                                setState(() => _isProcessingPayment = false);
-                              }
-                            }
-                          },
+                                        await startSubscriptionFlow(
+                                          context,
+                                          widget.userId!,
+                                          plan.id!,
+                                          provider,
+                                        );
+                                      }
+                                    } catch (e, s) {
+                                      debugPrint("❌ Payment error: $e\n$s");
+                                      Utils.toastMessage("Payment failed");
+                                    } finally {
+                                      if (mounted) {
+                                        setState(
+                                          () => _isProcessingPayment = false,
+                                        );
+                                      }
+                                    }
+                                  },
                         ),
                         const SizedBox(height: 15),
                       ],

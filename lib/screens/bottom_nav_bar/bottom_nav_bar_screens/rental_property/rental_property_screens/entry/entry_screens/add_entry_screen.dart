@@ -321,7 +321,7 @@ class _AddEntryScreenState extends State<AddEntryScreen> {
               context: context,
               initialDate: selectedDate ?? now,
               firstDate: DateTime(now.year - 6, 1, 1),
-              lastDate: DateTime(2100), // ✅ allows future dates
+              lastDate: DateTime(2100),
             );
 
             if (picked != null) {
@@ -468,7 +468,7 @@ class _AddEntryScreenState extends State<AddEntryScreen> {
             onChanged: (val) {
               setState(() {
                 selectedExpenseType = val;
-                onlyForRentalType = 'No'; // reset when changing type
+                onlyForRentalType = 'No';
               });
             },
           ),

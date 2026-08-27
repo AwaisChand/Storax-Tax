@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 class LoginModel {
   final int status;
   final String success;
@@ -15,7 +17,7 @@ class LoginModel {
 
   factory LoginModel.fromJson(Map<String, dynamic> json) {
     return LoginModel(
-      status: json['status'] ?? 0,
+      status: _parseInt(json['status']),
       success: json['success']?.toString() ?? "",
       accessToken: json['access_token']?.toString() ?? "",
       tokenType: json['token_type']?.toString() ?? "",
@@ -32,6 +34,12 @@ class LoginModel {
       'user': user.toJson(),
     };
   }
+
+  static int _parseInt(dynamic value) {
+    if (value == null) return 0;
+    if (value is int) return value;
+    return int.tryParse(value.toString()) ?? 0;
+  }
 }
 
 class User {
@@ -47,6 +55,7 @@ class User {
   final String phone;
   final String avatar;
   final String role;
+  final List<String> teamFor;
   final String status;
   final String city;
   final String country;
@@ -68,9 +77,9 @@ class User {
   final String couponId;
   final String createdBy;
   final String subscriptionId;
-  final int gst;
+  final dynamic gst;
   final String pst;
-  final String plan;
+  final dynamic plan; // Retains raw object or null for future plan parsing
 
   User({
     this.id = 0,
@@ -85,6 +94,7 @@ class User {
     this.phone = "",
     this.avatar = "",
     this.role = "",
+    this.teamFor = const [],
     this.status = "",
     this.city = "",
     this.country = "",
@@ -106,39 +116,40 @@ class User {
     this.couponId = "",
     this.createdBy = "",
     this.subscriptionId = "",
-    this.gst = 0,
+    this.gst,
     this.pst = "",
-    this.plan = "",
+    this.plan,
   });
 
   factory User.fromJson(Map<String, dynamic> json) {
     return User(
-      id: json['id'] ?? 0,
-      userId: json['user_id'] ?? 0,
+      id: _parseInt(json['id']),
+      userId: _parseInt(json['user_id']),
       firstName: json['first_name']?.toString() ?? "",
       lastName: json['last_name']?.toString() ?? "",
       username: json['username']?.toString() ?? "",
       email: json['email']?.toString() ?? "",
       province: json['province']?.toString() ?? "",
-      noOfClients: json['no_of_clients'] ?? 0,
+      noOfClients: _parseInt(json['no_of_clients']),
       emailVerifiedAt: json['email_verified_at']?.toString() ?? "",
       phone: json['phone']?.toString() ?? "",
       avatar: json['avatar']?.toString() ?? "",
       role: json['role']?.toString() ?? "",
+      teamFor: _parseStringList(json['team_for']),
       status: json['status']?.toString() ?? "",
       city: json['city']?.toString() ?? "",
       country: json['country']?.toString() ?? "",
       createdAt: json['created_at']?.toString() ?? "",
       updatedAt: json['updated_at']?.toString() ?? "",
       detachedAt: json['detached_at']?.toString() ?? "",
-      planId: json['plan_id'] ?? 0,
+      planId: _parseInt(json['plan_id']),
       paypalSubscriptionId: json['paypal_subscription_id']?.toString() ?? "",
       stripeId: json['stripe_id']?.toString() ?? "",
       pmType: json['pm_type']?.toString() ?? "",
       pmLastFour: json['pm_last_four']?.toString() ?? "",
       deletedAt: json['deleted_at']?.toString() ?? "",
       businessName: json['business_name']?.toString() ?? "",
-      tutorialCompleted: json['tutorial_completed'] ?? 0,
+      tutorialCompleted: _parseInt(json['tutorial_completed']),
       twoFactorCode: json['two_factor_code']?.toString() ?? "",
       twoFactorExpiresAt: json['two_factor_expires_at']?.toString() ?? "",
       payment: json['payment']?.toString() ?? "",
@@ -146,9 +157,9 @@ class User {
       couponId: json['coupon_id']?.toString() ?? "",
       createdBy: json['created_by']?.toString() ?? "",
       subscriptionId: json['subscription_id']?.toString() ?? "",
-      gst: json['gst'] ?? 0,
+      gst: json['gst'],
       pst: json['pst']?.toString() ?? "",
-      plan: json['plan']?.toString() ?? "",
+      plan: json['plan'],
     );
   }
 
@@ -166,6 +177,7 @@ class User {
       'phone': phone,
       'avatar': avatar,
       'role': role,
+      'team_for': jsonEncode(teamFor),
       'status': status,
       'city': city,
       'country': country,
@@ -191,5 +203,27 @@ class User {
       'pst': pst,
       'plan': plan,
     };
+  }
+
+  static int _parseInt(dynamic value) {
+    if (value == null) return 0;
+    if (value is int) return value;
+    return int.tryParse(value.toString()) ?? 0;
+  }
+
+  static List<String> _parseStringList(dynamic value) {
+    if (value == null) return [];
+    if (value is List) return List<String>.from(value.map((e) => e.toString()));
+    if (value is String) {
+      try {
+        final decoded = jsonDecode(value);
+        if (decoded is List) {
+          return List<String>.from(decoded.map((e) => e.toString()));
+        }
+      } catch (_) {
+        return [];
+      }
+    }
+    return [];
   }
 }

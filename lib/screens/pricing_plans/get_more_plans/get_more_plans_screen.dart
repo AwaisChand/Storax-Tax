@@ -8,6 +8,7 @@ import 'package:storatax/res/app_assets.dart';
 import 'package:storatax/res/components/app_button.dart';
 import 'package:storatax/res/components/app_text_field.dart';
 import 'package:storatax/screens/plan_summary_screen/more_plan_summary_screen.dart';
+import 'package:storatax/screens/pricing_plans/get_more_plans/widget/billing_toggle_widget.dart';
 import 'package:storatax/utils/app_colors.dart';
 import 'package:storatax/utils/utils.dart';
 import 'package:storatax/view_models/pricing_plans_view_model/pricing_plans_view_model.dart';
@@ -28,6 +29,7 @@ class GetMorePlansScreen extends StatefulWidget {
 }
 
 class _GetMorePlansScreenState extends State<GetMorePlansScreen> {
+  bool isYearly = true;
   @override
   void initState() {
     super.initState();
@@ -213,6 +215,7 @@ class _GetMorePlansScreenState extends State<GetMorePlansScreen> {
                 discountAmount: null,
                 code: null,
                 discountedValue: null,
+                isYearly: isYearly,
               ),
         ),
       );
@@ -230,6 +233,7 @@ class _GetMorePlansScreenState extends State<GetMorePlansScreen> {
                 discountAmount: result['discountAmount'] as double?,
                 code: result['code'] as String?,
                 discountedValue: result['discountValue'] as int?,
+                isYearly: isYearly,
               ),
         ),
       );
@@ -270,10 +274,26 @@ class _GetMorePlansScreenState extends State<GetMorePlansScreen> {
             ),
             child: Column(
               children: [
+                BillingToggle(
+                  onChanged: (isYearly) {
+                    final pricingVM = context.read<PricingPlansViewModel>();
+
+                    pricingVM.getMorePlansApi(context);
+                  },
+                ),
                 Expanded(
                   child:
                       morePlans.isLoading
-                          ? const Center(child: CircularProgressIndicator())
+                          ? const Center(
+                            child: SizedBox(
+                              height: 25,
+                              width: 25,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 4,
+                                color: Colors.black,
+                              ),
+                            ),
+                          )
                           : ListView.builder(
                             itemCount: morePlans.morePlans.length,
                             physics: const BouncingScrollPhysics(),
@@ -317,7 +337,10 @@ class _GetMorePlansScreenState extends State<GetMorePlansScreen> {
                                         text: TextSpan(
                                           children: [
                                             TextSpan(
-                                              text: '\$${plan.price}',
+                                              text:
+                                                  morePlans.isYearly
+                                                      ? '\$${plan.yearlyPrice}'
+                                                      : '\$${plan.monthlyPrice}',
                                               style: GoogleFonts.montserrat(
                                                 textStyle: TextStyle(
                                                   fontSize: 28,
@@ -328,7 +351,9 @@ class _GetMorePlansScreenState extends State<GetMorePlansScreen> {
                                             ),
                                             TextSpan(
                                               text:
-                                                  '/ ${AppLocalizations.of(context)!.translate("yearText1") ?? ''}',
+                                                  morePlans.isYearly
+                                                      ? '/ ${AppLocalizations.of(context)!.translate("yearText1") ?? ''}'
+                                                      : '/ ${AppLocalizations.of(context)!.translate("monthText") ?? ''}',
                                               style: GoogleFonts.montserrat(
                                                 textStyle: TextStyle(
                                                   fontSize: 10,
@@ -365,7 +390,7 @@ class _GetMorePlansScreenState extends State<GetMorePlansScreen> {
                                                 : feature.name ?? '';
                                         final featureText =
                                             locale == 'fr'
-                                                ? feature.translationName
+                                                ? feature.translatedName
                                                 : feature.name ?? '';
 
                                         return Padding(
@@ -405,7 +430,6 @@ class _GetMorePlansScreenState extends State<GetMorePlansScreen> {
                                                         GasolineViewModel
                                                       >();
 
-                                              // Find current Enterprise plan if exists
                                               MyPlans? currentEnterprisePlan;
                                               try {
                                                 currentEnterprisePlan = pricingVM
@@ -433,7 +457,6 @@ class _GetMorePlansScreenState extends State<GetMorePlansScreen> {
 
                                               bool hasTeamMembers = false;
 
-                                              // Only check team members if downgrading Enterprise → Pro
                                               if (currentEnterprisePlan !=
                                                       null &&
                                                   isNewPlanPro) {
@@ -443,7 +466,6 @@ class _GetMorePlansScreenState extends State<GetMorePlansScreen> {
                                                     teamVM.allData.isNotEmpty;
                                               }
 
-                                              // BLOCK Enterprise → Pro if team members exist
                                               if (currentEnterprisePlan !=
                                                       null &&
                                                   isNewPlanPro &&
@@ -741,10 +763,8 @@ class _GetMorePlansScreenState extends State<GetMorePlansScreen> {
       }
     }
 
-    // 🔹 FETCH GASOLINE DATA IN BACKGROUND
     unawaited(gasolineVM.getGasolineApi(context));
 
-    // ✅ ACTIVATE FREE PLAN
     final success = await pricingVM.freePlanSubscribeApi({"plan_id": planId});
     if (!success) return;
 

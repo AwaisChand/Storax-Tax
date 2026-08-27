@@ -23,7 +23,7 @@ void showForwardGrossIncomeDialog(
       return AlertDialog(
         title: Text(
           AppLocalizations.of(context)!.translate("forwardGrossReportText") ?? '',
-          style: GoogleFonts.montserrat(
+          style: GoogleFonts.poppins(
             textStyle: TextStyle(fontWeight: FontWeight.w700, fontSize: 15),
           ),
         ),
@@ -121,7 +121,7 @@ void showForwardGSTQSTReportDialog(
       return AlertDialog(
         title: Text(
           AppLocalizations.of(context)!.translate("forwardReportText") ?? '',
-          style: GoogleFonts.montserrat(
+          style: GoogleFonts.poppins(
             textStyle: TextStyle(fontWeight: FontWeight.w700, fontSize: 15),
           ),
         ),

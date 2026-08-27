@@ -20,6 +20,7 @@ class MorePlanSummaryScreen extends StatefulWidget {
     this.discountAmount,
     this.code,
     this.discountedValue,
+    required this.isYearly,
   });
 
   final int planId;
@@ -28,6 +29,7 @@ class MorePlanSummaryScreen extends StatefulWidget {
   final double? discountAmount;
   final String? code;
   final int? discountedValue;
+  final bool isYearly;
 
   @override
   State<MorePlanSummaryScreen> createState() => _MorePlanSummaryScreenState();
@@ -55,7 +57,8 @@ class _MorePlanSummaryScreenState extends State<MorePlanSummaryScreen> {
     return Consumer<PricingPlansViewModel>(
       builder: (context, planDetail, _) {
         final plan = planDetail.planDetailModel?.plan;
-        final originalPrice = plan?.price ?? 0.0;
+        final originalPrice =
+            Utils.isYearly ? plan?.yearlyPrice : plan?.monthlyPrice;
         final discountedPrice = widget.discountedPrice ?? originalPrice;
         final discountAmount = widget.discountAmount ?? 0.0;
         final couponCode = widget.code;
@@ -72,16 +75,16 @@ class _MorePlanSummaryScreenState extends State<MorePlanSummaryScreen> {
         return Scaffold(
           body:
               planDetail.isLoading
-                  ?  Center(
-                child: SizedBox(
-                  height: 25,
-                  width: 25,
-                  child: CircularProgressIndicator(
-                    color: AppColors.blackColor,
-                    strokeWidth: 4,
-                  ),
-                ),
-              )
+                  ? Center(
+                    child: SizedBox(
+                      height: 25,
+                      width: 25,
+                      child: CircularProgressIndicator(
+                        color: AppColors.blackColor,
+                        strokeWidth: 4,
+                      ),
+                    ),
+                  )
                   : Stack(
                     children: [
                       Padding(
@@ -138,7 +141,7 @@ class _MorePlanSummaryScreenState extends State<MorePlanSummaryScreen> {
                               ),
                               const SizedBox(height: 5),
                               Text(
-                                "Then \$${originalPrice.toStringAsFixed(2)} per year",
+                                "Then \$${originalPrice?.toStringAsFixed(2)} ${planDetail.isYearly ? "per year" : "per month"}",
                                 style: GoogleFonts.poppins(
                                   fontSize: 12,
                                   color: AppColors.darkMidnightColor,
@@ -155,7 +158,7 @@ class _MorePlanSummaryScreenState extends State<MorePlanSummaryScreen> {
                               Align(
                                 alignment: Alignment.topRight,
                                 child: Text(
-                                  "\$${originalPrice.toStringAsFixed(2)}/ year after",
+                                  "\$${originalPrice?.toStringAsFixed(2)}/ ${planDetail.isYearly ? "year after" : "month after"}",
                                   style: GoogleFonts.poppins(
                                     fontSize: 11,
                                     color: AppColors.mediumGrayColor,
@@ -169,7 +172,7 @@ class _MorePlanSummaryScreenState extends State<MorePlanSummaryScreen> {
                               // Pricing Summary Rows
                               _rowWidget(
                                 "Subtotal",
-                                "\$${originalPrice.toStringAsFixed(2)}",
+                                "\$${originalPrice?.toStringAsFixed(2)}",
                               ),
                               SizedBox(height: 5),
                               if (discountAmount > 0)
@@ -234,7 +237,7 @@ class _MorePlanSummaryScreenState extends State<MorePlanSummaryScreen> {
 
                               _rowWidget(
                                 "Total after trial",
-                                "\$${discountedPrice.toStringAsFixed(2)}",
+                                "\$${discountedPrice?.toStringAsFixed(2)}",
                               ),
                               _rowWidget("Total due today", "\$0.00"),
                               const SizedBox(height: 20),
@@ -248,63 +251,84 @@ class _MorePlanSummaryScreenState extends State<MorePlanSummaryScreen> {
                         left: 20,
                         right: 20,
                         child: AppButton(
-                          btnText: _isProcessingPayment ? "Processing..." : "Start Trial",
+                          btnText:
+                              _isProcessingPayment
+                                  ? "Processing..."
+                                  : "Start Trial",
                           isLoading: _isProcessingPayment,
-                          onPressed: _isProcessingPayment
-                              ? null
-                              : () async {
-                            setState(() => _isProcessingPayment = true);
+                          onPressed:
+                              _isProcessingPayment
+                                  ? null
+                                  : () async {
+                                    setState(() => _isProcessingPayment = true);
 
-                            try {
-                              final provider = context.read<PricingPlansViewModel>();
-                              final authProvider = context.read<AuthViewModel>();
+                                    try {
+                                      final provider =
+                                          context.read<PricingPlansViewModel>();
+                                      final authProvider =
+                                          context.read<AuthViewModel>();
 
-                              final plan = provider.planDetailModel?.plan;
+                                      final plan =
+                                          provider.planDetailModel?.plan;
 
-                              if (plan == null) {
-                                Utils.toastMessage("Plan data not loaded");
-                                return;
-                              }
+                                      if (plan == null) {
+                                        Utils.toastMessage(
+                                          "Plan data not loaded",
+                                        );
+                                        return;
+                                      }
 
-                              final userId = authProvider.user?.id;
-                              if (userId == null) {
-                                Utils.toastMessage("User not found");
-                                return;
-                              }
+                                      final userId = authProvider.user?.id;
+                                      if (userId == null) {
+                                        Utils.toastMessage("User not found");
+                                        return;
+                                      }
 
-                              // 🔥 PLATFORM BASED FLOW
-                              if (Platform.isIOS) {
-                                debugPrint("🍎 iOS detected → Apple IAP flow");
+                                      // 🔥 PLATFORM BASED FLOW
+                                      if (Platform.isIOS) {
+                                        debugPrint(
+                                          "🍎 iOS detected → Apple IAP flow",
+                                        );
 
-                                await saveAppleSubscriptionFlow(
-                                  context: context,
-                                  userId: userId,
-                                  planId: plan.id!,
-                                  productId: plan.appleProductId ?? "com.storatax.basic_plan",
-                                  couponId: widget.couponId,
-                                  provider: provider,
-                                );
-                              } else {
-                                debugPrint("🤖 Android detected → Stripe flow");
+                                        await saveAppleSubscriptionFlow(
+                                          context: context,
+                                          userId: userId,
+                                          planId: plan.id!,
+                                          productId:
+                                              Utils.isYearly
+                                                  ? plan.yearlyAppleProductId ??
+                                                      ''
+                                                  : plan.monthlyAppleProductId ??
+                                                      '',
+                                          couponId: widget.couponId,
+                                          provider: provider,
+                                        );
+                                      } else {
+                                        debugPrint(
+                                          "🤖 Android detected → Stripe flow",
+                                        );
 
-                                await saveSubscriptionFlow(
-                                  context,
-                                  userId,
-                                  plan.id!,
-                                  widget.couponId,
-                                  provider,
-                                );
-                              }
-
-                            } catch (e, s) {
-                              debugPrint("❌ BUTTON ERROR: $e\n$s");
-                              Utils.toastMessage("Something went wrong");
-                            } finally {
-                              if (mounted) {
-                                setState(() => _isProcessingPayment = false);
-                              }
-                            }
-                          },
+                                        await saveSubscriptionFlow(
+                                          context,
+                                          userId,
+                                          plan.id!,
+                                          widget.couponId,
+                                          provider,
+                                        );
+                                      }
+                                    } catch (e, s) {
+                                      debugPrint("❌ BUTTON ERROR: $e\n$s");
+                                      Utils.toastMessage(
+                                        "Something went wrong",
+                                      );
+                                    } finally {
+                                      if (mounted) {
+                                        setState(
+                                          () => _isProcessingPayment = false,
+                                        );
+                                      }
+                                    }
+                                  },
                         ),
                       ),
                     ],

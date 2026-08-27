@@ -95,7 +95,7 @@
   "filterText": "Filtrer par",
   "viewReportText": "Voir le rappor",
   "forwardFileText": "Transférer le fichier",
-  "transactionReportText": "Rapport de transactions",
+  "transactionReportText": "Rapport des transactions de reçus",
   "noGasolineText": "Vous n’avez aucune essence",
   "merchantText": "Commerçant",
   "totalText": "Total",
@@ -523,10 +523,97 @@
 
   "ticketUnavailableText": "Billets de support indisponibles",
   "ticketdetailText": "Les billets de support sont disponibles uniquement avec les forfaits payants.",
-  "viewPlanText": "Voir les forfaits"
+  "viewPlanText": "Voir les forfaits",
+
+  "allTripsText": "Tous les trajets",
+  "noTripsText": "Vous n'avez aucun trajet",
+  "starTrackingText": "Démarrer le suivi",
+  "stopTrackingText": "Arrêter le suivi",
+  "fromLocationText": "Lieu de départ",
+  "toLocationText": "Lieu d'arrivée",
+  "tripTypeText": "Type",
+  "purposeText": "Objet",
+  "selectTripTypeText": "Sélectionner le type de trajet",
+  "setText": "Définir",
+  "addPurposeText": "Ajouter un motif",
+  "enterPurposeText": "Saisir le motif",
+
+  "chooseTrackingModeText": "Choisir le mode de suivi",
+  "autoText": "Auto",
+  "autoDescText": "Suivi automatique de vos trajets en arrière-plan.",
+  "manualText": "Manuel",
+  "manualDescText": "Démarrez et suivez vos trajets manuellement.",
+  "confirmText": "Confirmer",
+
+  "receiptsViewReport": "Rapport de reçus",
+  "tripsReportText": "Rapport de trajets",
+  "reportsText": "Rapports",
+
+  "manualTrackingText": "Suivi manuel",
+  "doneText": "Terminé",
+  "enterDestinationText": "Saisir la destination",
+  "enterStopText": "Saisir l'arrêt",
+
+  "liveTrackingText": "Suivi en direct",
+  "remainingDistanceText": "Distance restante",
+  "etaDurationText": "Durée estimée (HAP)",
+  "endTripText": "Terminer le trajet",
+  "endingText": "Fin",
+  "reCenterText": "Recentrer",
+
+  "tripsReportDescText": "Trajets d'affaires uniquement — analyses manuelles et automatiques, historique des distances et itinéraires",
+  "periodText": "Période",
+
+  "allTimeText": "Toute la période",
+  "todayText": "Aujourd'hui",
+  "yesterdayText": "Hier",
+  "thisWeekText": "Cette semaine",
+  "prevWeekText": "Semaine précédente",
+  "thisMonthText": "Ce mois-ci",
+  "prevMonthText": "Mois précédent",
+  "thisYearText": "Cette année",
+  "customText": "Personnalisé",
+
+  "totalTripsText": "TOTAL DES TRAJETS",
+  "kmTraveledText": "KM PARCOURUS",
+  "traveledTimeText": "TEMPS DE TRAJET",
+  "avgText": "KM MOY. / TRAJET",
+  "durationText": "DURÉE MOYENNE",
+
+  "tripsOverviewText": "Aperçu des trajets et distances",
+  "tTripsText": "Total des trajets",
+  "kmText": "KM parcourus",
+  "businessTripText": "Trajets d'affaires",
+  "tripsText": "trajets",
+  "noChartFoundText": "Aucune analyse graphique enregistrée pour cette période",
+  "noRecordFoundText": "Aucun enregistrement trouvé pour cette période.",
 
 
 
+  "fText": "DE",
+  "tText": "À",
+  "tyText": "TYPE",
+  "pText": "OBJET",
+  "startedText": "DÉBUTÉ",
+  "distanceText": "DISTANCE (KM)",
+  "dText": "DURÉE",
+  "viewRouteText": "Voir l'itinéraire",
 
+  "tripSummaryText": "RÉSUMÉ DU TRAJET",
+  "tripDetailText": "Détails du trajet",
+  "stText": "Début",
+  "duText": "Durée",
+  "routeMapText": "Carte de l'itinéraire",
+  "showMapText": "Afficher la carte",
+
+  "gasolineFilterText": "Filtrer les reçus d'essence par",
+
+  "gasolineForwardFileText": "Reçu de transfert du dossier gaz",
+  "logBookText": "journal de bord",
+  "logBookReportText": "Rapport du journal de bord",
+  "kmBegText": "KM au début de l'année",
+  "kmBEndText": "KM à la fin de l'année",
+  "totalKmDrivenText": "Total des KM parcourus pour l'année",
+  "totalKmBusinessText": "Total des KM d'affaires pour l'année"
 
 }

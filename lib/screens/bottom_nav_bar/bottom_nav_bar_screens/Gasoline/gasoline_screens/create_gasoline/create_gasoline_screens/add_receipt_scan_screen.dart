@@ -182,10 +182,6 @@ class _AddReceiptScanScreenState extends State<AddReceiptScanScreen>
 
 
   Future<void> startSmartCameraCapture() async {
-    // `cunning_document_scanner` calls `Permission.camera.request()`
-    // internally and throws "Permission not granted" if iOS returns a cached
-    // denial (iOS shows the system prompt only once). Pre-handle here to give
-    // the user a clear "Open Settings" path.
     final granted = await ensureCameraPermission(context);
     if (!granted) {
       docScannerLog(

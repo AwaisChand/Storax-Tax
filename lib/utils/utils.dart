@@ -3,12 +3,19 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:storatax/utils/app_colors.dart';
+import 'package:storatax/view_models/trip_view_model/trip_view_model.dart';
 
 import '../res/app_assets.dart';
 import '../res/components/app_localization.dart';
+import '../view_models/gasoline_view_model/gasoline_view_model.dart';
 
 class Utils {
-  static toastMessage(String message) {
+
+ static bool isYearly = false;
+ static String? selectedMode;
+
+
+ static toastMessage(String message) {
     Fluttertoast.showToast(
       msg: message,
       textColor: AppColors.whiteColor,
@@ -76,6 +83,21 @@ class Utils {
     }
     return Color(int.parse(hex, radix: 16));
   }
+
+
+  /// Validation Custom date
+ static bool validateCustomDate({
+   required String tabMode,
+   required TripViewModel vm,
+ }) {
+   if (tabMode.toLowerCase() == 'custom') {
+     if (vm.fromDate == null || vm.toDate == null) {
+       Utils.toastMessage("Please enter your from and to date first.");
+       return false;
+     }
+   }
+   return true;
+ }
 
   static showPasswordInfoDialog(context) {
     return showDialog(

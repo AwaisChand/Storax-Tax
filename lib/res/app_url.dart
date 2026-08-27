@@ -78,6 +78,64 @@ class AppUrl {
       '${baseUrl}api/gasolines/gasoline-transactions/report/print';
   static var forwardEmailReportEndPoint =
       '${baseUrl}api/gasolines/gasoline-transactions/report/forward';
+  static var startTripEndPoint = '${baseUrl}api/trip/start-auto';
+  static String activeTripUrl(int userId) {
+    return '${baseUrl}api/trip/active?user_id=$userId';
+  }
+  static var updateTripTypeEndPoint = '${baseUrl}api/trip/update-type';
+
+
+  static var liveLocationUpdateEndPoint = '${baseUrl}api/trip/update-location';
+  static var stopTripEndPoint = '${baseUrl}api/trip/stop';
+
+  static String autoAllTripsUrl(int userId, String mode) {
+    return '${baseUrl}api/trips?user_id=$userId&tracking_mode=$mode';
+  }
+
+  static var addPurposeEndPoint = '${baseUrl}api/trip/add-purpose';
+
+  static var createTripEndPoint = '${baseUrl}api/trips/create';
+  static var startTrackingEndPoint = '${baseUrl}api/trips/start';
+
+  static String getTripDetailEndPoint(int tripId, int userId) {
+    return '${baseUrl}api/trips/$tripId?user_id=$userId';
+  }
+  static var updateTrackingEndPoint = '${baseUrl}api/trips/update-location';
+  static var endTripEndPoint = '${baseUrl}api/trips/stop';
+
+  static var tripReportEndPoint = '${baseUrl}api/trip/report';
+  static var tripReportDownloadPdfEndPoint = '${baseUrl}api/trip/report/download-pdf';
+
+  static var forwardTripReportEndPoint = '${baseUrl}api/trip/report/forward';
+  static var printTripReportEndPoint = '${baseUrl}api/trip/report/print';
+
+  static var deleteTripEndPoint = '${baseUrl}api/trips';
+  static var getLogBookEndPoint = '${baseUrl}api/log-book';
+  static var createLogBookEndPoint = '${baseUrl}api/log-book';
+  static var allTripsEndPoint = '${baseUrl}api/trips';
+
+
+  static String rejectTripEndPoint(int tripId) =>
+      '${baseUrl}api/trips/$tripId/reject';
+
+  static String approveTripEndPoint(int tripId) =>
+      '${baseUrl}api/trips/$tripId/approve';
+
+  static var pendingSubmissionEndPoint = '${baseUrl}api/log-book/pending';
+
+  static String rejectSubEndPoint(int subId) =>
+      '${baseUrl}api/log-book/$subId/reject';
+
+  static String approveSubEndPoint(int subId) =>
+      '${baseUrl}api/log-book/$subId/approve';
+
+  static var submitLogBookEndPoint = '${baseUrl}api/log-book/submit';
+
+
+
+
+
+
 
   ///Rental Property End Points
   static var getRentalPropertyPlanEndPoint =
@@ -126,8 +184,6 @@ class AppUrl {
   /// Instructions End Point
 
   static var instructionsEndPoint = '${baseUrl}api/client/instructions';
-
-
 
   ///Stripe Integration End Points
 

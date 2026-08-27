@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 class GetUserProfileModel {
   String message;
   int status;
@@ -12,10 +14,8 @@ class GetUserProfileModel {
   factory GetUserProfileModel.fromJson(Map<String, dynamic> json) {
     return GetUserProfileModel(
       message: json['message']?.toString() ?? "",
-      status: json['status'] ?? 0,
-      data: json['data'] != null
-          ? Data.fromJson(json['data'])
-          : Data(), // fallback empty data
+      status: _parseInt(json['status']),
+      data: json['data'] != null ? Data.fromJson(json['data']) : Data(),
     );
   }
 
@@ -25,6 +25,12 @@ class GetUserProfileModel {
       'status': status,
       'data': data.toJson(),
     };
+  }
+
+  static int _parseInt(dynamic value) {
+    if (value == null) return 0;
+    if (value is int) return value;
+    return int.tryParse(value.toString()) ?? 0;
   }
 }
 
@@ -40,6 +46,7 @@ class Data {
   String phone;
   String avatar;
   String role;
+  List<String> teamFor; // Added: handles stringified JSON array
   String status;
   String city;
   String country;
@@ -70,6 +77,7 @@ class Data {
     this.phone = "",
     this.avatar = "",
     this.role = "",
+    this.teamFor = const [],
     this.status = "",
     this.city = "",
     this.country = "",
@@ -90,32 +98,33 @@ class Data {
 
   factory Data.fromJson(Map<String, dynamic> json) {
     return Data(
-      id: json['id'] ?? 0,
-      userId: json['user_id'] ?? 0,
+      id: _parseInt(json['id']),
+      userId: _parseInt(json['user_id']),
       firstName: json['first_name']?.toString() ?? "",
       lastName: json['last_name']?.toString() ?? "",
       username: json['username']?.toString() ?? "",
       email: json['email']?.toString() ?? "",
       province: json['province']?.toString() ?? "",
-      noOfClients: json['no_of_clients'] ?? 0,
+      noOfClients: _parseInt(json['no_of_clients']),
       phone: json['phone']?.toString() ?? "",
       avatar: json['avatar']?.toString() ?? "",
       role: json['role']?.toString() ?? "",
+      teamFor: _parseStringList(json['team_for']),
       status: json['status']?.toString() ?? "",
       city: json['city']?.toString() ?? "",
       country: json['country']?.toString() ?? "",
       createdAt: json['created_at']?.toString() ?? "",
       updatedAt: json['updated_at']?.toString() ?? "",
-      planId: json['plan_id'] ?? 0,
+      planId: _parseInt(json['plan_id']),
       businessName: json['business_name']?.toString() ?? "",
-      tutorialCompleted: json['tutorial_completed'] ?? 0,
+      tutorialCompleted: _parseInt(json['tutorial_completed']),
       twoFactorCode: json['two_factor_code']?.toString() ?? "",
       twoFactorExpiresAt: json['two_factor_expires_at']?.toString() ?? "",
       payment: json['payment']?.toString() ?? "",
       regCountry: json['reg_country']?.toString() ?? "",
       subscriptionId: json['subscription_id']?.toString() ?? "",
 
-      // Handle GST / HST / PST safely
+      // Taxes
       gst: _parseDouble(json['gst']),
       hst: _parseDouble(json['hst']),
       pst: _parseDouble(json['pst']),
@@ -135,6 +144,7 @@ class Data {
       'phone': phone,
       'avatar': avatar,
       'role': role,
+      'team_for': jsonEncode(teamFor),
       'status': status,
       'city': city,
       'country': country,
@@ -154,10 +164,35 @@ class Data {
     };
   }
 
-  /// Safely convert any value to double? (supports null, "N/A", "", int, double)
+  // Safe integer parser
+  static int _parseInt(dynamic value) {
+    if (value == null) return 0;
+    if (value is int) return value;
+    return int.tryParse(value.toString()) ?? 0;
+  }
+
+  // Safe double parser
   static double? _parseDouble(dynamic value) {
-    if (value == null) return null;
-    if (value == "" || value == "N/A") return null;
+    if (value == null || value == "" || value == "N/A") return null;
+    if (value is double) return value;
+    if (value is int) return value.toDouble();
     return double.tryParse(value.toString());
+  }
+
+  // Safe decoder for stringified arrays like "[\"Business Tax Manager\"]"
+  static List<String> _parseStringList(dynamic value) {
+    if (value == null) return [];
+    if (value is List) return List<String>.from(value.map((e) => e.toString()));
+    if (value is String) {
+      try {
+        final decoded = jsonDecode(value);
+        if (decoded is List) {
+          return List<String>.from(decoded.map((e) => e.toString()));
+        }
+      } catch (_) {
+        return [];
+      }
+    }
+    return [];
   }
 }

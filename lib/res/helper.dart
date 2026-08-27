@@ -168,7 +168,7 @@ Future<void> startSubscriptionFlow(
 }
 
 
-Future<void> saveSubscriptionFlow(
+Future saveSubscriptionFlow(
     BuildContext context,
     int userId,
     int planId,
@@ -176,44 +176,60 @@ Future<void> saveSubscriptionFlow(
     PricingPlansViewModel provider,
     ) async {
   try {
-    debugPrint("🚀 STEP 1: Calling SetupIntent API");
+    debugPrint("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
+    debugPrint("🚀 START SUBSCRIPTION FLOW");
 
-    final setupResponse = await provider.createSetupIntentApi({
+    /// ✅ STEP 1: PREPARE REQUEST BODY
+    final requestBody = {
       "user_id": userId,
       "plan_id": planId,
       "platform": Platform.isIOS ? "ios" : "android",
-    });
 
-    debugPrint("📦 RAW RESPONSE: $setupResponse");
+
+      if (couponId != null) "coupon_id": couponId,
+    };
+
+    debugPrint("📤 SETUP INTENT REQUEST: $requestBody");
+
+    /// ✅ STEP 2: CALL SETUP INTENT
+    final setupResponse =
+    await provider.createSetupIntentApi(requestBody);
+
+    debugPrint("📥 SETUP RESPONSE: $setupResponse");
 
     if (setupResponse == null) {
-      Utils.toastMessage("Failed to create SetupIntent");
+      Utils.toastMessage("❌ Failed to create SetupIntent");
       return;
     }
 
+    /// ✅ STEP 3: EXTRACT DATA
     final clientSecret = setupResponse["client_secret"];
     final customerId = setupResponse["customer_id"];
     final ephemeralKey = setupResponse["ephemeral_key"];
     final planData = setupResponse["plan"];
+
+    debugPrint("🔍 VERIFY RESPONSE DATA:");
+    debugPrint("clientSecret: $clientSecret");
+    debugPrint("customerId: $customerId");
+    debugPrint("ephemeralKey: $ephemeralKey");
+    debugPrint("planData: $planData");
 
     if (clientSecret == null ||
         customerId == null ||
         ephemeralKey == null ||
         planData == null ||
         planData["stripe_price_id"] == null) {
+      debugPrint("❌ MISSING REQUIRED STRIPE VALUES");
       Utils.toastMessage("Missing Stripe required values");
       return;
     }
 
     final String priceId = planData["stripe_price_id"];
 
-    debugPrint("🔐 clientSecret: $clientSecret");
-    debugPrint("👤 customerId: $customerId");
-    debugPrint("🔑 ephemeralKey: $ephemeralKey");
-    debugPrint("💲 Price ID: $priceId");
+    debugPrint("💲 FINAL PRICE ID: $priceId");
 
-    // ✅ STEP 2: Init Payment Sheet (UPDATED WITH APPLE PAY)
-    debugPrint("🚀 STEP 2: Init Payment Sheet");
+    /// ✅ STEP 4: INIT PAYMENT SHEET
+    debugPrint("🚀 INIT PAYMENT SHEET");
 
     await Stripe.instance.initPaymentSheet(
       paymentSheetParameters: SetupPaymentSheetParameters(
@@ -225,47 +241,46 @@ Future<void> saveSubscriptionFlow(
       ),
     );
 
-    debugPrint("✅ INIT SUCCESS");
+    debugPrint("✅ PAYMENT SHEET INITIALIZED");
 
-    // ✅ STEP 3: Present Payment Sheet
-    debugPrint("🚀 STEP 3: Present Payment Sheet");
+    /// ✅ STEP 5: PRESENT SHEET
+    debugPrint("🚀 PRESENT PAYMENT SHEET");
 
     await Stripe.instance.presentPaymentSheet();
 
-    debugPrint("✅ PRESENT SUCCESS");
+    debugPrint("✅ PAYMENT SHEET COMPLETED");
 
-    // ✅ STEP 4: Retrieve SetupIntent
-    debugPrint("🚀 STEP 4: Retrieve SetupIntent");
+    /// ✅ STEP 6: GET PAYMENT METHOD
+    debugPrint("🚀 RETRIEVE SETUP INTENT");
 
     final setupIntent =
     await Stripe.instance.retrieveSetupIntent(clientSecret);
 
     final paymentMethodId = setupIntent.paymentMethodId;
 
+    debugPrint("💳 PAYMENT METHOD ID: $paymentMethodId");
+
     if (paymentMethodId == null) {
       Utils.toastMessage("Payment method not found");
       return;
     }
 
-    debugPrint("💳 PaymentMethodId: $paymentMethodId");
-
-    // ✅ STEP 5: Create Subscription
-    debugPrint("🚀 STEP 5: Create Subscription");
-
+    /// ✅ STEP 7: CREATE SUBSCRIPTION
     final subPayload = {
       "price_id": priceId,
       "payment_method_id": paymentMethodId,
       "user_id": userId,
       "plan_id": planId,
-      "coupon_id": couponId,
       "platform": Platform.isIOS ? "ios" : "android",
+      if (couponId != null) "coupon_id": couponId,
     };
 
-    debugPrint("📌 SUBSCRIPTION REQUEST PAYLOAD: $subPayload");
+    debugPrint("📤 SUBSCRIPTION PAYLOAD: $subPayload");
 
-    final subResponse = await provider.createSubscriptionApi(subPayload);
+    final subResponse =
+    await provider.createSubscriptionApi(subPayload);
 
-    debugPrint("📦 SUB RESPONSE: $subResponse");
+    debugPrint("📥 SUB RESPONSE: $subResponse");
 
     if (subResponse == null) {
       Utils.toastMessage("Subscription creation failed");
@@ -275,29 +290,30 @@ Future<void> saveSubscriptionFlow(
     final subscriptionId = subResponse["subscription_id"];
 
     if (subscriptionId == null) {
+      debugPrint("❌ INVALID SUB RESPONSE");
       Utils.toastMessage("Invalid subscription response");
       return;
     }
 
-    debugPrint("✅ Subscription ID: $subscriptionId");
+    debugPrint("✅ SUBSCRIPTION ID: $subscriptionId");
 
-    // ✅ STEP 6: Save Subscription
+    /// ✅ STEP 8: SAVE SUBSCRIPTION
     await provider.saveSubscriptionApi(context, {
       "subscription_id": subscriptionId,
       "user_id": userId,
       "plan_id": planId,
-      "coupon_id": couponId,
+      if (couponId != null) "coupon_id": couponId,
     });
 
-    debugPrint("✅ saveSubscriptionApi called");
+    debugPrint("✅ SUBSCRIPTION SAVED SUCCESSFULLY");
+    debugPrint("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
 
   } on StripeException catch (e) {
     debugPrint("❌ STRIPE ERROR: ${e.error.localizedMessage}");
     Utils.toastMessage(e.error.localizedMessage ?? "Payment cancelled");
-
   } catch (e, s) {
     debugPrint("❌ FINAL ERROR: $e");
-    debugPrint("$s");
+    debugPrint("STACK TRACE: $s");
     Utils.toastMessage("Something went wrong during subscription");
   }
 }

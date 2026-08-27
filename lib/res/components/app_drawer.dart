@@ -132,84 +132,82 @@ class AppDrawer extends StatelessWidget {
           ),
 
           /// --- NEWLY ADDED: INSTRUCTIONS COLLAPSIBLE DROPDOWN ---
-          Theme(
-            data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              child: ExpansionTile(
-                tilePadding: const EdgeInsets.symmetric(horizontal: 12),
-                leading: Icon(
-                  Icons.assignment_outlined,
-                  color: AppColors.blackColor,
+          /// Instructions
+          if (authProvider.user?.role != 'team')
+            Theme(
+              data: Theme.of(context).copyWith(
+                dividerColor: Colors.transparent,
+              ),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: ExpansionTile(
+                  tilePadding: const EdgeInsets.symmetric(horizontal: 12),
+                  leading: Icon(
+                    Icons.assignment_outlined,
+                    color: AppColors.blackColor,
+                  ),
+                  title: Text(
+                    "Instructions",
+                    style: GoogleFonts.poppins(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w500,
+                      color: Colors.grey.shade700,
+                    ),
+                  ),
+                  iconColor: Colors.blue,
+                  collapsedIconColor: Colors.blue,
+                  childrenPadding: const EdgeInsets.only(left: 24),
+                  children: [
+                    _buildSubMenuBulletItem(
+                      context,
+                      title: AppLocalizations.of(context)!
+                          .translate("gasReceiptManagerText") ??
+                          '',
+                      onTap: () {
+                        context.pushNamed("inst-gas-receipt");
+                      },
+                    ),
+                    _buildSubMenuBulletItem(
+                      context,
+                      title:
+                      AppLocalizations.of(context)!.translate("uberText") ?? '',
+                      onTap: () {
+                        context.pushNamed("uber");
+                      },
+                    ),
+                    _buildSubMenuBulletItem(
+                      context,
+                      title:
+                      AppLocalizations.of(context)!.translate("taxManText") ?? '',
+                      onTap: () {
+                        context.pushNamed("tax-manager");
+                      },
+                    ),
+                    _buildSubMenuBulletItem(
+                      context,
+                      title:
+                      AppLocalizations.of(context)!.translate("rentalText") ?? '',
+                      onTap: () {
+                        context.pushNamed("rental");
+                      },
+                    ),
+                  ],
                 ),
-                title: Text(
-                  "Instructions",
-                  style: GoogleFonts.poppins(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w500,
-                    color: Colors.grey.shade700,
-                  ),
-                ),
-                iconColor: Colors.blue,
-                collapsedIconColor: Colors.blue,
-                childrenPadding: const EdgeInsets.only(left: 24),
-                children: [
-                  _buildSubMenuBulletItem(
-                    context,
-                    title:
-                        AppLocalizations.of(
-                          context,
-                        )!.translate("gasReceiptManagerText") ??
-                        '',
-                    onTap: () {
-                      context.pushNamed("inst-gas-receipt");
-                    },
-                  ),
-                  _buildSubMenuBulletItem(
-                    context,
-                    title:
-                        AppLocalizations.of(context)!.translate("uberText") ??
-                        '',
-                    onTap: () {
-                      context.pushNamed("uber");
-                    },
-                  ),
-                  _buildSubMenuBulletItem(
-                    context,
-                    title:
-                        AppLocalizations.of(context)!.translate("taxManText") ??
-                        '',
-                    onTap: () {
-                      context.pushNamed("tax-manager");
-                    },
-                  ),
-                  _buildSubMenuBulletItem(
-                    context,
-                    title:
-                        AppLocalizations.of(context)!.translate("rentalText") ??
-                        '',
-                    onTap: () {
-                      context.pushNamed("rental");
-                    },
-                  ),
-                ],
               ),
             ),
-          ),
-
-          if (authProvider.user?.role != 'viewer' &&
-              authProvider.user?.role != 'team' &&
-              authProvider.user?.regCountry.toLowerCase() != 'us')
+          if (authProvider.user?.regCountry.trim().toLowerCase() != 'us')
             _buildDrawerItem(
               context,
               title:
-                  AppLocalizations.of(context)?.translate("changeLang") ??
+              AppLocalizations.of(context)?.translate("changeLang") ??
                   "Change Language",
               iconPath: AppAssets.translatorImg,
               onTap: () {
                 Scaffold.of(context).closeDrawer();
+
                 final currentLang =
                     Localizations.localeOf(context).languageCode;
+
                 if (currentLang == "en") {
                   MyApp.setLocale(context, const Locale('fr'));
                 } else {

@@ -11,7 +11,7 @@ class IncrementDecrementFileWidget extends StatefulWidget {
   const IncrementDecrementFileWidget({
     super.key,
     required this.labelText,
-    this.initialValue = 0, // Default to 0
+    this.initialValue = 0,
     required this.onChanged,
   });
 

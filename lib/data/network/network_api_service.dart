@@ -25,7 +25,7 @@ class NetworkApiService extends BaseApiServices {
         },
       );
       responseJson = returnResponse(response);
-      debugPrint("Raw response body: ${response.body}"); // Add this line
+      debugPrint("Raw response body: ${response.body}");
     } on SocketException {
       throw FetchDataException("No Internet Connection");
     }
@@ -433,101 +433,50 @@ class NetworkApiService extends BaseApiServices {
   dynamic returnResponse(http.Response response) {
     final status = response.statusCode;
 
+    print("📥 STATUS CODE: $status");
+    print("📥 RESPONSE BODY: ${response.body}");
+
+    dynamic responseJson;
+
     try {
-      switch (status) {
-
-      /// ✅ SUCCESS
-        case 200:
-        case 201:
-          try {
-            return jsonDecode(response.body);
-          } catch (_) {
-            return response.body;
-          }
-
-      /// ❌ BAD REQUEST
-        case 400:
-          try {
-            final decoded = jsonDecode(response.body);
-            if (decoded is Map<String, dynamic>) {
-              return _throwMessage(
-                  decoded['message'] ?? decoded['error'],
-                  fallback: "Invalid request. Please check your input."
-              );
-            }
-          } catch (_) {}
-          throw FetchDataException("Invalid request. Please check your input.");
-
-      /// 🔐 UNAUTHORIZED
-        case 401:
-          throw FetchDataException("Session expired. Please log in again.");
-
-      /// 🚫 FORBIDDEN
-        case 403:
-          throw FetchDataException(
-              "You don’t have access to this feature.");
-
-      /// 🔍 NOT FOUND
-        case 404:
-          throw FetchDataException(
-              "Requested data not found.");
-
-      /// ⚠️ VALIDATION ERROR
-        case 422:
-          try {
-            final decoded = jsonDecode(response.body);
-
-            if (decoded is Map<String, dynamic>) {
-
-              // Laravel validation errors
-              if (decoded.containsKey('errors')) {
-                final errors = decoded['errors'] as Map<String, dynamic>;
-
-                final messages = errors.values
-                    .map((e) => (e as List).join(', '))
-                    .join('\n');
-
-                throw FetchDataException(messages);
-              }
-
-              if (decoded.containsKey('message')) {
-                throw FetchDataException(decoded['message']);
-              }
-            }
-          } catch (_) {}
-
-          throw FetchDataException(
-              "Some fields are invalid. Please check and try again.");
-
-      /// 💥 SERVER ERROR
-        case 500:
-          throw FetchDataException(
-              "Server error. Please try again later.");
-
-      /// ❓ UNKNOWN ERROR
-        default:
-          throw FetchDataException(
-              "Something went wrong. Please try again.");
-      }
-
+      responseJson = jsonDecode(response.body);
     } catch (e) {
+      print("❌ JSON PARSE ERROR: $e");
+      responseJson = response.body;
+    }
 
-      /// ✅ IMPORTANT: Do NOT expose raw error
-      if (e is FetchDataException) {
-        throw e;
-      }
+    switch (status) {
 
-      throw FetchDataException(
-          "Something went wrong. Please try again.");
+    /// ✅ SUCCESS
+      case 200:
+      case 201:
+        return responseJson;
+
+    /// ⚠️ CLIENT ERRORS (DON'T THROW)
+      case 400:
+      case 401:
+      case 403:
+      case 404:
+      case 422:
+        print("⚠️ API ERROR (Handled): $responseJson");
+        return responseJson; // ✅ RETURN, DON'T THROW
+
+    /// ❌ SERVER ERROR
+      case 500:
+      default:
+        print("🔥 SERVER ERROR: $responseJson");
+        throw Exception("Server Error: $responseJson");
     }
   }
-  Never _throwMessage(dynamic message, {required String fallback}) {
-    if (message != null && message.toString().isNotEmpty) {
-      throw FetchDataException(message.toString());
-    } else {
-      throw FetchDataException(fallback);
-    }
-  }
+
+
+  // Never _throwMessage(dynamic message, {required String fallback}) {
+  //   if (message != null && message.toString().isNotEmpty) {
+  //     throw FetchDataException(message.toString());
+  //   } else {
+  //     throw FetchDataException(fallback);
+  //   }
+  // }
 
   Future<bool> setToken(String value) async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();

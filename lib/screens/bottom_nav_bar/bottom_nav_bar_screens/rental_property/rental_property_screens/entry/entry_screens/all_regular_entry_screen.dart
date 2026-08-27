@@ -12,6 +12,8 @@ import '../../../../../../../res/components/app_localization.dart';
 import '../../../../../../../utils/app_colors.dart';
 import '../../../../../../../utils/utils.dart';
 import '../../../../../../../view_models/rental_property_view_model/rental_property_view_model.dart';
+import '../../../../Gasoline/gasoline_screens/all_trips_screen/all_trips_screen.dart';
+import '../../../../Gasoline/gasoline_screens/transaction_report/transaction_report_screen/transaction_report_screen.dart';
 import '../widget/multple_buttons_widget.dart';
 import 'add_entry_screen.dart';
 
@@ -94,6 +96,75 @@ class _AllRegularEntryScreenState extends State<AllRegularEntryScreen> {
                             buildEntriesFilterBar(context, widget.planId),
                             const SizedBox(height: 15),
                             buildMultipleButtons(context, widget.planId),
+                            Row(
+                              children: [
+                                SizedBox(
+                                  width: Utils.setHeight(context) * 0.2,
+                                  child: MaterialButton(
+                                    color: AppColors.goldenOrangeColor,
+                                    height: 40,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                    child: Text(
+                                      AppLocalizations.of(
+                                        context,
+                                      )!.translate("allTripsText") ??
+                                          '',
+                                      textAlign: TextAlign.center,
+                                      style: GoogleFonts.poppins(
+                                        color: AppColors.whiteColor,
+                                        fontSize: 17,
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                    ),
+                                    onPressed: () {
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (context) => AllTripsScreen(),
+                                        ),
+                                      );
+                                    },
+                                  ),
+                                ),
+                                SizedBox(
+                                  width: 3,
+                                ),
+                                SizedBox(
+                                  width: Utils.setHeight(context) * 0.2,
+                                  child: MaterialButton(
+                                    color: AppColors.goldenOrangeColor,
+                                    height: 40,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                    child: Text(
+                                      AppLocalizations.of(
+                                        context,
+                                      )!.translate("transactionReportText") ??
+                                          '',
+                                      textAlign: TextAlign.center,
+                                      style: GoogleFonts.poppins(
+                                        color: AppColors.whiteColor,
+                                        fontSize: 17,
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                    ),
+                                    onPressed: () {
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (context) => TransactionReportScreen(),
+                                        ),
+                                      );
+                                    },
+                                  ),
+                                ),
+
+
+                              ],
+                            ),
                             const SizedBox(height: 15),
                             rentalProvider.otherLoading
                                 ? SizedBox(

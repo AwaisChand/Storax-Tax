@@ -96,7 +96,7 @@
   "filterText": "Filter By",
   "viewReportText": "View Report",
   "forwardFileText": "Forward File",
-  "transactionReportText": "Transaction Report",
+  "transactionReportText": "Recipts Transaction Report",
   "noGasolineText": "You have no gasoline",
   "merchantText": "Merchant",
   "totalText": "Total",
@@ -518,14 +518,98 @@
 
   "ticketUnavailableText": "Support Tickets Unavailable",
   "ticketdetailText": "Support tickets are only available on paid plans.",
-  "viewPlanText": "View Plans"
+  "viewPlanText": "View Plans",
 
 
+  "allTripsText": "All Trips",
+  "noTripsText": "You have no trips",
+  "starTrackingText": "Start Tracking",
+  "stopTrackingText": "Stop Tracking",
+  "fromLocationText": "From Location",
+  "toLocationText": "To Location",
+  "tripTypeText": "Type",
+  "purposeText": "Purpose",
+  "selectTripTypeText": "Select Trip Type",
+  "setText": "Set",
+  "addPurposeText": "Add Purpose",
+  "enterPurposeText": "Enter Purpose",
+
+  "chooseTrackingModeText": "Choose Tracking mode",
+  "autoText": "Auto",
+  "autoDescText": "Automatically track your trips in the background.",
+  "manualText": "Manual",
+  "manualDescText": "Manually start your trips and track",
+  "confirmText": "Confirm",
+
+  "receiptsViewReport": "Receipts View Report",
+  "tripsReportText": "Trips Report",
+  "reportsText": "Reports",
+
+  "manualTrackingText": "Manual Tracking",
+  "doneText": "Done",
+  "enterDestinationText": "Enter Destination",
+  "enterStopText": "Enter Stop",
+
+  "liveTrackingText": "Live Tracking",
+  "remainingDistanceText": "Remaining Distance",
+  "etaDurationText": "ETA Duration",
+  "endTripText": "End Trip",
+  "endingText": "Ending",
+  "reCenterText": "Re-center",
+
+  "tripsReportDescText": "Business trips only — manual & auto tracking analytics, distance & route history",
+  "periodText": "Period",
+
+  "allTimeText": "All Time",
+  "todayText": "Today",
+  "yesterdayText": "Yesterday",
+  "thisWeekText": "This Week",
+  "prevWeekText": "Previous Week",
+  "thisMonthText": "This Month",
+  "prevMonthText": "Previous Month",
+  "thisYearText": "This Year",
+  "customText": "Custom",
+
+  "totalTripsText": "TOTAL TRIPS",
+  "kmTraveledText": "KM TRAVELED",
+  "traveledTimeText": "TRAVEL TIME",
+  "avgText": "AVG KM / TRIP",
+  "durationText": "AVG DURATION",
+
+  "tripsOverviewText": "Trips & Distance Overview",
+  "tTripsText": "Total Trips",
+  "kmText": "KM Traveled",
+  "businessTripText": "Business Trips",
+  "tripsText": "Trips",
+  "noChartFoundText": "No chart analytics recorded for this period",
+  "noRecordFoundText": "No records found for this period.",
 
 
+  "fText": "FROM",
+  "tText": "TO",
+  "tyText": "TYPE",
+  "pText": "PURPOSE",
+  "startedText": "STARTED",
+  "distanceText": "DISTANCE (KM)",
+  "dText": "DURATION",
+  "viewRouteText": "View Route",
+
+  "tripDetailText": "Trip Details",
+  "distText": "Distance",
+  "duText": "Duration",
+  "stText": "Started",
+  "endedText": "Ended",
+  "routeMapText": "Route Map",
+  "showMapText": "Show Map",
 
 
+  "gasolineFilterText": "Filter Gas Receipt By",
 
-
-
+  "gasolineForwardFileText": "Forward File Gas Receipt",
+  "logBookText": "Log Book",
+  "logBookReportText": "Log Book Report",
+  "kmBegText": "KM at the beginning of the year",
+  "kmBEndText": "KM at the end of the year",
+  "totalKmDrivenText": "Total KM driven for the year",
+  "totalKmBusinessText": "Total KM business for the year"
 }

@@ -4,7 +4,8 @@ import 'package:go_router/go_router.dart';
 import 'package:storatax/models/add_sub_status_model/add_sub_status_model.dart';
 import 'package:storatax/models/get_more_plans/get_more_plans.dart';
 import 'package:storatax/models/my_plans_model/my_plans_model.dart';
-import 'package:storatax/models/plan_detail_model/plan_detail_model.dart';
+import 'package:storatax/models/plan_detail_model/plan_detail_model.dart'
+    hide Plans;
 import 'package:storatax/models/tax_professional_plans_model/tax_professional_plans_model.dart';
 import 'package:storatax/repository/pricing_plans_repository/pricing_plans_repository.dart';
 import 'package:storatax/models/client_plan_model/client_plan_model.dart'
@@ -41,11 +42,28 @@ class PricingPlansViewModel extends ChangeNotifier {
   List<MorePlans> _morePlans = [];
   List<MorePlans> get morePlans => _morePlans;
 
+  MyPlans? _selectedPlan;
+  MyPlans? get selectedPlan => _selectedPlan;
+
   List<MyPlans> _myPlans = [];
   List<MyPlans> get myPlans => _myPlans;
 
+  void selectPlan(MyPlans plan) {
+    _selectedPlan = plan;
+    notifyListeners();
+  }
+
+  bool isYearly = false;
+
+  void setBilling(bool value) {
+    if (isYearly == value) return;
+    isYearly = value;
+    notifyListeners();
+  }
+
   AppleSubscriptionStatusModel? _appleSubscriptionStatusModel;
-  AppleSubscriptionStatusModel? get appleSubscriptionStatusModel => _appleSubscriptionStatusModel;
+  AppleSubscriptionStatusModel? get appleSubscriptionStatusModel =>
+      _appleSubscriptionStatusModel;
 
   Future<void> getTaxProfessionalPlansApi(BuildContext context) async {
     loading = true;
@@ -183,10 +201,7 @@ class PricingPlansViewModel extends ChangeNotifier {
         };
       }
     } catch (e) {
-      return {
-        "success": false,
-        "message": "Error: ${e.toString()}",
-      };
+      return {"success": false, "message": "Error: ${e.toString()}"};
     } finally {
       loading = false;
     }
@@ -240,7 +255,9 @@ class PricingPlansViewModel extends ChangeNotifier {
     notifyListeners();
 
     try {
-      final response = await pricingPlansRepository.createPaymentIntentRepo(data);
+      final response = await pricingPlansRepository.createPaymentIntentRepo(
+        data,
+      );
 
       if (response["status"].toString() == "1") {
         Utils.toastMessage(response["message"]);
@@ -249,7 +266,6 @@ class PricingPlansViewModel extends ChangeNotifier {
         Utils.toastMessage(response["message"]);
         return false;
       }
-
     } catch (e, st) {
       Utils.toastMessage("Error: ${e.toString()}, $st");
       return false;
@@ -259,8 +275,6 @@ class PricingPlansViewModel extends ChangeNotifier {
     }
   }
 
-
-
   ///Create Setup Intent Api
 
   Future<Map<String, dynamic>?> createSetupIntentApi(dynamic data) async {
@@ -268,25 +282,44 @@ class PricingPlansViewModel extends ChangeNotifier {
     notifyListeners();
 
     try {
-      final response = await pricingPlansRepository.createSetupIntentRepo(data);
+      final response =
+      await pricingPlansRepository.createSetupIntentRepo(data);
 
-      if (response["status"].toString() == "1") {
-        // ✅ Correct: return the whole response
-        return response;
-      } else {
-        Utils.toastMessage(response["message"]);
+      debugPrint("📥 SETUP INTENT RESPONSE: $response");
+
+      if (response == null) {
+        Utils.toastMessage("Something went wrong");
         return null;
       }
+
+      /// ✅ SUCCESS
+      if (response["status"].toString() == "1") {
+        return response;
+      }
+
+      /// ❌ BUSINESS ERROR (SHOW EXACT MESSAGE)
+      final message = response["message"] ?? "Something went wrong";
+
+      debugPrint("❌ BUSINESS ERROR: $message");
+
+      /// 🔥 THIS IS THE KEY LINE
+      Utils.toastMessage(message);
+
+      return null; // ❌ DO NOT THROW
+
     } catch (e, st) {
-      Utils.toastMessage("Error: ${e.toString()}");
-      print("Catch Error: $st}");
+      debugPrint("❌ EXCEPTION: $e");
+      debugPrint("📍 STACKTRACE: $st");
+
+      /// Optional fallback
+      Utils.toastMessage("Something went wrong");
+
       return null;
     } finally {
       loading = false;
       notifyListeners();
     }
   }
-
 
   ///Create Subscription Api
 
@@ -295,11 +328,12 @@ class PricingPlansViewModel extends ChangeNotifier {
     notifyListeners();
 
     try {
-      final response =
-      await pricingPlansRepository.createSubscriptionRepo(data);
+      final response = await pricingPlansRepository.createSubscriptionRepo(
+        data,
+      );
 
       if (response["status"].toString() == "1") {
-        return response; // ✅ RETURN FULL RESPONSE
+        return response;
       } else {
         Utils.toastMessage(response["success"]);
         return null;
@@ -314,7 +348,6 @@ class PricingPlansViewModel extends ChangeNotifier {
     }
   }
 
-
   /// Apple Verify Purchase Api
 
   Future<Map<String, dynamic>?> appleVerifyPurchaseApi(dynamic data) async {
@@ -322,8 +355,9 @@ class PricingPlansViewModel extends ChangeNotifier {
     notifyListeners();
 
     try {
-      final response =
-      await pricingPlansRepository.appleVerifyPurchaseRepo(data);
+      final response = await pricingPlansRepository.appleVerifyPurchaseRepo(
+        data,
+      );
 
       if (response["status"].toString() == "1") {
         return response; // ✅ RETURN FULL RESPONSE
@@ -340,7 +374,6 @@ class PricingPlansViewModel extends ChangeNotifier {
       notifyListeners();
     }
   }
-
 
   /// Get Subscription Status API
 
@@ -367,7 +400,6 @@ class PricingPlansViewModel extends ChangeNotifier {
     }
   }
 
-
   /// Save Subscription
 
   Future<void> saveSubscriptionApi(BuildContext context, dynamic data) async {
@@ -392,9 +424,9 @@ class PricingPlansViewModel extends ChangeNotifier {
         Future.delayed(const Duration(milliseconds: 300), () {
           final navState = BottomNavBar.globalKey.currentState;
 
-          navState?.resetState();      // clears screens & keys
-          navState?.refreshTabs();     // rebuilds tabs based on new plan
-          navState?.switchTab(0);      // go to dashboard
+          navState?.resetState();
+          navState?.refreshTabs();
+          navState?.switchTab(0);
         });
       } else {
         Utils.toastMessage(response["message"]);
@@ -424,7 +456,9 @@ class PricingPlansViewModel extends ChangeNotifier {
         Utils.toastMessage(response["message"]);
 
         // STEP 1: Refresh plans via Provider
-        await myPlansApi(context); // myPlansApi should update the `myPlans` list
+        await myPlansApi(
+          context,
+        ); // myPlansApi should update the `myPlans` list
 
         // STEP 2: Navigate safely after the current frame
         WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -437,9 +471,9 @@ class PricingPlansViewModel extends ChangeNotifier {
           Future.delayed(const Duration(milliseconds: 200), () {
             final navState = BottomNavBar.globalKey.currentState;
             if (navState != null) {
-              navState.resetState();   // Clear old screens
-              navState.refreshTabs();  // Rebuild tabs based on new plan
-              navState.switchTab(0);   // Go to default tab (dashboard)
+              navState.resetState(); // Clear old screens
+              navState.refreshTabs(); // Rebuild tabs based on new plan
+              navState.switchTab(0); // Go to default tab (dashboard)
             }
           });
         });
@@ -466,7 +500,9 @@ class PricingPlansViewModel extends ChangeNotifier {
     notifyListeners();
 
     try {
-      final response = await pricingPlansRepository.freePlanSubscriptionRepo(data);
+      final response = await pricingPlansRepository.freePlanSubscriptionRepo(
+        data,
+      );
 
       if (response["status"].toString() == "1") {
         Utils.toastMessage(response["message"]);
@@ -475,7 +511,6 @@ class PricingPlansViewModel extends ChangeNotifier {
         Utils.toastMessage(response["message"]);
         return false;
       }
-
     } catch (e, st) {
       Utils.toastMessage("Error: ${e.toString()}, $st");
       return false;
