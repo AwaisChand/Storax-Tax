@@ -38,6 +38,10 @@
 	<string>Storatax needs permission to save scanned documents and receipts to your photo library.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>Storatax needs photo library access to select and attach receipts, documents, and images to your tax records.</string>
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>location</string>
+	</array>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
 	<key>UILaunchStoryboardName</key>

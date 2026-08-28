@@ -180,7 +180,7 @@ class GasolineViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> _initLocation() async {
+  Future<void> _initLocation({bool requireBackground = false}) async {
     bool serviceEnabled;
     LocationPermission permission;
 
@@ -192,6 +192,18 @@ class GasolineViewModel extends ChangeNotifier {
     permission = await Geolocator.checkPermission();
     if (permission == LocationPermission.denied) {
       permission = await Geolocator.requestPermission();
+    }
+
+    if (requireBackground && Platform.isIOS) {
+      if (permission == LocationPermission.whileInUse) {
+        permission = await Geolocator.requestPermission();
+      }
+
+      if (permission != LocationPermission.always) {
+        throw Exception(
+          'Always location permission is required for background trip tracking',
+        );
+      }
     }
 
     if (permission == LocationPermission.deniedForever) {
@@ -232,7 +244,7 @@ class GasolineViewModel extends ChangeNotifier {
     _isTrackingRunning = true;
     notifyListeners();
 
-    await _initLocation();
+    await _initLocation(requireBackground: true);
     await _positionStream?.cancel();
 
     DateTime? lastSentTime;
@@ -251,6 +263,14 @@ class GasolineViewModel extends ChangeNotifier {
           notificationIcon: AndroidResource(name: 'ic_launcher'),
           enableWakeLock: true,
         ),
+      );
+    } else if (defaultTargetPlatform == TargetPlatform.iOS) {
+      locationSettings = AppleSettings(
+        accuracy: LocationAccuracy.high,
+        distanceFilter: 5,
+        activityType: ActivityType.automotiveNavigation,
+        allowBackgroundLocationUpdates: true,
+        showBackgroundLocationIndicator: true,
       );
     } else {
       locationSettings = const LocationSettings(

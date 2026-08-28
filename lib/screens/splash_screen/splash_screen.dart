@@ -33,7 +33,7 @@ class _SplashScreenState extends State<SplashScreen> {
   Future _checkVersion() async {
     final newVersion = NewVersionPlus(
       androidId: "com.storatax.app",
-      iOSId: "123456789",
+      iOSId: "6760159336",
     );
 
     try {
