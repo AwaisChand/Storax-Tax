@@ -59,7 +59,11 @@ class Trips {
   String? purpose;
   String? status;
   String? fromLocation;
+  double? fromLat;
+  double? fromLng;
   String? toLocation;
+  double? toLat;
+  double? toLng;
   String? startedAt;
   String? startDateFormatted;
   String? endedAt;
@@ -76,7 +80,11 @@ class Trips {
         this.purpose,
         this.status,
         this.fromLocation,
+        this.fromLat,
+        this.fromLng,
         this.toLocation,
+        this.toLat,
+        this.toLng,
         this.startedAt,
         this.startDateFormatted,
         this.endedAt,
@@ -93,7 +101,11 @@ class Trips {
     purpose = json['purpose'];
     status = json['status'];
     fromLocation = json['from_location'];
+    fromLat = json['from_lat'];
+    fromLng = json['from_lng'];
     toLocation = json['to_location'];
+    toLat = json['to_lat'];
+    toLng = json['to_lng'];
     startedAt = json['started_at'];
     startDateFormatted = json['start_date_formatted'];
     endedAt = json['ended_at'];
@@ -112,7 +124,11 @@ class Trips {
     data['purpose'] = purpose;
     data['status'] = status;
     data['from_location'] = fromLocation;
+    data['from_lat'] = fromLat;
+    data['from_lng'] = fromLng;
     data['to_location'] = toLocation;
+    data['to_lat'] = toLat;
+    data['to_lng'] = toLng;
     data['started_at'] = startedAt;
     data['start_date_formatted'] = startDateFormatted;
     data['ended_at'] = endedAt;

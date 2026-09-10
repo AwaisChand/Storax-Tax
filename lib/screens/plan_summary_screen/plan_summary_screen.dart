@@ -157,80 +157,74 @@ class _PlanSummaryScreenState extends State<PlanSummaryScreen> {
                         _rowWidget("Total due today", "\$0.00"),
                         const Spacer(),
                         AppButton(
-                          btnText:
-                              _isProcessingPayment
-                                  ? "Processing..."
-                                  : "Start Trial",
+                          btnText: _isProcessingPayment ? "Processing..." : "Start Trial",
                           isLoading: _isProcessingPayment,
-                          onPressed:
-                              _isProcessingPayment
-                                  ? null
-                                  : () async {
-                                    setState(() => _isProcessingPayment = true);
+                          onPressed: _isProcessingPayment
+                              ? null
+                              : () async {
+                            setState(() => _isProcessingPayment = true);
 
-                                    try {
-                                      final provider =
-                                          context.read<PricingPlansViewModel>();
-                                      final authProvider =
-                                          context.read<AuthViewModel>();
+                            try {
+                              final provider = context.read<PricingPlansViewModel>();
+                              final authProvider = context.read<AuthViewModel>();
 
-                                      final plan =
-                                          provider.planDetailModel?.plan;
+                              final plan = provider.planDetailModel?.plan;
+                              if (plan == null) {
+                                Utils.toastMessage("Plan data not loaded");
+                                return;
+                              }
 
-                                      if (plan == null) {
-                                        Utils.toastMessage(
-                                          "Plan data not loaded",
-                                        );
-                                        return;
-                                      }
+                              // Fallback to widget.userId if AuthViewModel user is not populated yet
+                              final resolvedUserId =
+                                  authProvider.user?.id.toString() ?? widget.userId;
 
-                                      final userId = authProvider.user?.id;
-                                      if (userId == null) {
-                                        Utils.toastMessage("User not found");
-                                        return;
-                                      }
+                              if (resolvedUserId == null || resolvedUserId.isEmpty) {
+                                Utils.toastMessage("User not found. Please log in again.");
+                                return;
+                              }
 
-                                      // 🔥 PLATFORM BASED FLOW
-                                      if (Platform.isIOS) {
-                                        debugPrint(
-                                          "🍎 iOS detected → Apple IAP flow",
-                                        );
+                              // Parse String ID to int
+                              final intUserId = int.tryParse(resolvedUserId);
 
-                                        await saveAppleSubscriptionFlow(
-                                          context: context,
-                                          userId: userId,
-                                          planId: plan.id!,
-                                          productId:
-                                              Utils.isYearly
-                                                  ? plan.monthlyAppleProductId ??
-                                                      ''
-                                                  : plan.yearlyAppleProductId ??
-                                                      '',
-                                          provider: provider,
-                                        );
-                                      } else {
-                                        debugPrint(
-                                          "🤖 Android detected → Stripe flow",
-                                        );
+                              if (intUserId == null) {
+                                Utils.toastMessage("Invalid User ID format");
+                                return;
+                              }
 
-                                        await startSubscriptionFlow(
-                                          context,
-                                          widget.userId!,
-                                          plan.id!,
-                                          provider,
-                                        );
-                                      }
-                                    } catch (e, s) {
-                                      debugPrint("❌ Payment error: $e\n$s");
-                                      Utils.toastMessage("Payment failed");
-                                    } finally {
-                                      if (mounted) {
-                                        setState(
-                                          () => _isProcessingPayment = false,
-                                        );
-                                      }
-                                    }
-                                  },
+                              // PLATFORM BASED FLOW
+                              if (Platform.isIOS) {
+                                debugPrint("🍎 iOS detected → Apple IAP flow");
+
+                                final productId = Utils.isYearly
+                                    ? (plan.yearlyAppleProductId ?? '')
+                                    : (plan.monthlyAppleProductId ?? '');
+
+                                await saveAppleSubscriptionFlow(
+                                  context: context,
+                                  userId: intUserId, // Passed as int
+                                  planId: plan.id!,
+                                  productId: productId,
+                                  provider: provider,
+                                );
+                              } else {
+                                debugPrint("🤖 Android detected → Stripe flow");
+
+                                await startSubscriptionFlow(
+                                  context,
+                                  intUserId.toString(),
+                                  plan.id!,
+                                  provider,
+                                );
+                              }
+                            } catch (e, s) {
+                              debugPrint("❌ Payment error: $e\n$s");
+                              Utils.toastMessage("Payment failed");
+                            } finally {
+                              if (mounted) {
+                                setState(() => _isProcessingPayment = false);
+                              }
+                            }
+                          },
                         ),
                         const SizedBox(height: 15),
                       ],

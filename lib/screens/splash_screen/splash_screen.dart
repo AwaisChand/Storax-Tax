@@ -23,14 +23,13 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   void initState() {
     super.initState();
-
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _checkVersion();
     });
   }
 
-  /// 🔥 VERSION CHECK
-  Future _checkVersion() async {
+  /// VERSION CHECK
+  Future<void> _checkVersion() async {
     final newVersion = NewVersionPlus(
       androidId: "com.storatax.app",
       iOSId: "6760159336",
@@ -39,111 +38,47 @@ class _SplashScreenState extends State<SplashScreen> {
     try {
       final status = await newVersion.getVersionStatus();
 
-      // 👉 ADD PRINTS HERE
-      print("Store Version: ${status?.storeVersion}");
-      print("Local Version: ${status?.localVersion}");
+      debugPrint("Store Version: ${status?.storeVersion}");
+      debugPrint("Local Version: ${status?.localVersion}");
 
       if (!mounted) return;
 
+      // Forces update for ANY version increment (1.0.0 -> 1.0.1, 1.1.0, 2.0.0, etc.)
       if (status != null && status.canUpdate) {
         _versionStatus = status;
-
-        final localVersion = status.localVersion;
-        final storeVersion = status.storeVersion;
-
-        final isForceUpdate =
-        _shouldForceUpdate(localVersion, storeVersion);
-
-        if (isForceUpdate) {
-          setState(() {
-            _forceUpdate = true;
-          });
-        } else {
-          _showSoftUpdateDialog();
-        }
+        setState(() {
+          _forceUpdate = true;
+        });
       } else {
         _goNext();
       }
     } catch (e) {
-      print("Version check error: $e");
+      debugPrint("Version check error: $e");
       _goNext();
     }
   }
 
-  /// Helper to check if a major update is required
-  bool _shouldForceUpdate(String local, String store) {
-    try {
-      final localParts = local.split('.').map(int.parse).toList();
-      final storeParts = store.split('.').map(int.parse).toList();
-
-      // If the major version (first number) on store is higher, force the update
-      if (storeParts.isNotEmpty && localParts.isNotEmpty) {
-        if (storeParts[0] > localParts[0]) {
-          return true;
-        }
-      }
-    } catch (_) {
-      // If parsing fails, default to soft update safety
-    }
-    return false;
-  }
-
-  /// ✅ NORMAL FLOW
+  /// NORMAL FLOW
   void _goNext() {
     context.read<AuthViewModel>().handleSplash(context);
   }
 
-  /// 🔴 OPEN STORE
+  /// OPEN STORE (Cross-platform safe)
   Future<void> _openStore() async {
     if (_versionStatus == null) return;
 
     final url = Uri.parse(_versionStatus!.appStoreLink);
 
-    if (await canLaunchUrl(url)) {
-      await launchUrl(url, mode: LaunchMode.externalApplication);
+    try {
+      if (await canLaunchUrl(url)) {
+        await launchUrl(url, mode: LaunchMode.externalApplication);
+      } else {
+        // Fallback for strict iOS URL schemes
+        await launchUrl(url, mode: LaunchMode.platformDefault);
+      }
+    } catch (e) {
+      debugPrint("Could not open store link: $e");
     }
-  }
-
-  /// 💬 SOFT UPDATE POPUP
-  void _showSoftUpdateDialog() {
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (context) {
-        return AlertDialog(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
-          ),
-          title: Text(
-            "Update Available",
-            style: GoogleFonts.poppins(fontWeight: FontWeight.w600),
-          ),
-          content: Text(
-            "A new version of the app is available. Update for better experience.",
-            style: GoogleFonts.poppins(fontSize: 14),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.pop(context);
-                _goNext();
-              },
-              child: Text(
-                "Later",
-                style: GoogleFonts.poppins(),
-              ),
-            ),
-            ElevatedButton(
-              onPressed: _openStore,
-              child: Text(
-                "Update",
-                style: GoogleFonts.poppins(),
-              ),
-            ),
-          ],
-        );
-      },
-    );
   }
 
   @override
@@ -153,7 +88,6 @@ class _SplashScreenState extends State<SplashScreen> {
     );
   }
 
-  /// ✅ SPLASH UI
   Widget _buildSplashUI() {
     return Container(
       width: double.infinity,
@@ -173,61 +107,86 @@ class _SplashScreenState extends State<SplashScreen> {
     );
   }
 
-  /// 🚨 FORCE UPDATE UI
   Widget _buildForceUpdateUI() {
-    return Container(
-      width: double.infinity,
-      height: double.infinity,
-      decoration: BoxDecoration(
-        image: DecorationImage(
-          image: AssetImage(AppAssets.backgroundImg),
-          fit: BoxFit.cover,
+    return Scaffold(
+      body: Container(
+        width: double.infinity,
+        height: double.infinity,
+        decoration: BoxDecoration(
+          image: DecorationImage(
+            image: AssetImage(AppAssets.backgroundImg),
+            fit: BoxFit.cover,
+          ),
         ),
-      ),
-      child: Center(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 24),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Icon(Icons.system_update, size: 80, color: Colors.white),
-              const SizedBox(height: 20),
-              Text(
-                "Update Required",
-                style: GoogleFonts.poppins(
-                  fontSize: 24,
-                  fontWeight: FontWeight.w700,
-                  color: Colors.white,
-                ),
-              ),
-              const SizedBox(height: 10),
-              Text(
-                "A new version of the app is available.\nPlease update to continue.",
-                textAlign: TextAlign.center,
-                style: GoogleFonts.poppins(
-                  fontSize: 14,
-                  color: Colors.white.withOpacity(0.9),
-                ),
-              ),
-              const SizedBox(height: 30),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: _openStore,
-                  style: ElevatedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(vertical: 14),
+        child: SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+            child: Column(
+              children: [
+                const Spacer(),
+                // Central Icon + Text Container
+                Container(
+                  padding: const EdgeInsets.all(28),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.92),
+                    borderRadius: BorderRadius.circular(20),
                   ),
-                  child: Text(
-                    "Update Now",
-                    style: GoogleFonts.poppins(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w500,
-                      color: Colors.white,
+                  child: Column(
+                    children: [
+                      Icon(
+                        Icons.system_update,
+                        size: 64,
+                        color: Theme.of(context).primaryColor,
+                      ),
+                      const SizedBox(height: 20),
+                      Text(
+                        "Time to Update!",
+                        style: GoogleFonts.poppins(
+                          fontSize: 22,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black87,
+                        ),
+                      ),
+                      const SizedBox(height: 10),
+                      Text(
+                        "To ensure your account stays secure and up to date, please install the latest version of Storatax.",
+                        textAlign: TextAlign.center,
+                        style: GoogleFonts.poppins(
+                          fontSize: 14,
+                          color: Colors.black54,
+                          height: 1.4,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const Spacer(),
+
+                // Bottom Button
+                SizedBox(
+                  width: double.infinity,
+                  height: 52,
+                  child: ElevatedButton.icon(
+                    onPressed: _openStore,
+                    icon: const Icon(Icons.download_rounded, color: Colors.white),
+                    label: Text(
+                      "Update Application",
+                      style: GoogleFonts.poppins(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.white,
+                      ),
+                    ),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Theme.of(context).primaryColor,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(14),
+                      ),
                     ),
                   ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),

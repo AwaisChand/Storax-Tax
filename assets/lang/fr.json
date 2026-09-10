@@ -377,7 +377,7 @@
   "qstNumText": "Votre numéro de TVQ",
 
 
-  "uberEatsGrossText": "UBER EATS\nDÉTAIL DU PRIX BRUT DES COURSES",
+  "uberEatsGrossText": "UBER EATS DÉTAIL DU PRIX BRUT DES COURSES",
   "uberEatsDescText": "La TPS et la TVH ne s'appliquent pas aux frais de péage ni aux pourboires. Si vous avez fait votre inscription pour la TPS/TVH et que vous avez entré toutes les informations pertinentes dans votre profil fiscal, vous avez perçu la TPS/TVH pour Uber sur vos courses Uber Eats. Si vous n'avez pas fait votre inscription pour la TPS/TVH parce que vous êtes un petit fournisseur (p. ex. vous avez réalisé des ventes de moins de 30 000 $ au cours des 12 derniers mois), vous n'avez pas à remplir de profil fiscal.",
   "grossUberText": "Prix brut des commandes Uber Eats",
   "gstUberC": "TPS perçue auprès d’Uber",
@@ -614,6 +614,6 @@
   "kmBegText": "KM au début de l'année",
   "kmBEndText": "KM à la fin de l'année",
   "totalKmDrivenText": "Total des KM parcourus pour l'année",
-  "totalKmBusinessText": "Total des KM d'affaires pour l'année"
-
+  "totalKmBusinessText": "Total des KM d'affaires pour l'année",
+  "viewFromText": "Voir le formulaire"
 }

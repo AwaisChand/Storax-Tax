@@ -32,7 +32,7 @@ class SingleTicketData {
   String? assignedTo;
   String? createdAt;
   String? lastReplyAt;
-  Null resolvedAt;
+  String? resolvedAt;
   List<Messages>? messages;
   List<Attachments>? attachments;
 

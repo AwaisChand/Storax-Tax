@@ -29,7 +29,7 @@ class ViewGasolineDetailScreen extends StatelessWidget {
   }
   @override
   Widget build(BuildContext context) {
-    final fileUrl = gasolineData.image ?? "";
+    final fileUrl = gasolineData.imageUrl ?? "";
     return Scaffold(
       body: Stack(
         children: [

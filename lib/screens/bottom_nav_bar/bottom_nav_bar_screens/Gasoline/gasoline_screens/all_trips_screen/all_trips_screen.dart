@@ -273,25 +273,81 @@ class _AllTripsScreenState extends State<AllTripsScreen> {
                                       ),
                                     ),
                                     const SizedBox(width: 15),
+                                    // From Location with Edit Icon
                                     Expanded(
                                       flex: 3,
-                                      child: Text(
-                                        item.fromLocation ?? 'No Location',
-                                        style: GoogleFonts.poppins(
-                                          fontSize: 12,
-                                          color: Colors.black87,
-                                        ),
+                                      child: Row(
+                                        children: [
+                                          Expanded(
+                                            child: Text(
+                                              item.fromLocation ??
+                                                  'No Location',
+                                              style: GoogleFonts.poppins(
+                                                fontSize: 12,
+                                                color: Colors.black87,
+                                              ),
+                                              maxLines: 2,
+                                              overflow: TextOverflow.ellipsis,
+                                            ),
+                                          ),
+                                          GestureDetector(
+                                            onTap:
+                                                () => _showEditLocationDialog(
+                                                  context,
+                                                  item,
+                                                  index,
+                                                ),
+                                            child: const Padding(
+                                              padding: EdgeInsets.only(
+                                                left: 4.0,
+                                              ),
+                                              child: Icon(
+                                                Icons.edit,
+                                                size: 14,
+                                                color: Colors.blue,
+                                              ),
+                                            ),
+                                          ),
+                                        ],
                                       ),
                                     ),
                                     const SizedBox(width: 15),
+
+                                    // To Location with Edit Icon
                                     Expanded(
                                       flex: 3,
-                                      child: Text(
-                                        item.toLocation ?? "No Location",
-                                        style: GoogleFonts.poppins(
-                                          fontSize: 12,
-                                          color: Colors.black87,
-                                        ),
+                                      child: Row(
+                                        children: [
+                                          Expanded(
+                                            child: Text(
+                                              item.toLocation ?? "No Location",
+                                              style: GoogleFonts.poppins(
+                                                fontSize: 12,
+                                                color: Colors.black87,
+                                              ),
+                                              maxLines: 2,
+                                              overflow: TextOverflow.ellipsis,
+                                            ),
+                                          ),
+                                          GestureDetector(
+                                            onTap:
+                                                () => _showEditLocationDialog(
+                                                  context,
+                                                  item,
+                                                  index,
+                                                ),
+                                            child: const Padding(
+                                              padding: EdgeInsets.only(
+                                                left: 4.0,
+                                              ),
+                                              child: Icon(
+                                                Icons.edit,
+                                                size: 14,
+                                                color: Colors.blue,
+                                              ),
+                                            ),
+                                          ),
+                                        ],
                                       ),
                                     ),
                                     const SizedBox(width: 10),
@@ -456,6 +512,219 @@ class _AllTripsScreenState extends State<AllTripsScreen> {
                 ),
             ],
           ),
+        );
+      },
+    );
+  }
+
+  void _showEditLocationDialog(BuildContext context, dynamic item, int index) {
+    final TextEditingController fromController = TextEditingController(
+      text: item.fromLocation ?? '',
+    );
+    final TextEditingController toController = TextEditingController(
+      text: item.toLocation ?? '',
+    );
+
+    showDialog(
+      context: context,
+      builder: (dialogContext) {
+        bool isLoading = false;
+
+        return StatefulBuilder(
+          builder: (context, setDialogState) {
+            return AlertDialog(
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+              ),
+              elevation: 8,
+              titlePadding: const EdgeInsets.fromLTRB(24, 24, 24, 8),
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 24,
+                vertical: 8,
+              ),
+              actionsPadding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
+              title: Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: Colors.blue.shade50,
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(
+                      Icons.edit_location_alt_rounded,
+                      color: Colors.blue.shade700,
+                      size: 20,
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Text(
+                    "Update Location",
+                    style: GoogleFonts.poppins(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.black87,
+                    ),
+                  ),
+                ],
+              ),
+              content: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const SizedBox(height: 8),
+                    TextField(
+                      controller: fromController,
+                      style: GoogleFonts.poppins(fontSize: 14),
+                      decoration: InputDecoration(
+                        labelText: "From Location",
+                        labelStyle: GoogleFonts.poppins(fontSize: 13),
+                        prefixIcon: const Icon(
+                          Icons.my_location_rounded,
+                          size: 18,
+                        ),
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 14,
+                        ),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                          borderSide: const BorderSide(
+                            color: Colors.blue,
+                            width: 1.5,
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    TextField(
+                      controller: toController,
+                      style: GoogleFonts.poppins(fontSize: 14),
+                      decoration: InputDecoration(
+                        labelText: "To Location",
+                        labelStyle: GoogleFonts.poppins(fontSize: 13),
+                        prefixIcon: const Icon(
+                          Icons.location_on_outlined,
+                          size: 18,
+                        ),
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 14,
+                        ),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                          borderSide: const BorderSide(
+                            color: Colors.blue,
+                            width: 1.5,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              actions: [
+                TextButton(
+                  onPressed:
+                      isLoading
+                          ? null
+                          : () => Navigator.of(dialogContext).pop(),
+                  style: TextButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 12,
+                    ),
+                  ),
+                  child: Text(
+                    "Cancel",
+                    style: GoogleFonts.poppins(
+                      color: Colors.grey.shade700,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ),
+                ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.black,
+                    elevation: 0,
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 20,
+                      vertical: 12,
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
+                  onPressed:
+                      isLoading
+                          ? null
+                          : () async {
+                            final newFrom = fromController.text.trim();
+                            final newTo = toController.text.trim();
+
+                            setDialogState(() {
+                              isLoading = true;
+                            });
+
+                            final tripVm = context.read<TripViewModel>();
+
+                            // Construct request payload matching your API contract
+                            final Map<String, dynamic> bodyData = {
+                              "from_location": newFrom,
+                              "from_lat": item.fromLat,
+                              "from_lng": item.fromLng,
+                              "to_location": newTo,
+                              "to_lat": item.toLat,
+                              "to_lng": item.toLng,
+                            };
+
+                            final response = await tripVm.updateLocationApi(
+                              item.tripId,
+                              bodyData,
+                            );
+
+                            if (response != null &&
+                                response["status"].toString() == "1") {
+                              if (mounted) {
+                                setState(() {
+                                  item.fromLocation = newFrom;
+                                  item.toLocation = newTo;
+                                });
+                              }
+                              Navigator.of(dialogContext).pop();
+                            } else {
+                              setDialogState(() {
+                                isLoading = false;
+                              });
+                            }
+                          },
+                  child:
+                      isLoading
+                          ? const SizedBox(
+                            height: 18,
+                            width: 18,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: Colors.white,
+                            ),
+                          )
+                          : Text(
+                            "Update",
+                            style: GoogleFonts.poppins(
+                              color: Colors.white,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                ),
+              ],
+            );
+          },
         );
       },
     );

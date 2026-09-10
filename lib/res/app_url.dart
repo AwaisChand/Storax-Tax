@@ -131,6 +131,9 @@ class AppUrl {
 
   static var submitLogBookEndPoint = '${baseUrl}api/log-book/submit';
 
+  static String updateLocationEndPoint(int tripId) =>
+      '${baseUrl}api/trips/$tripId/update-location-details';
+
 
 
 
@@ -177,6 +180,9 @@ class AppUrl {
 
   static var listTicketSupportEndPoint = '${baseUrl}api/client/support-tickets';
   static var createTicketEndPoint = '${baseUrl}api/client/support-tickets';
+  static String singleTicketSupport(int ticketId) {
+    return '${baseUrl}api/client/support-tickets/$ticketId';
+  }
   static String replyTicket(int ticketId) {
     return '${baseUrl}api/client/support-tickets/$ticketId/reply';
   }

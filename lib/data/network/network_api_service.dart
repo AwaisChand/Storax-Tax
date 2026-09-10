@@ -8,6 +8,8 @@ import '../app_exception.dart';
 import 'base_api_service.dart';
 import 'package:path/path.dart';
 import 'package:http_parser/http_parser.dart';
+import 'package:path/path.dart' as path_helper;
+import 'package:mime/mime.dart';
 
 
 class NetworkApiService extends BaseApiServices {
@@ -267,80 +269,263 @@ class NetworkApiService extends BaseApiServices {
         Map<String, File>? files,
       }) async {
     try {
-      String? token = await getToken();
-      final uri = Uri.parse(url);
+      final String? token = await getToken();
 
-      final request = http.MultipartRequest('POST', uri);
+      final Uri uri = Uri.parse(url);
 
-      // Headers
-      request.headers.addAll({
-        'Authorization': 'Bearer $token',
-        'Accept': 'application/json',
-      });
+      final request = http.MultipartRequest(
+        'POST',
+        uri,
+      );
 
-      // Fields
+      // ============================================================
+      // HEADERS
+      // ============================================================
+
+      if (token != null && token.isNotEmpty) {
+        request.headers['Authorization'] = 'Bearer $token';
+      }
+
+      request.headers['Accept'] = 'application/json';
+
+      // DO NOT manually set Content-Type.
+      // MultipartRequest creates boundary automatically.
+
+
+      // ============================================================
+      // TEXT FIELDS
+      // ============================================================
+
       if (fields != null) {
         fields.forEach((key, value) {
-          request.fields[key] = value?.toString() ?? '';
+          if (value == null) {
+            return;
+          }
+
+          final valueString = value.toString();
+
+          if (valueString.isNotEmpty) {
+            request.fields[key] = valueString;
+          }
         });
       }
 
-      // Files (images or pdfs)
-      if (files != null) {
+
+      // ============================================================
+      // FILES
+      // ============================================================
+
+      if (files != null && files.isNotEmpty) {
         for (final entry in files.entries) {
-          final name = entry.key;
-          final file = entry.value;
+          final String fieldName = entry.key;
+          final File file = entry.value;
 
           if (!await file.exists()) {
-            debugPrint("⚠️ File not found: ${file.path}");
+            debugPrint(
+              'File does not exist: ${file.path}',
+            );
             continue;
           }
 
-          final path = file.path;
-          final filename = basename(path);
+          final String filename =
+          path_helper.basename(file.path);
 
-          // determine content type by extension
-          final ext = filename.split('.').last.toLowerCase();
-          MediaType contentType;
-          if (ext == 'pdf') {
-            contentType = MediaType('application', 'pdf');
-          } else if (ext == 'png') {
-            contentType = MediaType('image', 'png');
-          } else if (ext == 'jpg' || ext == 'jpeg') {
-            contentType = MediaType('image', 'jpeg');
-          } else if (ext == 'gif') {
-            contentType = MediaType('image', 'gif');
-          } else {
-            // fallback
-            contentType = MediaType('application', 'octet-stream');
+          final String extension =
+          path_helper.extension(filename).toLowerCase();
+
+          final int fileSize = await file.length();
+
+          debugPrint(
+            '==========================================',
+          );
+
+          debugPrint('MULTIPART FILE');
+          debugPrint('Field: $fieldName');
+          debugPrint('Filename: $filename');
+          debugPrint('Extension: $extension');
+          debugPrint('Size: $fileSize bytes');
+
+
+          // ========================================================
+          // MIME TYPE
+          // ========================================================
+
+          late MediaType contentType;
+
+          switch (extension) {
+            case '.jpg':
+            case '.jpeg':
+              contentType = MediaType(
+                'image',
+                'jpeg',
+              );
+              break;
+
+            case '.png':
+              contentType = MediaType(
+                'image',
+                'png',
+              );
+              break;
+
+            case '.pdf':
+              contentType = MediaType(
+                'application',
+                'pdf',
+              );
+              break;
+
+            default:
+              debugPrint(
+                'Unsupported file extension: $extension',
+              );
+              continue;
           }
 
-          final multipartFile = await http.MultipartFile.fromPath(
-            name,
-            path,
+
+          // ========================================================
+          // MULTIPART FILE
+          // ========================================================
+
+          final multipartFile =
+          await http.MultipartFile.fromPath(
+            fieldName,
+            file.path,
             filename: filename,
             contentType: contentType,
           );
 
           request.files.add(multipartFile);
-          debugPrint("Added file field='$name' filename='$filename' contentType='$contentType'");
+
+          debugPrint(
+            'Content-Type: $contentType',
+          );
+
+          debugPrint(
+            'Multipart file added.',
+          );
+
+          debugPrint(
+            '==========================================',
+          );
         }
       }
 
-      // Send
+
+      // ============================================================
+      // REQUEST DEBUG
+      // ============================================================
+
+      debugPrint(
+        '==========================================',
+      );
+
+      debugPrint(
+        'MULTIPART POST REQUEST',
+      );
+
+      debugPrint(
+        'URL: $url',
+      );
+
+      debugPrint(
+        'Fields: ${request.fields}',
+      );
+
+      debugPrint(
+        'Total multipart files: ${request.files.length}',
+      );
+
+      for (final file in request.files) {
+        debugPrint(
+          'File field: ${file.field}',
+        );
+
+        debugPrint(
+          'Filename: ${file.filename}',
+        );
+
+        debugPrint(
+          'Content-Type: ${file.contentType}',
+        );
+      }
+
+      debugPrint(
+        '==========================================',
+      );
+
+
+      // ============================================================
+      // SAFETY CHECK
+      // ============================================================
+
+      if (request.files.isEmpty) {
+        debugPrint(
+          'ERROR: Multipart request contains NO FILES.',
+        );
+
+        return {
+          'status': 0,
+          'success': 'No valid file was added to the request.',
+        };
+      }
+
+
+      // ============================================================
+      // SEND
+      // ============================================================
+
       final streamedResponse = await request.send();
-      final response = await http.Response.fromStream(streamedResponse);
 
-      debugPrint("Multipart POST ${uri.toString()} -> ${response.statusCode}");
-      debugPrint("Response body: ${response.body}");
 
-      if (response.statusCode == 200 || response.statusCode == 201) {
+      // ============================================================
+      // RESPONSE
+      // ============================================================
+
+      final response =
+      await http.Response.fromStream(
+        streamedResponse,
+      );
+
+      debugPrint(
+        'Multipart POST -> ${response.statusCode}',
+      );
+
+      debugPrint(
+        'Response body: ${response.body}',
+      );
+
+
+      // ============================================================
+      // JSON
+      // ============================================================
+
+      if (response.body.isEmpty) {
+        return {
+          'status': response.statusCode,
+          'message': 'Empty server response',
+        };
+      }
+
+      try {
         return jsonDecode(response.body);
-      } else {
-        throw Exception("Failed: ${response.statusCode} ${response.body}");
+      } catch (e) {
+        debugPrint(
+          'JSON decode error: $e',
+        );
+
+        return {
+          'status': response.statusCode,
+          'message': response.body,
+        };
       }
     } catch (e, st) {
-      debugPrint("Multipart request error: $e\n$st");
+      debugPrint(
+        'Multipart request error: $e',
+      );
+
+      debugPrint('$st');
+
       rethrow;
     }
   }

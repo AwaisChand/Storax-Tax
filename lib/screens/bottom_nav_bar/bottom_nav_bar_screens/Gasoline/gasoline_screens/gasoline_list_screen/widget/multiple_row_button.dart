@@ -6,7 +6,6 @@ import 'package:permission_handler/permission_handler.dart' as ph;
 import 'package:provider/provider.dart';
 import 'package:storatax/screens/bottom_nav_bar/bottom_nav_bar_screens/Gasoline/gasoline_screens/gasoline_list_screen/widget/tracking_mode_dialog_widget.dart';
 import 'package:storatax/screens/bottom_nav_bar/bottom_nav_bar_screens/Gasoline/gasoline_screens/log_book_screen/log_book_report_screen.dart';
-import 'package:storatax/screens/bottom_nav_bar/bottom_nav_bar_screens/Gasoline/gasoline_screens/manuel_tracking_screen/manuel_tracking_live_screen.dart';
 
 import '../../../../../../../res/components/app_localization.dart';
 import '../../../../../../../utils/app_colors.dart';
@@ -31,55 +30,48 @@ class _MultipleRowButtonState extends State<MultipleRowButton> {
   // Flag to prevent fast double-clicks or concurrent executions
   bool _isProcessing = false;
 
-  /// ---------------------------------------------------------------------------
-  /// 🚨 GOOGLE PLAY COMPLIANT BACKGROUND LOCATION PERMISSION FLOW
-  /// ---------------------------------------------------------------------------
-  Future<bool> _ensureLocationPermissionsWithDisclosure(BuildContext context) async {
-    // Check if background permission is already granted
-    ph.PermissionStatus backgroundStatus = await ph.Permission.locationAlways.status;
-    if (backgroundStatus.isGranted) {
-      return true;
+  /// Helper to build a clean cross-platform address without leading commas
+  String _formatPlacemark(Placemark place) {
+    List<String> addressParts = [];
+
+    // On iOS, CLGeocoder populates thoroughfare / subThoroughfare rather than street
+    String streetName = place.street ?? '';
+    if (streetName.isEmpty || streetName.startsWith('+')) {
+      final sub = place.subThoroughfare ?? '';
+      final main = place.thoroughfare ?? '';
+      streetName = '$sub $main'.trim();
     }
 
-    // STEP 1: Show Prominent In-App Disclosure Dialog
-    bool userAgreed = await showDialog<bool>(
-      context: context,
-      barrierDismissible: false,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-          title: Text(
-            "Background Location Access",
-            style: GoogleFonts.poppins(fontWeight: FontWeight.bold, fontSize: 16),
-          ),
-          content: Text(
-            "StoraTax collects location data in the background to automatically track your trips, calculate distance, and log travel routes even when the app is closed or not in use.",
-            style: GoogleFonts.poppins(fontSize: 13),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(false),
-              child: Text("No thanks", style: GoogleFonts.poppins(color: Colors.grey)),
-            ),
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.goldenOrangeColor,
-              ),
-              onPressed: () => Navigator.of(context).pop(true),
-              child: Text("Agree & Continue", style: GoogleFonts.poppins(color: Colors.white)),
-            ),
-          ],
-        );
-      },
-    ) ?? false;
-
-    if (!userAgreed) {
-      Utils.toastMessage("Background location agreement required for Auto tracking");
-      return false;
+    // Fallback to feature name if street name is still empty
+    if (streetName.isEmpty && place.name != null && place.name != place.locality) {
+      streetName = place.name!;
     }
 
-    // STEP 2: Request Foreground Location Permission
-    ph.PermissionStatus foregroundStatus = await ph.Permission.location.request();
+    if (streetName.isNotEmpty) addressParts.add(streetName);
+    if (place.subLocality != null && place.subLocality!.isNotEmpty) {
+      addressParts.add(place.subLocality!);
+    }
+    if (place.locality != null && place.locality!.isNotEmpty) {
+      addressParts.add(place.locality!);
+    }
+    if (place.country != null && place.country!.isNotEmpty) {
+      addressParts.add(place.country!);
+    }
+
+    return addressParts.join(', ');
+  }
+
+  /// ---------------------------------------------------------------------------
+  /// 🚨 iOS & ANDROID COMPLIANT BACKGROUND LOCATION PERMISSION FLOW
+  /// ---------------------------------------------------------------------------
+  Future<bool> _ensureLocationPermissionsWithDisclosure(
+      BuildContext context,
+      ) async {
+    // STEP 1: Always check/request foreground permission first (Required for iOS)
+    ph.PermissionStatus foregroundStatus = await ph.Permission.locationWhenInUse.status;
+    if (foregroundStatus.isDenied) {
+      foregroundStatus = await ph.Permission.locationWhenInUse.request();
+    }
 
     if (foregroundStatus.isDenied) {
       Utils.toastMessage("Location permission is required to track trips");
@@ -92,13 +84,73 @@ class _MultipleRowButtonState extends State<MultipleRowButton> {
       return false;
     }
 
-    // STEP 3: Request Background Location Permission ("Allow all the time")
+    // STEP 2: Check background status
+    ph.PermissionStatus backgroundStatus = await ph.Permission.locationAlways.status;
+    if (backgroundStatus.isGranted) {
+      return true;
+    }
+
+    // STEP 3: Show Prominent Disclosure Dialog before asking for Always access
+    bool userAgreed =
+        await showDialog<bool>(
+          context: context,
+          barrierDismissible: false,
+          builder: (BuildContext context) {
+            return AlertDialog(
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+              title: Text(
+                "Background Location Access",
+                style: GoogleFonts.poppins(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 16,
+                ),
+              ),
+              content: Text(
+                "StoraTax collects location data in the background to automatically track your trips, calculate distance, and log travel routes even when the app is closed or not in use.",
+                style: GoogleFonts.poppins(fontSize: 13),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.of(context).pop(false),
+                  child: Text(
+                    "No thanks",
+                    style: GoogleFonts.poppins(color: Colors.grey),
+                  ),
+                ),
+                ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.goldenOrangeColor,
+                  ),
+                  onPressed: () => Navigator.of(context).pop(true),
+                  child: Text(
+                    "Agree & Continue",
+                    style: GoogleFonts.poppins(color: Colors.white),
+                  ),
+                ),
+              ],
+            );
+          },
+        ) ??
+            false;
+
+    if (!userAgreed) {
+      Utils.toastMessage(
+        "Background location agreement required for Auto tracking",
+      );
+      return false;
+    }
+
+    // STEP 4: Request Background Permission
     backgroundStatus = await ph.Permission.locationAlways.request();
 
     if (backgroundStatus.isGranted) {
       return true;
     } else if (backgroundStatus.isPermanentlyDenied || backgroundStatus.isDenied) {
-      Utils.toastMessage("Please set location permission to 'Allow all the time'");
+      Utils.toastMessage(
+        "Please set location permission to 'Always Allow' in iOS Settings",
+      );
       await ph.openAppSettings();
       return false;
     }
@@ -151,13 +203,11 @@ class _MultipleRowButtonState extends State<MultipleRowButton> {
                   ),
                 ),
                 onPressed: () async {
-                  // Lock button actions while processing
                   if (_isProcessing) return;
                   setState(() => _isProcessing = true);
 
                   try {
                     final tripReportVM = context.read<GasolineViewModel>();
-                    final authVM = context.read<AuthViewModel>();
 
                     final String currentDeviceTime =
                     DateTime.now().toIso8601String();
@@ -192,6 +242,7 @@ class _MultipleRowButtonState extends State<MultipleRowButton> {
                           try {
                             position = await Geolocator.getCurrentPosition(
                               desiredAccuracy: LocationAccuracy.high,
+                              timeLimit: const Duration(seconds: 10),
                             );
                           } catch (e) {
                             debugPrint("⚠️ Failed to get fresh location: $e");
@@ -212,9 +263,7 @@ class _MultipleRowButtonState extends State<MultipleRowButton> {
                             );
 
                             if (placemarks.isNotEmpty) {
-                              final place = placemarks.first;
-                              address =
-                              "${place.street ?? ''}, ${place.locality ?? ''}";
+                              address = _formatPlacemark(placemarks.first);
                             }
                           } catch (e) {
                             debugPrint("⚠️ Geocoding failed: $e");
@@ -253,7 +302,9 @@ class _MultipleRowButtonState extends State<MultipleRowButton> {
                     // ============================================================
                     // 🚀 START TRACKING
                     // ============================================================
-                    String? result = await showTrackingModeDialogWidget(context);
+                    String? result = await showTrackingModeDialogWidget(
+                      context,
+                    );
 
                     if (result != null && mounted) {
                       setState(() {
@@ -264,18 +315,21 @@ class _MultipleRowButtonState extends State<MultipleRowButton> {
                       // ---------------- AUTO MODE ----------------
                       if (result == 'auto') {
                         try {
-                          // 1. Run full Google Disclosure & Permission Flow FIRST
                           bool hasPermissions =
-                          await _ensureLocationPermissionsWithDisclosure(context);
+                          await _ensureLocationPermissionsWithDisclosure(
+                            context,
+                          );
 
                           if (!hasPermissions) {
                             debugPrint("❌ Permission denied/aborted.");
                             return;
                           }
 
-                          // 2. Fetch current GPS Position ONLY AFTER permission is fully granted
-                          Position position = await Geolocator.getCurrentPosition(
+                          // Get high accuracy GPS position with a 10s timeout
+                          Position position =
+                          await Geolocator.getCurrentPosition(
                             desiredAccuracy: LocationAccuracy.high,
+                            timeLimit: const Duration(seconds: 10),
                           );
 
                           if (position.latitude == 0.0 &&
@@ -286,7 +340,7 @@ class _MultipleRowButtonState extends State<MultipleRowButton> {
                             return;
                           }
 
-                          String address = "Unknown";
+                          String address = "Unknown Location";
                           try {
                             List<Placemark> placemarks =
                             await placemarkFromCoordinates(
@@ -295,9 +349,7 @@ class _MultipleRowButtonState extends State<MultipleRowButton> {
                             );
 
                             if (placemarks.isNotEmpty) {
-                              final place = placemarks.first;
-                              address =
-                              "${place.street ?? ''}, ${place.locality ?? ''}";
+                              address = _formatPlacemark(placemarks.first);
                             }
                           } catch (e) {
                             debugPrint("Geocoding failed: $e");
@@ -305,10 +357,10 @@ class _MultipleRowButtonState extends State<MultipleRowButton> {
 
                           if (!mounted) return;
 
-                          // 3. Set local state and trigger API ONLY when ready
                           tripReportVM.setTrackingLocally();
 
-                          final int? userId = (auth.user?.role == 'team')
+                          final int? userId =
+                          (auth.user?.role == 'team')
                               ? auth.user?.userId
                               : auth.user?.id;
 
@@ -331,34 +383,14 @@ class _MultipleRowButtonState extends State<MultipleRowButton> {
 
                       // ---------------- MANUAL MODE ----------------
                       if (result == 'manual') {
-                        final isTripActive =
-                            tripReportVM.activeTripModel?.data?.isTracking ==
-                                true;
+                        await Future.delayed(const Duration(milliseconds: 100));
+                        if (!mounted) return;
 
-                        final tripStatus =
-                        tripReportVM.getTripDetailModel?.data?.status
-                            ?.toLowerCase();
-
-                        if (tripReportVM.currentTripId != null &&
-                            isTripActive &&
-                            tripStatus != 'completed') {
-                          await Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder:
-                                  (context) => ManuelTrackingLiveScreen(
-                                tripId: tripReportVM.currentTripId ?? 0,
-                              ),
-                            ),
-                          );
-                        } else {
-                          await Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => const ManuelTrackingScreen(),
-                            ),
-                          );
-                        }
+                        await Navigator.of(context, rootNavigator: true).push(
+                          MaterialPageRoute(
+                            builder: (context) => const ManuelTrackingScreen(),
+                          ),
+                        );
 
                         if (mounted) {
                           setState(() {
@@ -476,7 +508,6 @@ class _MultipleRowButtonState extends State<MultipleRowButton> {
                     ],
                   ),
                 ),
-
                 PopupMenuItem(
                   value: 4,
                   child: Row(

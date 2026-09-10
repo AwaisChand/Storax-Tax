@@ -29,6 +29,25 @@ class TicketSupportRepo {
     }
   }
 
+  /// Get Single Ticket Details Repo
+  Future<GetSingleTicketModel?> getSingleTicketRepo(int ticketId) async {
+    try {
+      final String url = AppUrl.singleTicketSupport(ticketId);
+      debugPrint("Get Single Ticket Url: $url");
+
+      final response = await baseApiServices.getRequestToken(url);
+      debugPrint("Get Single Ticket Response: $response");
+
+      if (response != null) {
+        return GetSingleTicketModel.fromJson(response);
+      }
+      return null;
+    } catch (e) {
+      debugPrint("getSingleTicketRepo Error: ${e.toString()}");
+      rethrow;
+    }
+  }
+
   Future<dynamic> createTicketSupportRepo({
     required Map<String, dynamic> fields,
     required List<File> files,
@@ -55,8 +74,6 @@ class TicketSupportRepo {
           );
         } catch (_) {}
 
-        // ⚠️ IMPORTANT FIX
-        // We still keep backend compatibility using SAME KEY STYLE
         fileMap['attachments[$i]'] = normalized;
       }
 
@@ -75,9 +92,7 @@ class TicketSupportRepo {
     }
   }
 
-
   /// Reply to Ticket
-
   Future<dynamic> replyTicketRepo(dynamic data, int ticketId) async {
     try {
       final String url = AppUrl.replyTicket(ticketId);

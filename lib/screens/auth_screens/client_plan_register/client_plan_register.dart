@@ -2,6 +2,7 @@ import 'dart:ui';
 
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'package:storatax/res/app_assets.dart';
@@ -13,11 +14,13 @@ import 'package:storatax/view_models/auth_view_model/auth_view_model.dart';
 
 import '../../../res/components/app_localization.dart';
 import '../../../res/components/app_text_field.dart';
+import '../../bottom_nav_bar/bottom_nav_bar.dart';
 import '../../plan_summary_screen/plan_summary_screen.dart';
 
 class ClientPlanRegister extends StatefulWidget {
-  const ClientPlanRegister({super.key, this.planId});
+  const ClientPlanRegister({super.key, this.planId, this.planName});
   final int? planId;
+  final String? planName;
 
   @override
   State<ClientPlanRegister> createState() => _ClientPlanRegisterState();
@@ -372,19 +375,27 @@ class _ClientPlanRegisterState extends State<ClientPlanRegister> {
                                             .toString(),
                                     "country": _resolveCountryCode(),
                                   };
-                                  auth.clientPlanRegApi(context, data, (
-                                    userId,
-                                  ) {
-                                    Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder:
-                                            (_) => PlanSummaryScreen(
+                                  auth.clientPlanRegApi(context, data, (userId) async {
+                                    // Check if the registered plan is a free plan
+                                    final name = (widget.planName ?? '').toLowerCase().trim();
+                                    final isFreePlan = name.contains('free version') || name.contains('basic');
+
+                                    if (isFreePlan) {
+                                      context.pushNamed('login');
+
+                                    } else {
+                                      if (context.mounted) {
+                                        Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                            builder: (_) => PlanSummaryScreen(
                                               planId: widget.planId ?? 0,
                                               userId: userId,
                                             ),
-                                      ),
-                                    );
+                                          ),
+                                        );
+                                      }
+                                    }
                                   });
                                 }
                               },

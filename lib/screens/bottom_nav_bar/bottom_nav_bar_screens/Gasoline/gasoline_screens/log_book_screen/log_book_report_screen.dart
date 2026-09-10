@@ -561,6 +561,8 @@ class _LogBookReportScreenState extends State<LogBookReportScreen> {
                                 "year": selectedYear,
                                 "km_start": _startKmController.text.trim(),
                                 "km_end": _endKmController.text.trim(),
+                                "device_time": DateTime.now().toIso8601String(),
+
                               };
 
                               await vm.createLogBookApi(clientData);

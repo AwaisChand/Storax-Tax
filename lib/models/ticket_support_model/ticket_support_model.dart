@@ -44,7 +44,7 @@ class TicketSupport {
   String? statusLabelFr;
   String? assignedTo;
   String? description;
-  Null resolvedAt;
+  String? resolvedAt;
   List<Messages>? messages;
   List<Attachments>? attachments;
 

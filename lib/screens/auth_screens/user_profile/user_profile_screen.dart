@@ -391,18 +391,33 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                                       '',
                                   isLoading: userProfile.isLoading,
                                   onPressed: () {
-                                    Map<String, dynamic> fields = {
-                                      'first_name': firstNameController.text,
-                                      'last_name': lastNameController.text,
-                                      'email': emailController.text,
-                                      'province': selectedIndex ?? '',
+                                    final Map<String, dynamic> fields = {
+                                      'first_name':
+                                      firstNameController.text.trim(),
+
+                                      'last_name':
+                                      lastNameController.text.trim(),
+
+                                      'email':
+                                      emailController.text.trim(),
                                     };
+
+                                    // Add province only when selected
+                                    if (selectedIndex != null &&
+                                        selectedIndex!.trim().isNotEmpty) {
+                                      fields['province'] =
+                                          selectedIndex!.trim();
+                                    }
 
                                     userProfile.updateProfileApi(
                                       context,
                                       fields,
                                       pickedImage,
                                       onInvalidAvatar: () {
+                                        if (!mounted) {
+                                          return;
+                                        }
+
                                         setState(() {
                                           pickedImage = null;
                                         });

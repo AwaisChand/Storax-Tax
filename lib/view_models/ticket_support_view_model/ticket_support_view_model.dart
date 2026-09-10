@@ -6,7 +6,7 @@ import 'package:go_router/go_router.dart';
 import 'package:storatax/models/ticket_support_model/ticket_support_model.dart';
 import 'package:storatax/repository/ticket_support_repo/ticket_support_repo.dart';
 import 'package:storatax/screens/support_tickets/view_support_ticket/view_support_ticket.dart';
-import '';
+
 import '../../models/get_single_ticket_model/get_single_ticket_model.dart';
 import '../../utils/utils.dart';
 
@@ -27,10 +27,45 @@ class TicketSupportViewModel extends ChangeNotifier {
   SingleTicketData? _singleTicketData;
   SingleTicketData? get singleTicketData => _singleTicketData;
 
+  /// Get Single Ticket Details (Supports background polling via [isSilent])
+  Future<TicketSupport?> getTicketDetailsApi(
+      BuildContext context,
+      int ticketId, {
+        bool isSilent = true,
+      }) async {
+    if (!isSilent) {
+      loading = true;
+    }
+
+    try {
+      final response = await ticketSupportRepo.getSingleTicketRepo(ticketId);
+
+      if (response != null && response.data != null) {
+        _singleTicketData = response.data;
+
+        // Convert SingleTicketData or Json response to TicketSupport model
+        final updatedTicket = TicketSupport.fromJson(response.data!.toJson());
+
+        if (!isSilent) {
+          notifyListeners();
+        }
+
+        return updatedTicket;
+      }
+    } catch (e, stackTrace) {
+      debugPrint("Get Ticket Details error: $e $stackTrace");
+    } finally {
+      if (!isSilent) {
+        loading = false;
+      }
+    }
+    return null;
+  }
+
   Future<void> getAllTicketSupports(
-    BuildContext context, {
-    int page = 1,
-  }) async {
+      BuildContext context, {
+        int page = 1,
+      }) async {
     loading = true;
     try {
       final response = await ticketSupportRepo.listTicketRepo(page: page);
@@ -124,7 +159,6 @@ class TicketSupportViewModel extends ChangeNotifier {
   }
 
   /// Reply Ticket Api
-
   Future<void> replyTicketApi(
       BuildContext context,
       dynamic data,
@@ -142,15 +176,11 @@ class TicketSupportViewModel extends ChangeNotifier {
 
       if (response["status"].toString() == "1") {
         Utils.toastMessage(
-          locale == 'fr'
-              ? response["success_fr"]
-              : response["success"],
+          locale == 'fr' ? response["success_fr"] : response["success"],
         );
       } else {
         Utils.toastMessage(
-          locale == 'fr'
-              ? response["success_fr"]
-              : response["success"],
+          locale == 'fr' ? response["success_fr"] : response["success"],
         );
       }
 

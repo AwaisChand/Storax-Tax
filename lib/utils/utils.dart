@@ -7,7 +7,7 @@ import 'package:storatax/view_models/trip_view_model/trip_view_model.dart';
 
 import '../res/app_assets.dart';
 import '../res/components/app_localization.dart';
-import '../view_models/gasoline_view_model/gasoline_view_model.dart';
+
 
 class Utils {
 
@@ -83,6 +83,7 @@ class Utils {
     }
     return Color(int.parse(hex, radix: 16));
   }
+
 
 
   /// Validation Custom date

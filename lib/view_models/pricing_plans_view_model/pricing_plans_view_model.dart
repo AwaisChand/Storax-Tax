@@ -145,7 +145,9 @@ class PricingPlansViewModel extends ChangeNotifier {
 
       if (response["status"].toString() == "1") {
         Utils.toastMessage(response["success"]);
-        context.pushNamed('login');
+        // context.pushNamed('login');
+        context.goNamed("bottomNavBar");
+        BottomNavBar.of(context)?.switchTab(0);
       } else {
         Utils.toastMessage(response["success"]);
       }

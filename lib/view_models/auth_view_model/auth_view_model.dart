@@ -10,10 +10,13 @@ import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:storatax/models/get_user_profile/get_user_profile.dart';
+import 'package:image/image.dart' as img;
+import 'package:path_provider/path_provider.dart';
 
 import '../../models/login_model/login_model.dart';
 import '../../repository/auth_repository/auth_repository.dart';
 import '../../screens/bottom_nav_bar/bottom_nav_bar.dart';
+import '../../screens/plan_summary_screen/plan_summary_screen.dart';
 import '../../utils/utils.dart';
 import '../pricing_plans_view_model/pricing_plans_view_model.dart';
 
@@ -49,6 +52,10 @@ class AuthViewModel extends ChangeNotifier {
 
   bool _deleteLoading = false;
   bool get deleteLoading => _deleteLoading;
+
+  String? pendingSubStatus;
+  int? pendingPlanId;
+  String? pendingUserId;
 
   set loading(bool setLoading) {
     _isLoading = setLoading;
@@ -211,6 +218,28 @@ class AuthViewModel extends ChangeNotifier {
     }
   }
 
+  Future<File?> sanitizeToJpeg(File rawFile) async {
+    try {
+      // 1. Read bytes & decode original image (handles HEIC, WebP, PNG, etc.)
+      final bytes = await rawFile.readAsBytes();
+      final decodedImage = img.decodeImage(bytes);
+
+      if (decodedImage == null) return null;
+
+      // 2. Force re-encode to true JPG standard
+      final jpgBytes = img.encodeJpg(decodedImage, quality: 85);
+
+      // 3. Save to a clean temporary file with a clear .jpg extension
+      final tempDir = await getTemporaryDirectory();
+      final sanitizedFile = File('${tempDir.path}/clean_avatar_${DateTime.now().millisecondsSinceEpoch}.jpg');
+
+      return await sanitizedFile.writeAsBytes(jpgBytes);
+    } catch (e) {
+      debugPrint("Failed to sanitize image: $e");
+      return rawFile; // Fallback to raw file if decoding fails
+    }
+  }
+
   ///Login Api
   Future<void> loginApi(BuildContext context, dynamic data) async {
     loading = true;
@@ -227,15 +256,17 @@ class AuthViewModel extends ChangeNotifier {
         if (_user != null) {
           await saveUserData(_user!);
           debugPrint("User data: $_user");
-          // Future.microtask(() {
-          //   context.goNamed("bottomNavBar");
-          //   BottomNavBar.of(context)?.switchTab(0);
-          // });
-          await verifyEmailApi(context, {
-            "email": _user!.email,
-          }, fromLogin: true);
-          // Navigator.pushNamed(context, RoutesNames.dashboard);
-          await context.read<PricingPlansViewModel>().myPlansApi(context);
+
+          // Save pending status info locally inside Provider state
+          pendingSubStatus = _user!.status.toString().toLowerCase();
+          pendingPlanId = _user!.planId;
+          pendingUserId = _user!.id.toString();
+
+          if (context.mounted) {
+            await verifyEmailApi(context, {
+              "email": _user!.email,
+            }, fromLogin: true);
+          }
         }
       } else {
         Utils.toastMessage(success);
@@ -300,10 +331,10 @@ class AuthViewModel extends ChangeNotifier {
   ///verify otp
 
   Future<void> verifyOtpApi(
-      BuildContext context,
-      dynamic data, {
-        bool fromLogin = false,
-      }) async {
+    BuildContext context,
+    dynamic data, {
+    bool fromLogin = false,
+  }) async {
     loading = true;
     try {
       debugPrint("Verify OTP data: $data");
@@ -321,17 +352,38 @@ class AuthViewModel extends ChangeNotifier {
           await prefs.setBool("isLoggedIn", true);
           await prefs.setBool("isOtpVerified", true);
 
-          // ✅ Navigate to dashboard
-          context.goNamed(
-            'bottomNavBar',
-            extra: {"initialIndex": 0},
-          );
+          // Extract subStatus, planId, and userId
+          final String subStatus =
+              pendingSubStatus ??
+              _user?.status.toString().toLowerCase() ??
+              'unpaid';
+
+          final int planId = pendingPlanId ?? _user?.planId ?? 1;
+          final String? userId = pendingUserId ?? _user?.id.toString();
+
+          if (context.mounted) {
+            if (subStatus == 'unpaid') {
+              Navigator.pushAndRemoveUntil(
+                context,
+                MaterialPageRoute(
+                  builder:
+                      (context) =>
+                          PlanSummaryScreen(planId: planId, userId: userId),
+                ),
+                (route) => false,
+              );
+            } else {
+              // 🟢 ACTIVE/PAID: Fetch plan details and navigate to dashboard
+              await context.read<PricingPlansViewModel>().myPlansApi(context);
+
+              if (context.mounted) {
+                context.goNamed('bottomNavBar', extra: {"initialIndex": 0});
+              }
+            }
+          }
         } else {
           // Forgot password flow
-          context.pushNamed(
-            'resetPassword',
-            extra: email,
-          );
+          context.pushNamed('resetPassword', extra: email);
         }
       } else {
         Utils.toastMessage(response["success"]);
@@ -541,71 +593,208 @@ class AuthViewModel extends ChangeNotifier {
   ///Update User Profile Api
 
   Future<void> updateProfileApi(
-    BuildContext context,
-    Map<String, dynamic> fields,
-    File? avatarFile, {
-    VoidCallback? onInvalidAvatar, // ⭐ callback from UI
-  }) async {
+      BuildContext context,
+      Map<String, dynamic> fields,
+      File? avatarFile, {
+        VoidCallback? onInvalidAvatar,
+      }) async {
     loading = true;
     notifyListeners();
 
     try {
-      debugPrint("Update Profile fields: $fields");
-      debugPrint("Avatar file: ${avatarFile?.path}");
+      debugPrint("==========================================");
+      debugPrint("UPDATE PROFILE");
+      debugPrint("Fields: $fields");
+      debugPrint("Avatar: ${avatarFile?.path}");
+      debugPrint("==========================================");
 
-      final response = await authRepository.updateProfileRepo(
+      final response =
+      await authRepository.updateProfileRepo(
         fields: fields,
         avatarFile: avatarFile,
       );
 
-      // ⛔ HANDLE INVALID AVATAR FORMAT FIRST
-      if (response["status"].toString() == "0") {
-        final msg = response["message"];
+      debugPrint(
+        "Update Profile Response: $response",
+      );
 
-        if (msg is Map && msg["avatar"] != null) {
-          // 🔥 Reset picked image in UI
+
+      // ============================================================
+      // SAFETY CHECK
+      // ============================================================
+
+      if (response is! Map) {
+        Utils.toastMessage(
+          "Unexpected server response.",
+        );
+        return;
+      }
+
+
+      // ============================================================
+      // RESPONSE STATUS
+      // ============================================================
+
+      final status =
+      response["status"]?.toString();
+
+
+      // ============================================================
+      // ERROR RESPONSE
+      // ============================================================
+
+      if (status == "0") {
+        final message = response["message"];
+
+
+        // ----------------------------------------------------------
+        // Avatar validation error
+        // ----------------------------------------------------------
+
+        if (message is Map &&
+            message["avatar"] != null) {
+          final avatarError =
+          message["avatar"];
+
+          String errorText =
+              "Invalid avatar.";
+
+          if (avatarError is List &&
+              avatarError.isNotEmpty) {
+            errorText =
+                avatarError.first.toString();
+          } else if (avatarError is String) {
+            errorText = avatarError;
+          }
+
+          // Reset selected image in UI
           onInvalidAvatar?.call();
 
-          Utils.toastMessage(msg["avatar"][0].toString());
-          loading = false;
-          notifyListeners();
+          Utils.toastMessage(
+            errorText,
+          );
+
           return;
         }
+
+
+        // ----------------------------------------------------------
+        // Other validation errors
+        // ----------------------------------------------------------
+
+        if (message is Map) {
+          String? errorText;
+
+          for (final value in message.values) {
+            if (value is List &&
+                value.isNotEmpty) {
+              errorText =
+                  value.first.toString();
+              break;
+            }
+
+            if (value is String &&
+                value.isNotEmpty) {
+              errorText = value;
+              break;
+            }
+          }
+
+          Utils.toastMessage(
+            errorText ?? "Something went wrong.",
+          );
+
+          return;
+        }
+
+
+        // ----------------------------------------------------------
+        // String error
+        // ----------------------------------------------------------
+
+        if (message is String &&
+            message.isNotEmpty) {
+          Utils.toastMessage(
+            message,
+          );
+
+          return;
+        }
+
+
+        Utils.toastMessage(
+          "Something went wrong.",
+        );
+
+        return;
       }
 
-      // ✔ SUCCESS
-      if (response["status"].toString() == "1") {
+
+      // ============================================================
+      // SUCCESS
+      // ============================================================
+
+      if (status == "1") {
         await getUserProfileApi(context);
-        Utils.toastMessage(response["message"]);
 
+        final successMessage =
+        response["message"];
+
+        if (successMessage is String &&
+            successMessage.isNotEmpty) {
+          Utils.toastMessage(
+            successMessage,
+          );
+        }
+
+
+        // Navigate after profile update
         Future.microtask(() {
-          context.goNamed("bottomNavBar");
-          BottomNavBar.of(context)?.switchTab(0);
+          if (!context.mounted) {
+            return;
+          }
+
+          context.goNamed(
+            "bottomNavBar",
+          );
+
+          BottomNavBar.of(context)
+              ?.switchTab(0);
         });
+
+        return;
       }
 
-      // 🔁 DEFAULT MESSAGE HANDLING
-      final message = response["message"];
-      if (message is String) {
-        Utils.toastMessage(message);
-      } else if (message is Map<String, dynamic>) {
-        final firstKey = message.keys.first;
-        final firstError = message[firstKey];
-        final errorMessage =
-            (firstError is List && firstError.isNotEmpty)
-                ? firstError.first.toString()
-                : "Something went wrong";
-        Utils.toastMessage(errorMessage);
+
+      // ============================================================
+      // UNKNOWN STATUS
+      // ============================================================
+
+      final message =
+      response["message"];
+
+      if (message is String &&
+          message.isNotEmpty) {
+        Utils.toastMessage(
+          message,
+        );
       } else {
-        Utils.toastMessage("Unexpected error format.");
+        Utils.toastMessage(
+          "Unexpected server response.",
+        );
       }
+    } catch (e, st) {
+      debugPrint(
+        "Update Profile error: $e",
+      );
 
-      if (kDebugMode) {
-        debugPrint("Update Profile API Response: $response");
-      }
-    } catch (e) {
-      debugPrint("Update Profile error: $e");
-      Utils.toastMessage("Error: ${e.toString()}");
+      debugPrint(
+        "$st",
+      );
+
+      Utils.toastMessage(
+        "Error: ${e.toString()}",
+      );
     } finally {
       loading = false;
       notifyListeners();
@@ -673,47 +862,113 @@ class AuthViewModel extends ChangeNotifier {
     }
   }
 
+  // Future<void> handleSplash(BuildContext context) async {
+  //   try {
+  //     final prefs = await SharedPreferences.getInstance();
+  //
+  //     final String? userJson = prefs.getString('user');
+  //     final bool isLoggedIn = prefs.getBool('isLoggedIn') ?? false;
+  //     final bool isOtpVerified = prefs.getBool('isOtpVerified') ?? false;
+  //
+  //     if (!isLoggedIn || userJson == null || userJson.isEmpty) {
+  //       context.goNamed("login");
+  //       return;
+  //     }
+  //
+  //     if (!isOtpVerified) {
+  //       final user = User.fromJson(jsonDecode(userJson));
+  //       context.goNamed(
+  //         "verifyOtp",
+  //         extra: {"email": user.email, "fromLogin": true},
+  //       );
+  //       return;
+  //     }
+  //
+  //     // Set local instance
+  //     _user = User.fromJson(jsonDecode(userJson));
+  //
+  //     // Optional: Fetch fresh profile status from API to guarantee accurate state
+  //     // await getProfileApi();
+  //
+  //     notifyListeners();
+  //
+  //     final String subStatus = _user?.status?.toString().toLowerCase() ?? 'unpaid';
+  //
+  //     if (subStatus == 'unpaid') {
+  //       Navigator.pushAndRemoveUntil(
+  //         context,
+  //         MaterialPageRoute(
+  //           builder: (context) => PlanSummaryScreen(
+  //             planId: _user?.planId ?? 1,
+  //             userId: _user?.id.toString(),
+  //           ),
+  //         ),
+  //             (route) => false,
+  //       );
+  //     } else {
+  //       await context.read<PricingPlansViewModel>().myPlansApi(context);
+  //
+  //       if (context.mounted) {
+  //         context.goNamed("bottomNavBar");
+  //         BottomNavBar.of(context)?.switchTab(0);
+  //       }
+  //     }
+  //   } catch (e) {
+  //     debugPrint("Splash handling error: $e");
+  //     context.goNamed("login");
+  //   }
+  // }
+
   Future<void> handleSplash(BuildContext context) async {
     try {
       final prefs = await SharedPreferences.getInstance();
 
       final String? userJson = prefs.getString('user');
+
       final bool isLoggedIn = prefs.getBool('isLoggedIn') ?? false;
+
       final bool isOtpVerified = prefs.getBool('isOtpVerified') ?? false;
 
       debugPrint("isLoggedIn: $isLoggedIn");
+
       debugPrint("isOtpVerified: $isOtpVerified");
+
       debugPrint("userJson: $userJson");
 
       /// ❌ Not logged in
+
       if (!isLoggedIn || userJson == null || userJson.isEmpty) {
         context.goNamed("login");
+
         return;
       }
 
       /// ⚠️ OTP not verified
+
       if (!isOtpVerified) {
         final user = User.fromJson(jsonDecode(userJson));
 
         context.goNamed(
           "verifyOtp",
-          extra: {
-            "email": user.email,
-            "fromLogin": true,
-          },
+
+          extra: {"email": user.email, "fromLogin": true},
         );
+
         return;
       }
 
       /// ✅ Fully logged in
+
       _user = User.fromJson(jsonDecode(userJson));
+
       notifyListeners();
 
       context.goNamed("bottomNavBar");
-      BottomNavBar.of(context)?.switchTab(0);
 
+      BottomNavBar.of(context)?.switchTab(0);
     } catch (e) {
       debugPrint("Splash handling error: $e");
+
       context.goNamed("login");
     }
   }

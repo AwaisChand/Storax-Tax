@@ -402,7 +402,13 @@ class TaxManagerViewModel extends ChangeNotifier {
 
     try {
       final dir = await getApplicationDocumentsDirectory();
-      final path = "${dir.path}/$fileName.pdf";
+
+      // 1️⃣ Sanitize fileName to strip slashes and OS-illegal characters
+      final sanitizedFileName = fileName
+          .replaceAll(RegExp(r'[\\/:*?"<>|]'), '_') // Replaces / and invalid chars with _
+          .trim();
+
+      final path = "${dir.path}/$sanitizedFileName.pdf";
       final file = File(path);
 
       await file.writeAsBytes(await pdf.save());

@@ -12,6 +12,16 @@ import 'line_chart_widget.dart';
 import 'monthly_summary_table_widget.dart';
 import 'monthly_transaction_table_widget.dart';
 
+
+extension SafeString on String? {
+  String safeValue([String fallback = 'N/A']) {
+    if (this == null || this!.trim().isEmpty || this == 'null') {
+      return fallback;
+    }
+    return this!;
+  }
+}
+
 class ChartSelectorWidget extends StatefulWidget {
   final GasolineViewModel gasoline;
 
@@ -152,9 +162,8 @@ class _ChartSelectorState extends State<ChartSelectorWidget> {
                 children: [
                   Expanded(
                     child: _monthlyInsightsWidget(
-                      AppLocalizations.of(context)!.translate("hMonthText") ??
-                          '',
-                      "${widget.gasoline.getTransactionReportModel?.data?.charts?.monthlyInsights?.highestMonth}",
+                      AppLocalizations.of(context)!.translate("hMonthText").safeValue(),
+                      widget.gasoline.getTransactionReportModel?.data?.charts?.monthlyInsights?.highestMonth.safeValue(),
                     ),
                   ),
                   Expanded(

@@ -379,7 +379,7 @@
   "gstNumText": "Your GST number",
   "qstNumText": "Your QST number",
 
-  "uberEatsGrossText": "UBER EATS\\nGROSS FARES BREAKDOWN",
+  "uberEatsGrossText": "UBER EATS GROSS FARES BREAKDOWN",
   "uberEatsDescText": "Tolls and tips not subject to GST/HST. You have collected GST/HST from Uber on your Uber Eats Fares if you are registered for GST/HST and have entered all the relevant information in your tax profile. If you are not registered for GST/HST because you are a small supplier (e.g., you have less than \\$30,000 in sales over the past 12 months), you do not need to fill your tax profile.",
   "grossUberText": "Gross Uber Eats fare",
   "gstUberC": "Gst you collected from Uber",

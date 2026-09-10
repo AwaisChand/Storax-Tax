@@ -79,7 +79,7 @@ class User {
   final String subscriptionId;
   final dynamic gst;
   final String pst;
-  final dynamic plan; // Retains raw object or null for future plan parsing
+  final dynamic plan;
 
   User({
     this.id = 0,

@@ -79,7 +79,7 @@ class MorePlans {
   String? monthlyUsdPriceId;
   String? monthlyCadStripeId;
   String? monthlyCadPriceId;
-  Null monthlyAppleProductId;
+  String? monthlyAppleProductId;
   String? yearlyAppleProductId;
   List<Features>? features;
   bool? isPurchased;

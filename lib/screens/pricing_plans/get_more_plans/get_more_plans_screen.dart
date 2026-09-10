@@ -40,14 +40,14 @@ class _GetMorePlansScreenState extends State<GetMorePlansScreen> {
   }
 
   Future<void> _showCouponDialog(
-    BuildContext context,
-    int planId,
-    PricingPlansViewModel pricingVM,
-  ) async {
+      BuildContext context,
+      int planId,
+      PricingPlansViewModel pricingVM,
+      bool isYearly, // <-- Accept isYearly here
+      ) async {
     debugPrint("🟢 STEP 1: Opening coupon dialog");
 
     final navigator = Navigator.of(context, rootNavigator: true);
-
     final couponController = TextEditingController();
 
     final Map<String, dynamic>? result = await showDialog<Map<String, dynamic>>(
@@ -68,13 +68,12 @@ class _GetMorePlansScreenState extends State<GetMorePlansScreen> {
               actions: [
                 // ---------- SKIP ----------
                 TextButton(
-                  onPressed:
-                      isLoading
-                          ? null
-                          : () {
-                            debugPrint("🟡 STEP 2A: Skip pressed");
-                            Navigator.pop(dialogContext, {"skip": true});
-                          },
+                  onPressed: isLoading
+                      ? null
+                      : () {
+                    debugPrint("🟡 STEP 2A: Skip pressed");
+                    Navigator.pop(dialogContext, {"skip": true});
+                  },
                   child: Text(
                     "Skip",
                     style: GoogleFonts.montserrat(
@@ -87,64 +86,61 @@ class _GetMorePlansScreenState extends State<GetMorePlansScreen> {
 
                 // ---------- APPLY ----------
                 TextButton(
-                  onPressed:
-                      isLoading
-                          ? null
-                          : () async {
-                            debugPrint("🟡 STEP 2B: Apply pressed");
+                  onPressed: isLoading
+                      ? null
+                      : () async {
+                    debugPrint("🟡 STEP 2B: Apply pressed");
 
-                            final code = couponController.text.trim();
-                            debugPrint("🔹 Entered coupon: $code");
+                    final code = couponController.text.trim();
+                    debugPrint("🔹 Entered coupon: $code");
 
-                            if (code.isEmpty) {
-                              debugPrint("🔴 Coupon empty");
-                              Utils.toastMessage(
-                                "Please enter a coupon or click Skip",
-                              );
-                              return;
-                            }
+                    if (code.isEmpty) {
+                      debugPrint("🔴 Coupon empty");
+                      Utils.toastMessage(
+                        "Please enter a coupon or click Skip",
+                      );
+                      return;
+                    }
 
-                            setState(() => isLoading = true);
-                            debugPrint("⏳ STEP 3: Calling verifyCouponApi");
+                    setState(() => isLoading = true);
+                    debugPrint("⏳ STEP 3: Calling verifyCouponApi");
 
-                            final apiResult = await pricingVM.verifyCouponApi(
-                              code,
-                              planId,
-                            );
+                    final apiResult = await pricingVM.verifyCouponApi(
+                      code,
+                      planId,
+                    );
 
-                            debugPrint("🟢 STEP 4: API Result => $apiResult");
+                    debugPrint("🟢 STEP 4: API Result => $apiResult");
 
-                            setState(() => isLoading = false);
+                    setState(() => isLoading = false);
 
-                            if (apiResult["success"] == true) {
-                              debugPrint("✅ STEP 5: Coupon valid");
+                    if (apiResult["success"] == true) {
+                      debugPrint("✅ STEP 5: Coupon valid");
 
-                              if (dialogContext.mounted) {
-                                debugPrint(
-                                  "🟢 STEP 6: Closing dialog with result",
-                                );
+                      if (dialogContext.mounted) {
+                        debugPrint("🟢 STEP 6: Closing dialog with result");
 
-                                Navigator.pop(dialogContext, {
-                                  'id': apiResult["id"],
-                                  'code': apiResult["couponCode"],
-                                  'discountedPrice':
-                                      (apiResult["discounted_price"] as num)
-                                          .toDouble(),
-                                  'discountAmount':
-                                      (apiResult["discount_amount"] as num)
-                                          .toDouble(),
-                                  'discountValue':
-                                      apiResult["discount_value"] as int,
-                                });
-                              }
-                            } else {
-                              debugPrint("❌ STEP 5: Coupon invalid");
-                              Utils.toastMessage(
-                                apiResult["message"] ??
-                                    "Coupon verification failed",
-                              );
-                            }
-                          },
+                        Navigator.pop(dialogContext, {
+                          'id': apiResult["id"],
+                          'code': apiResult["couponCode"],
+                          'discountedPrice':
+                          (apiResult["discounted_price"] as num)
+                              .toDouble(),
+                          'discountAmount':
+                          (apiResult["discount_amount"] as num)
+                              .toDouble(),
+                          'discountValue':
+                          apiResult["discount_value"] as int,
+                        });
+                      }
+                    } else {
+                      debugPrint("❌ STEP 5: Coupon invalid");
+                      Utils.toastMessage(
+                        apiResult["message"] ??
+                            "Coupon verification failed",
+                      );
+                    }
+                  },
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
@@ -154,7 +150,7 @@ class _GetMorePlansScreenState extends State<GetMorePlansScreen> {
                           height: 16,
                           child: CircularProgressIndicator(strokeWidth: 2),
                         ),
-                      if (isLoading) SizedBox(width: 8),
+                      if (isLoading) const SizedBox(width: 8),
                       Text(
                         "Apply",
                         style: GoogleFonts.montserrat(
@@ -169,13 +165,12 @@ class _GetMorePlansScreenState extends State<GetMorePlansScreen> {
 
                 // ---------- CANCEL ----------
                 TextButton(
-                  onPressed:
-                      isLoading
-                          ? null
-                          : () {
-                            debugPrint("🟡 STEP 2C: Cancel pressed");
-                            Navigator.pop(dialogContext);
-                          },
+                  onPressed: isLoading
+                      ? null
+                      : () {
+                    debugPrint("🟡 STEP 2C: Cancel pressed");
+                    Navigator.pop(dialogContext);
+                  },
                   child: Text(
                     "Cancel",
                     style: GoogleFonts.montserrat(
@@ -207,16 +202,15 @@ class _GetMorePlansScreenState extends State<GetMorePlansScreen> {
 
       navigator.push(
         MaterialPageRoute(
-          builder:
-              (_) => MorePlanSummaryScreen(
-                planId: planId,
-                couponId: null,
-                discountedPrice: null,
-                discountAmount: null,
-                code: null,
-                discountedValue: null,
-                isYearly: isYearly,
-              ),
+          builder: (_) => MorePlanSummaryScreen(
+            planId: planId,
+            couponId: null,
+            discountedPrice: null,
+            discountAmount: null,
+            code: null,
+            discountedValue: null,
+            isYearly: isYearly, // Passes the correctly scoped billing cycle
+          ),
         ),
       );
     } else {
@@ -225,16 +219,15 @@ class _GetMorePlansScreenState extends State<GetMorePlansScreen> {
 
       navigator.push(
         MaterialPageRoute(
-          builder:
-              (_) => MorePlanSummaryScreen(
-                planId: planId,
-                couponId: result['id'] as int?,
-                discountedPrice: result['discountedPrice'] as double?,
-                discountAmount: result['discountAmount'] as double?,
-                code: result['code'] as String?,
-                discountedValue: result['discountValue'] as int?,
-                isYearly: isYearly,
-              ),
+          builder: (_) => MorePlanSummaryScreen(
+            planId: planId,
+            couponId: result['id'] as int?,
+            discountedPrice: result['discountedPrice'] as double?,
+            discountAmount: result['discountAmount'] as double?,
+            code: result['code'] as String?,
+            discountedValue: result['discountValue'] as int?,
+            isYearly: isYearly, // Passes the correctly scoped billing cycle
+          ),
         ),
       );
     }
@@ -337,10 +330,9 @@ class _GetMorePlansScreenState extends State<GetMorePlansScreen> {
                                         text: TextSpan(
                                           children: [
                                             TextSpan(
-                                              text:
-                                                  morePlans.isYearly
-                                                      ? '\$${plan.yearlyPrice}'
-                                                      : '\$${plan.monthlyPrice}',
+                                              text: morePlans.isYearly
+                                                  ? '\$${plan.yearlyPrice ?? 0}'
+                                                  : '\$${plan.monthlyPrice ?? 0}',
                                               style: GoogleFonts.montserrat(
                                                 textStyle: TextStyle(
                                                   fontSize: 28,
@@ -522,10 +514,12 @@ class _GetMorePlansScreenState extends State<GetMorePlansScreen> {
                                               }
 
                                               // HANDLE Paid Plan
+                                              // HANDLE Paid Plan
                                               _showCouponDialog(
                                                 context,
                                                 plan.id ?? 0,
                                                 pricingVM,
+                                                pricingVM.isYearly,
                                               );
                                             },
                                           )

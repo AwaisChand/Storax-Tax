@@ -89,9 +89,6 @@ class TripViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
-
-
-
   bool _logBookRejectLoading = false;
 
   bool get logBookRejectLoading => _logBookRejectLoading;
@@ -100,6 +97,7 @@ class TripViewModel extends ChangeNotifier {
     _logBookApproveLoading = reject;
     notifyListeners();
   }
+
   List<Trips> _trips = [];
   List<Trips> get trips => _trips;
 
@@ -114,11 +112,10 @@ class TripViewModel extends ChangeNotifier {
 
   int? _activeApproveId;
   int? _activeRejectId;
+  int? _locationId;
 
   int? get activeApproveId => _activeApproveId;
   int? get activeRejectId => _activeRejectId;
-
-
 
   DateTime? fromDate;
   DateTime? toDate;
@@ -164,7 +161,6 @@ class TripViewModel extends ChangeNotifier {
 
   /// all trips api
 
-
   Future<void> allTripsApi({
     int? userId,
     String? perPage,
@@ -172,13 +168,11 @@ class TripViewModel extends ChangeNotifier {
     DateTime? toDate,
     bool loadMore = false,
   }) async {
-
     // ============================================================
     // LOAD MORE
     // ============================================================
 
     if (loadMore) {
-
       // Don't make another request if one is already running
       if (loadingMoreTrips) {
         return;
@@ -190,9 +184,7 @@ class TripViewModel extends ChangeNotifier {
       }
 
       loadingMoreTrips = true;
-
     } else {
-
       // ============================================================
       // FIRST LOAD / REFRESH
       // ============================================================
@@ -209,13 +201,11 @@ class TripViewModel extends ChangeNotifier {
     notifyListeners();
 
     try {
-
       final response = await tripRepo.allTripsRepo(
         userId: userId,
 
         // Always request 10
-        perPage:
-        perPage ?? tripsPerPage.toString(),
+        perPage: perPage ?? tripsPerPage.toString(),
 
         // Page number
         page: currentTripsPage,
@@ -229,51 +219,32 @@ class TripViewModel extends ChangeNotifier {
       // ============================================================
 
       if (response.status == 1) {
+        final newTrips = response.data?.trips ?? [];
 
-        final newTrips =
-            response.data?.trips ?? [];
+        debugPrint("======================================");
 
-        debugPrint(
-          "======================================",
-        );
+        debugPrint("Trips Page: $currentTripsPage");
 
-        debugPrint(
-          "Trips Page: $currentTripsPage",
-        );
+        debugPrint("New Trips: ${newTrips.length}");
 
-        debugPrint(
-          "New Trips: ${newTrips.length}",
-        );
-
-        debugPrint(
-          "Existing Trips: ${_trips.length}",
-        );
+        debugPrint("Existing Trips: ${_trips.length}");
 
         // ==========================================================
         // FIRST PAGE
         // ==========================================================
 
         if (!loadMore) {
-
-          _trips = [
-            ...newTrips,
-          ];
-
+          _trips = [...newTrips];
         }
-
         // ==========================================================
         // LOAD MORE
         // ==========================================================
-
         else {
-
           // IMPORTANT:
           // Don't replace existing trips.
           // Add the next page to existing trips.
 
-          _trips.addAll(
-            newTrips,
-          );
+          _trips.addAll(newTrips);
         }
 
         // ==========================================================
@@ -281,43 +252,29 @@ class TripViewModel extends ChangeNotifier {
         // ==========================================================
 
         if (newTrips.length < tripsPerPage) {
-
           // Example:
           // Page returns only 7 trips
           // Therefore there are no more pages.
 
           hasMoreTrips = false;
 
-          debugPrint(
-            "No more trips available.",
-          );
-
+          debugPrint("No more trips available.");
         } else {
-
           // Move to next page
 
           currentTripsPage++;
 
-          debugPrint(
-            "Next page: $currentTripsPage",
-          );
+          debugPrint("Next page: $currentTripsPage");
         }
 
-        debugPrint(
-          "Total trips now: ${_trips.length}",
-        );
+        debugPrint("Total trips now: ${_trips.length}");
 
-        debugPrint(
-          "======================================",
-        );
+        debugPrint("======================================");
       }
-
       // ============================================================
       // API FAILED
       // ============================================================
-
       else {
-
         if (!loadMore) {
           _trips = [];
         }
@@ -330,21 +287,12 @@ class TripViewModel extends ChangeNotifier {
           hasMoreTrips = false;
         }
 
-        Utils.toastMessage(
-          response.message ??
-              "Unable to load trips",
-        );
+        Utils.toastMessage(response.message ?? "Unable to load trips");
       }
-
     } catch (e, stackTrace) {
+      debugPrint("Get all trips data error: $e");
 
-      debugPrint(
-        "Get all trips data error: $e",
-      );
-
-      debugPrint(
-        "$stackTrace",
-      );
+      debugPrint("$stackTrace");
 
       // Only clear list on initial request.
       // Don't destroy already loaded trips
@@ -354,22 +302,15 @@ class TripViewModel extends ChangeNotifier {
         _trips = [];
       }
 
-      Utils.toastMessage(
-        "Error: ${e.toString()}",
-      );
-
+      Utils.toastMessage("Error: ${e.toString()}");
     } finally {
-
       // ============================================================
       // STOP LOADING
       // ============================================================
 
       if (loadMore) {
-
         loadingMoreTrips = false;
-
       } else {
-
         allTrips = false;
       }
 
@@ -832,12 +773,18 @@ class TripViewModel extends ChangeNotifier {
   }
 
   /// Approved log sub API
-  Future<Map<String, dynamic>?> approveLogSubApi(int subId, dynamic data) async {
+  Future<Map<String, dynamic>?> approveLogSubApi(
+    int subId,
+    dynamic data,
+  ) async {
     _activeApproveId = subId;
     notifyListeners();
 
     try {
-      final response = await tripRepo.approvedLogSubRepo(subId: subId,data: data);
+      final response = await tripRepo.approvedLogSubRepo(
+        subId: subId,
+        data: data,
+      );
 
       if (response["status"].toString() == "1") {
         Utils.toastMessage(response["message"]?.toString() ?? "");
@@ -893,6 +840,44 @@ class TripViewModel extends ChangeNotifier {
       return null;
     } finally {
       logBook = true;
+      notifyListeners();
+    }
+  }
+
+  /// Update location API
+  Future<Map<String, dynamic>?> updateLocationApi(
+    int tripId,
+    dynamic data,
+  ) async {
+    _locationId = tripId;
+    notifyListeners();
+
+    try {
+      final response = await tripRepo.updateLocationRepo(
+        tripId: tripId,
+        data: data,
+      );
+
+      if (response["status"].toString() == "1") {
+        Utils.toastMessage(response["message"]?.toString() ?? "");
+      } else {
+        Utils.toastMessage(response["message"]?.toString() ?? "");
+      }
+
+      if (kDebugMode) {
+        debugPrint("Update Location API Response: $response");
+      }
+
+      return Map<String, dynamic>.from(response);
+    } catch (e, stackTrace) {
+      debugPrint("Update location api error: $e");
+      debugPrint("$stackTrace");
+
+      Utils.toastMessage("Error: ${e.toString()}");
+
+      return null;
+    } finally {
+      _locationId = null;
       notifyListeners();
     }
   }

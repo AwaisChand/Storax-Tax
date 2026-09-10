@@ -57,17 +57,31 @@ class _MorePlanSummaryScreenState extends State<MorePlanSummaryScreen> {
     return Consumer<PricingPlansViewModel>(
       builder: (context, planDetail, _) {
         final plan = planDetail.planDetailModel?.plan;
-        final originalPrice =
-            Utils.isYearly ? plan?.yearlyPrice : plan?.monthlyPrice;
-        final discountedPrice = widget.discountedPrice ?? originalPrice;
-        final discountAmount = widget.discountAmount ?? 0.0;
+
+        // 1. Calculate base price using widget.isYearly instead of global Utils
+        // 1. Calculate base price using widget.isYearly
+        final num originalPrice = widget.isYearly
+            ? (plan?.yearlyPrice ?? 0.0)
+            : (plan?.monthlyPrice ?? 0.0);
+
+// 2. Ensure discountAmount is strictly positive using .abs()
+        final int discountPercentage = widget.discountedValue ?? 0;
+        final double rawDiscount = discountPercentage > 0
+            ? (originalPrice * (discountPercentage / 100))
+            : (widget.discountAmount ?? 0.0);
+
+        final double discountAmount = rawDiscount.abs();
+
+        final double finalDiscountedPrice = (originalPrice - discountAmount)
+            .clamp(0.0, double.infinity);
+
         final couponCode = widget.code;
         final discountedValue = widget.discountedValue;
         final id = widget.couponId;
 
         debugPrint("📋 PlanID: ${widget.planId}");
         debugPrint("🏷 Coupon Code: $couponCode");
-        debugPrint("💲 Discounted Price: $discountedPrice");
+        debugPrint("💲 Discounted Price: $finalDiscountedPrice");
         debugPrint("💰 Discount Amount: $discountAmount");
         debugPrint("💰 Discount Value: $discountedValue");
         debugPrint("💰 Coupon Id: $id");
@@ -141,7 +155,7 @@ class _MorePlanSummaryScreenState extends State<MorePlanSummaryScreen> {
                               ),
                               const SizedBox(height: 5),
                               Text(
-                                "Then \$${originalPrice?.toStringAsFixed(2)} ${planDetail.isYearly ? "per year" : "per month"}",
+                                "Then \$${originalPrice.toStringAsFixed(2)} ${widget.isYearly ? "per year" : "per month"}",
                                 style: GoogleFonts.poppins(
                                   fontSize: 12,
                                   color: AppColors.darkMidnightColor,
@@ -158,7 +172,7 @@ class _MorePlanSummaryScreenState extends State<MorePlanSummaryScreen> {
                               Align(
                                 alignment: Alignment.topRight,
                                 child: Text(
-                                  "\$${originalPrice?.toStringAsFixed(2)}/ ${planDetail.isYearly ? "year after" : "month after"}",
+                                  "\$${originalPrice.toStringAsFixed(2)}/ ${widget.isYearly ? "year after" : "month after"}",
                                   style: GoogleFonts.poppins(
                                     fontSize: 11,
                                     color: AppColors.mediumGrayColor,
@@ -172,13 +186,12 @@ class _MorePlanSummaryScreenState extends State<MorePlanSummaryScreen> {
                               // Pricing Summary Rows
                               _rowWidget(
                                 "Subtotal",
-                                "\$${originalPrice?.toStringAsFixed(2)}",
+                                "\$${originalPrice.toStringAsFixed(2)}",
                               ),
-                              SizedBox(height: 5),
+                              const SizedBox(height: 5),
                               if (discountAmount > 0)
                                 Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                   children: [
                                     Container(
                                       padding: const EdgeInsets.symmetric(
@@ -211,8 +224,7 @@ class _MorePlanSummaryScreenState extends State<MorePlanSummaryScreen> {
                                               style: GoogleFonts.poppins(
                                                 fontSize: 12,
                                                 fontWeight: FontWeight.w400,
-                                                color:
-                                                    AppColors.mediumGrayColor,
+                                                color: AppColors.mediumGrayColor,
                                               ),
                                             ),
                                           ],
@@ -220,7 +232,7 @@ class _MorePlanSummaryScreenState extends State<MorePlanSummaryScreen> {
                                       ),
                                     ),
                                     Text(
-                                      "-\$${discountAmount.toStringAsFixed(2)}",
+                                      "\$${discountAmount.abs().toStringAsFixed(2)}",
                                       style: GoogleFonts.poppins(
                                         fontSize: 13,
                                         color: AppColors.mediumGrayColor,
@@ -237,7 +249,7 @@ class _MorePlanSummaryScreenState extends State<MorePlanSummaryScreen> {
 
                               _rowWidget(
                                 "Total after trial",
-                                "\$${discountedPrice?.toStringAsFixed(2)}",
+                                "\$${finalDiscountedPrice.toStringAsFixed(2)}",
                               ),
                               _rowWidget("Total due today", "\$0.00"),
                               const SizedBox(height: 20),
@@ -284,7 +296,7 @@ class _MorePlanSummaryScreenState extends State<MorePlanSummaryScreen> {
                                         return;
                                       }
 
-                                      // 🔥 PLATFORM BASED FLOW
+                                      // Platform Payment Flow
                                       if (Platform.isIOS) {
                                         debugPrint(
                                           "🍎 iOS detected → Apple IAP flow",
@@ -295,11 +307,11 @@ class _MorePlanSummaryScreenState extends State<MorePlanSummaryScreen> {
                                           userId: userId,
                                           planId: plan.id!,
                                           productId:
-                                              Utils.isYearly
+                                              widget.isYearly
                                                   ? plan.yearlyAppleProductId ??
-                                                      ''
+                                                      'Apple product id not found'
                                                   : plan.monthlyAppleProductId ??
-                                                      '',
+                                                      'Apple product id not found',
                                           couponId: widget.couponId,
                                           provider: provider,
                                         );

@@ -92,7 +92,7 @@ class _MyPlansScreenState extends State<MyPlansScreen> {
                                         child: Text(
                                           AppLocalizations.of(
                                                 context,
-                                              )!.translate("noSubscribePlan") ??
+                                              )!.translate("noSubscribePlanText") ??
                                               '',
                                           style: GoogleFonts.poppins(
                                             fontSize: 14,

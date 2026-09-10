@@ -56,8 +56,11 @@ class _ClientPlansScreenState extends State<ClientPlansScreen> {
               children: [
                 ClientBillingToggle(
                   onChanged: (isYearly) {
-                    final pricingVM = context.read<PricingPlansViewModel>();
+                    // 1. Update the static helper state so PlanSummaryScreen reflects it
+                    Utils.isYearly = isYearly;
 
+                    // 2. Refresh plans list
+                    final pricingVM = context.read<PricingPlansViewModel>();
                     pricingVM.getClientPlansApi(context);
                   },
                 ),
@@ -128,10 +131,9 @@ class _ClientPlansScreenState extends State<ClientPlansScreen> {
                                         text: TextSpan(
                                           children: [
                                             TextSpan(
-                                              text:
-                                                  clientPlan.isYearly
-                                                      ? '\$${clientPlanDetail.yearlyPrice}'
-                                                      : '\$${clientPlanDetail.monthlyPrice}',
+                                              text: clientPlan.isYearly
+                                                  ? '\$${clientPlanDetail.yearlyPrice ?? 0}'
+                                                  : '\$${clientPlanDetail.monthlyPrice ?? 0}',
                                               style: GoogleFonts.montserrat(
                                                 textStyle: TextStyle(
                                                   fontSize: 28,
@@ -202,6 +204,7 @@ class _ClientPlansScreenState extends State<ClientPlansScreen> {
                                             )!.translate("getStartedText") ??
                                             '',
                                         onPressed: () {
+                                          Utils.isYearly = clientPlan.isYearly;
                                           Navigator.push(
                                             context,
                                             MaterialPageRoute(
@@ -210,6 +213,7 @@ class _ClientPlansScreenState extends State<ClientPlansScreen> {
                                                       ClientPlanRegister(
                                                         planId:
                                                             clientPlanDetail.id,
+                                                        planName: clientPlanDetail.name,
                                                       ),
                                             ),
                                           );

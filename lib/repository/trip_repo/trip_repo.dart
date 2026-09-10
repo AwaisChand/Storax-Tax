@@ -25,43 +25,34 @@ class TripRepo {
     DateTime? toDate,
   }) async {
     try {
-      if (fromDate != null &&
-          toDate != null &&
-          fromDate.isAfter(toDate)) {
+      if (fromDate != null && toDate != null && fromDate.isAfter(toDate)) {
         throw Exception("From date cannot be after To date.");
       }
 
       String url = AppUrl.allTripsEndPoint;
 
       final queryParams = <String, String>{
-        if (perPage != null && perPage.isNotEmpty)
-          'per_page': perPage,
+        if (perPage != null && perPage.isNotEmpty) 'per_page': perPage,
 
-        if (userId != null)
-          'user_id': userId.toString(),
+        if (userId != null) 'user_id': userId.toString(),
 
-        if (page != null)
-          'page': page.toString(),
+        if (page != null) 'page': page.toString(),
 
         if (fromDate != null)
           'from_date': DateFormat('yyyy-MM-dd').format(fromDate),
 
-        if (toDate != null)
-          'to_date': DateFormat('yyyy-MM-dd').format(toDate),
+        if (toDate != null) 'to_date': DateFormat('yyyy-MM-dd').format(toDate),
       };
 
       if (queryParams.isNotEmpty) {
-        final uri = Uri.parse(url).replace(
-          queryParameters: queryParams,
-        );
+        final uri = Uri.parse(url).replace(queryParameters: queryParams);
 
         url = uri.toString();
       }
 
       debugPrint("Final Request URL: $url");
 
-      final response =
-      await baseApiServices.getRequestToken(url);
+      final response = await baseApiServices.getRequestToken(url);
 
       if (kDebugMode) {
         debugPrint("API Raw Response: $response");
@@ -447,7 +438,7 @@ class TripRepo {
     try {
       final url = Uri.parse(AppUrl.approveSubEndPoint(subId));
 
-      final response = await baseApiServices.postRequest(url.toString(),data);
+      final response = await baseApiServices.postRequest(url.toString(), data);
 
       debugPrint("Response: $response");
       debugPrint("API URL: $url");
@@ -479,6 +470,27 @@ class TripRepo {
       return response;
     } catch (e) {
       debugPrint(e.toString());
+      rethrow;
+    }
+  }
+
+  /// update location repo
+
+  Future<dynamic> updateLocationRepo({
+    required int tripId,
+    dynamic data,
+  }) async {
+    try {
+      final url = Uri.parse(AppUrl.updateLocationEndPoint(tripId));
+
+      final response = await baseApiServices.postRequest(url.toString(), data);
+
+      debugPrint("Response: $response");
+      debugPrint("API URL: $url");
+
+      return response;
+    } catch (e) {
+      debugPrint("Error: $e");
       rethrow;
     }
   }
