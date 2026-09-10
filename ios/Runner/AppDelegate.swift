@@ -1,6 +1,7 @@
 import UIKit
 import Flutter
 import VisionKit
+import GoogleMaps
 
 @UIApplicationMain
 @objc class AppDelegate: FlutterAppDelegate, VNDocumentCameraViewControllerDelegate {
@@ -11,6 +12,10 @@ import VisionKit
         _ application: UIApplication,
         didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
     ) -> Bool {
+        // Required for google_maps_flutter on iOS. Missing key causes a native crash
+        // when opening Manual Tracking / any GoogleMap screen.
+        GMSServices.provideAPIKey("AIzaSyBx7X2S83I4ei7X51AOUOiqiaj-e7gHO0E")
+
         GeneratedPluginRegistrant.register(with: self)
         let ok = super.application(application, didFinishLaunchingWithOptions: launchOptions)
 
