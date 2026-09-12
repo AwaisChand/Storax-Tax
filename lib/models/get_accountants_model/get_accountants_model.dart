@@ -106,7 +106,7 @@ class AccountantData {
   Null userId;
   String? firstName;
   String? lastName;
-  Null username;
+  String? username;
   String? email;
   String? province;
   int? noOfClients;
@@ -122,7 +122,7 @@ class AccountantData {
   Null detachedAt;
   int? planId;
   String? paypalSubscriptionId;
-  Null stripeId;
+  String? stripeId;
   Null pmType;
   Null pmLastFour;
   Null deletedAt;
@@ -132,7 +132,7 @@ class AccountantData {
   String? twoFactorExpiresAt;
   String? payment;
   String? regCountry;
-  Null couponId;
+  int? couponId;
   int? createdBy;
   String? subscriptionId;
   bool? isConnected;
