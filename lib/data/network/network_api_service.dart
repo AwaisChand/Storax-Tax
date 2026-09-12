@@ -289,7 +289,7 @@ class NetworkApiService extends BaseApiServices {
       request.headers['Accept'] = 'application/json';
 
       // DO NOT manually set Content-Type.
-      // MultipartRequest creates boundary automatically.
+      // MultipartRequest creates the boundary automatically.
 
 
       // ============================================================
@@ -312,7 +312,7 @@ class NetworkApiService extends BaseApiServices {
 
 
       // ============================================================
-      // FILES
+      // FILES - OPTIONAL
       // ============================================================
 
       if (files != null && files.isNotEmpty) {
@@ -320,10 +320,17 @@ class NetworkApiService extends BaseApiServices {
           final String fieldName = entry.key;
           final File file = entry.value;
 
+          // --------------------------------------------------------
+          // File does not exist
+          // --------------------------------------------------------
+
           if (!await file.exists()) {
             debugPrint(
-              'File does not exist: ${file.path}',
+              'Optional file does not exist: ${file.path}',
             );
+
+            // IMPORTANT:
+            // Do NOT fail the whole request.
             continue;
           }
 
@@ -350,7 +357,7 @@ class NetworkApiService extends BaseApiServices {
           // MIME TYPE
           // ========================================================
 
-          late MediaType contentType;
+          MediaType? contentType;
 
           switch (extension) {
             case '.jpg':
@@ -379,6 +386,8 @@ class NetworkApiService extends BaseApiServices {
               debugPrint(
                 'Unsupported file extension: $extension',
               );
+
+              // Skip invalid optional file.
               continue;
           }
 
@@ -436,6 +445,12 @@ class NetworkApiService extends BaseApiServices {
         'Total multipart files: ${request.files.length}',
       );
 
+      if (request.files.isEmpty) {
+        debugPrint(
+          'No file attached - sending fields only.',
+        );
+      }
+
       for (final file in request.files) {
         debugPrint(
           'File field: ${file.field}',
@@ -456,24 +471,17 @@ class NetworkApiService extends BaseApiServices {
 
 
       // ============================================================
-      // SAFETY CHECK
+      // SEND REQUEST
       // ============================================================
 
-      if (request.files.isEmpty) {
-        debugPrint(
-          'ERROR: Multipart request contains NO FILES.',
-        );
-
-        return {
-          'status': 0,
-          'success': 'No valid file was added to the request.',
-        };
-      }
-
-
-      // ============================================================
-      // SEND
-      // ============================================================
+      // IMPORTANT:
+      // Do NOT require request.files here.
+      //
+      // Multipart requests can contain only fields.
+      //
+      // This allows:
+      // 1. Profile update WITHOUT avatar
+      // 2. Profile update WITH avatar
 
       final streamedResponse = await request.send();
 
@@ -497,7 +505,7 @@ class NetworkApiService extends BaseApiServices {
 
 
       // ============================================================
-      // JSON
+      // EMPTY RESPONSE
       // ============================================================
 
       if (response.body.isEmpty) {
@@ -506,6 +514,11 @@ class NetworkApiService extends BaseApiServices {
           'message': 'Empty server response',
         };
       }
+
+
+      // ============================================================
+      // JSON
+      // ============================================================
 
       try {
         return jsonDecode(response.body);

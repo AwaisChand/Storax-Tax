@@ -121,7 +121,7 @@ class AccountantData {
   String? updatedAt;
   Null detachedAt;
   int? planId;
-  Null paypalSubscriptionId;
+  String? paypalSubscriptionId;
   Null stripeId;
   Null pmType;
   Null pmLastFour;

@@ -320,6 +320,134 @@ Future saveSubscriptionFlow(
 
 
 
+// Future<void> saveAppleSubscriptionFlow({
+//   required BuildContext context,
+//   required int userId,
+//   required int planId,
+//   required String productId,
+//   int? couponId,
+//   required PricingPlansViewModel provider,
+// }) async {
+//   final InAppPurchase iap = InAppPurchase.instance;
+//
+//   try {
+//     debugPrint("🚀 STEP 1: Check Store Availability");
+//
+//     final bool isAvailable = await iap.isAvailable();
+//     if (!isAvailable) {
+//       Utils.toastMessage("App Store not available");
+//       return;
+//     }
+//
+//     // 🔥 STEP 2: Get Product Details
+//     debugPrint("🚀 STEP 2: Fetch Product id=$productId");
+//
+//     final ProductDetailsResponse response =
+//     await iap.queryProductDetails({productId});
+//
+//     debugPrint(
+//       "🔍 IAP query result: found=${response.productDetails.map((p) => p.id).toList()} "
+//       "notFound=${response.notFoundIDs} error=${response.error}",
+//     );
+//
+//     if (response.notFoundIDs.isNotEmpty) {
+//       Utils.toastMessage(
+//         "This subscription isn't available on the App Store yet. "
+//         "Please try again later.",
+//       );
+//       return;
+//     }
+//
+//     final productDetails = response.productDetails.first;
+//
+//     debugPrint("✅ Product Found: ${productDetails.id}");
+//
+//     // 🔥 STEP 3: Listen to Purchase Updates
+//     late StreamSubscription<List<PurchaseDetails>> subscription;
+//
+//     subscription = iap.purchaseStream.listen(
+//           (List<PurchaseDetails> purchases) async {
+//         for (final purchase in purchases) {
+//           debugPrint("📦 Purchase Status: ${purchase.status}");
+//
+//           if (purchase.status == PurchaseStatus.purchased ||
+//               purchase.status == PurchaseStatus.restored) {
+//
+//             // 🔐 RECEIPT
+//             final receiptData =
+//                 purchase.verificationData.serverVerificationData;
+//
+//             final transactionId = purchase.purchaseID ??"";
+//
+//             debugPrint("🧾 Receipt: $receiptData");
+//             debugPrint("🆔 TransactionId: $transactionId");
+//
+//             // 🔥 STEP 4: VERIFY WITH BACKEND
+//             final verifyPayload = {
+//               "user_id": userId,
+//               "plan_id": planId,
+//               "product_id": productId,
+//               "transaction_id": transactionId,
+//               "receipt_data": receiptData,
+//               if (couponId != null) "coupon_id": couponId,
+//             };
+//
+//             debugPrint("📤 VERIFY PAYLOAD: $verifyPayload");
+//
+//             final verifyResponse =
+//             await provider.appleVerifyPurchaseApi(verifyPayload);
+//
+//             debugPrint("📦 VERIFY RESPONSE: $verifyResponse");
+//
+//             if (verifyResponse != null &&
+//                 verifyResponse["status"] == true) {
+//
+//               // ✅ SUCCESS
+//               Utils.toastMessage("Subscription Activated");
+//
+//               // 🔥 OPTIONAL: COMPLETE TRANSACTION
+//               if (purchase.pendingCompletePurchase) {
+//                 await iap.completePurchase(purchase);
+//               }
+//
+//               await subscription.cancel();
+//               return;
+//             } else {
+//               Utils.toastMessage("Verification failed");
+//             }
+//           }
+//
+//           if (purchase.status == PurchaseStatus.error) {
+//             debugPrint("❌ Purchase Error: ${purchase.error}");
+//             Utils.toastMessage("Purchase failed");
+//           }
+//
+//           if (purchase.pendingCompletePurchase) {
+//             await iap.completePurchase(purchase);
+//           }
+//         }
+//       },
+//       onError: (error) {
+//         debugPrint("❌ STREAM ERROR: $error");
+//         Utils.toastMessage("Something went wrong");
+//       },
+//     );
+//
+//     // 🔥 STEP 5: Start Purchase
+//     debugPrint("🚀 STEP 5: Start Purchase");
+//
+//     final PurchaseParam purchaseParam =
+//     PurchaseParam(productDetails: productDetails);
+//
+//     await iap.buyNonConsumable(purchaseParam: purchaseParam);
+//
+//   } catch (e, s) {
+//     debugPrint("❌ FINAL ERROR: $e");
+//     debugPrint("$s");
+//     Utils.toastMessage("Something went wrong");
+//   }
+// }
+
 Future<void> saveAppleSubscriptionFlow({
   required BuildContext context,
   required int userId,
@@ -345,24 +473,18 @@ Future<void> saveAppleSubscriptionFlow({
     final ProductDetailsResponse response =
     await iap.queryProductDetails({productId});
 
-    debugPrint(
-      "🔍 IAP query result: found=${response.productDetails.map((p) => p.id).toList()} "
-      "notFound=${response.notFoundIDs} error=${response.error}",
-    );
-
     if (response.notFoundIDs.isNotEmpty) {
       Utils.toastMessage(
         "This subscription isn't available on the App Store yet. "
-        "Please try again later.",
+            "Please try again later.",
       );
       return;
     }
 
     final productDetails = response.productDetails.first;
-
     debugPrint("✅ Product Found: ${productDetails.id}");
 
-    // 🔥 STEP 3: Listen to Purchase Updates
+    // 🔥 STEP 3: Listen to Purchase Updates FIRST (Before triggering buy)
     late StreamSubscription<List<PurchaseDetails>> subscription;
 
     subscription = iap.purchaseStream.listen(
@@ -373,14 +495,9 @@ Future<void> saveAppleSubscriptionFlow({
           if (purchase.status == PurchaseStatus.purchased ||
               purchase.status == PurchaseStatus.restored) {
 
-            // 🔐 RECEIPT
             final receiptData =
                 purchase.verificationData.serverVerificationData;
-
-            final transactionId = purchase.purchaseID ??"";
-
-            debugPrint("🧾 Receipt: $receiptData");
-            debugPrint("🆔 TransactionId: $transactionId");
+            final transactionId = purchase.purchaseID ?? "";
 
             // 🔥 STEP 4: VERIFY WITH BACKEND
             final verifyPayload = {
@@ -392,20 +509,14 @@ Future<void> saveAppleSubscriptionFlow({
               if (couponId != null) "coupon_id": couponId,
             };
 
-            debugPrint("📤 VERIFY PAYLOAD: $verifyPayload");
-
             final verifyResponse =
             await provider.appleVerifyPurchaseApi(verifyPayload);
-
-            debugPrint("📦 VERIFY RESPONSE: $verifyResponse");
 
             if (verifyResponse != null &&
                 verifyResponse["status"] == true) {
 
-              // ✅ SUCCESS
               Utils.toastMessage("Subscription Activated");
 
-              // 🔥 OPTIONAL: COMPLETE TRANSACTION
               if (purchase.pendingCompletePurchase) {
                 await iap.completePurchase(purchase);
               }
@@ -420,6 +531,7 @@ Future<void> saveAppleSubscriptionFlow({
           if (purchase.status == PurchaseStatus.error) {
             debugPrint("❌ Purchase Error: ${purchase.error}");
             Utils.toastMessage("Purchase failed");
+            await subscription.cancel();
           }
 
           if (purchase.pendingCompletePurchase) {
@@ -433,7 +545,7 @@ Future<void> saveAppleSubscriptionFlow({
       },
     );
 
-    // 🔥 STEP 5: Start Purchase
+    // 🔥 STEP 5: Start Purchase AFTER stream is active
     debugPrint("🚀 STEP 5: Start Purchase");
 
     final PurchaseParam purchaseParam =
