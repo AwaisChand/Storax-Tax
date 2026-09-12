@@ -108,7 +108,7 @@ class AccountantData {
   String? lastName;
   Null username;
   String? email;
-  Null province;
+  String? province;
   int? noOfClients;
   Null emailVerifiedAt;
   String? phone;
