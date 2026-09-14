@@ -862,116 +862,116 @@ class AuthViewModel extends ChangeNotifier {
     }
   }
 
-  // Future<void> handleSplash(BuildContext context) async {
-  //   try {
-  //     final prefs = await SharedPreferences.getInstance();
-  //
-  //     final String? userJson = prefs.getString('user');
-  //     final bool isLoggedIn = prefs.getBool('isLoggedIn') ?? false;
-  //     final bool isOtpVerified = prefs.getBool('isOtpVerified') ?? false;
-  //
-  //     if (!isLoggedIn || userJson == null || userJson.isEmpty) {
-  //       context.goNamed("login");
-  //       return;
-  //     }
-  //
-  //     if (!isOtpVerified) {
-  //       final user = User.fromJson(jsonDecode(userJson));
-  //       context.goNamed(
-  //         "verifyOtp",
-  //         extra: {"email": user.email, "fromLogin": true},
-  //       );
-  //       return;
-  //     }
-  //
-  //     // Set local instance
-  //     _user = User.fromJson(jsonDecode(userJson));
-  //
-  //     // Optional: Fetch fresh profile status from API to guarantee accurate state
-  //     // await getProfileApi();
-  //
-  //     notifyListeners();
-  //
-  //     final String subStatus = _user?.status?.toString().toLowerCase() ?? 'unpaid';
-  //
-  //     if (subStatus == 'unpaid') {
-  //       Navigator.pushAndRemoveUntil(
-  //         context,
-  //         MaterialPageRoute(
-  //           builder: (context) => PlanSummaryScreen(
-  //             planId: _user?.planId ?? 1,
-  //             userId: _user?.id.toString(),
-  //           ),
-  //         ),
-  //             (route) => false,
-  //       );
-  //     } else {
-  //       await context.read<PricingPlansViewModel>().myPlansApi(context);
-  //
-  //       if (context.mounted) {
-  //         context.goNamed("bottomNavBar");
-  //         BottomNavBar.of(context)?.switchTab(0);
-  //       }
-  //     }
-  //   } catch (e) {
-  //     debugPrint("Splash handling error: $e");
-  //     context.goNamed("login");
-  //   }
-  // }
-
   Future<void> handleSplash(BuildContext context) async {
     try {
       final prefs = await SharedPreferences.getInstance();
 
       final String? userJson = prefs.getString('user');
-
       final bool isLoggedIn = prefs.getBool('isLoggedIn') ?? false;
-
       final bool isOtpVerified = prefs.getBool('isOtpVerified') ?? false;
-
-      debugPrint("isLoggedIn: $isLoggedIn");
-
-      debugPrint("isOtpVerified: $isOtpVerified");
-
-      debugPrint("userJson: $userJson");
-
-      /// ❌ Not logged in
 
       if (!isLoggedIn || userJson == null || userJson.isEmpty) {
         context.goNamed("login");
-
         return;
       }
-
-      /// ⚠️ OTP not verified
 
       if (!isOtpVerified) {
         final user = User.fromJson(jsonDecode(userJson));
-
         context.goNamed(
           "verifyOtp",
-
           extra: {"email": user.email, "fromLogin": true},
         );
-
         return;
       }
 
-      /// ✅ Fully logged in
-
+      // Set local instance
       _user = User.fromJson(jsonDecode(userJson));
+
+      // Optional: Fetch fresh profile status from API to guarantee accurate state
+      // await getProfileApi();
 
       notifyListeners();
 
-      context.goNamed("bottomNavBar");
+      final String subStatus = _user?.status?.toString().toLowerCase() ?? 'unpaid';
 
-      BottomNavBar.of(context)?.switchTab(0);
+      if (subStatus == 'unpaid') {
+        Navigator.pushAndRemoveUntil(
+          context,
+          MaterialPageRoute(
+            builder: (context) => PlanSummaryScreen(
+              planId: _user?.planId ?? 1,
+              userId: _user?.id.toString(),
+            ),
+          ),
+              (route) => false,
+        );
+      } else {
+        await context.read<PricingPlansViewModel>().myPlansApi(context);
+
+        if (context.mounted) {
+          context.goNamed("bottomNavBar");
+          BottomNavBar.of(context)?.switchTab(0);
+        }
+      }
     } catch (e) {
       debugPrint("Splash handling error: $e");
-
       context.goNamed("login");
     }
   }
+
+  // Future<void> handleSplash(BuildContext context) async {
+  //   try {
+  //     final prefs = await SharedPreferences.getInstance();
+  //
+  //     final String? userJson = prefs.getString('user');
+  //
+  //     final bool isLoggedIn = prefs.getBool('isLoggedIn') ?? false;
+  //
+  //     final bool isOtpVerified = prefs.getBool('isOtpVerified') ?? false;
+  //
+  //     debugPrint("isLoggedIn: $isLoggedIn");
+  //
+  //     debugPrint("isOtpVerified: $isOtpVerified");
+  //
+  //     debugPrint("userJson: $userJson");
+  //
+  //     /// ❌ Not logged in
+  //
+  //     if (!isLoggedIn || userJson == null || userJson.isEmpty) {
+  //       context.goNamed("login");
+  //
+  //       return;
+  //     }
+  //
+  //     /// ⚠️ OTP not verified
+  //
+  //     if (!isOtpVerified) {
+  //       final user = User.fromJson(jsonDecode(userJson));
+  //
+  //       context.goNamed(
+  //         "verifyOtp",
+  //
+  //         extra: {"email": user.email, "fromLogin": true},
+  //       );
+  //
+  //       return;
+  //     }
+  //
+  //     /// ✅ Fully logged in
+  //
+  //     _user = User.fromJson(jsonDecode(userJson));
+  //
+  //     notifyListeners();
+  //
+  //     context.goNamed("bottomNavBar");
+  //
+  //     BottomNavBar.of(context)?.switchTab(0);
+  //   } catch (e) {
+  //     debugPrint("Splash handling error: $e");
+  //
+  //     context.goNamed("login");
+  //   }
+  // }
 
   Future<void> logout(BuildContext context) async {
     try {

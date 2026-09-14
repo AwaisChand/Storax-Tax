@@ -403,6 +403,15 @@ class _ManuelTrackingScreenState extends State<ManuelTrackingScreen> {
               _mapController = c;
               _mapReady = true;
               if (routePolyline.isNotEmpty) _drawPolyline();
+
+              // Force iOS platform view to render tiles
+              Future.delayed(const Duration(milliseconds: 300), () {
+                if (_mapController != null) {
+                  _mapController!.animateCamera(
+                    CameraUpdate.zoomBy(0.0),
+                  );
+                }
+              });
             },
             myLocationEnabled: true,
           ),

@@ -112,18 +112,24 @@ class AppDrawer extends StatelessWidget {
             ),
 
           /// Support Tickets
+
+
+          /// Support Tickets
           _buildDrawerIconItem(
             context,
             title:
-                AppLocalizations.of(
-                  context,
-                )!.translate("supportingTicketsText") ??
+            AppLocalizations.of(
+              context,
+            )!.translate("supportingTicketsText") ??
                 '',
             icon: Icons.help_outline,
             onTap: () {
               Scaffold.of(context).closeDrawer();
 
-              if (isFreeGasPlan) {
+              if (plans.myPlans.isEmpty ||
+                  planNames.every(
+                        (n) => n.contains('free version') || n.contains('basic'),
+                  )) {
                 _showUpgradeDialog(context);
               } else {
                 context.pushNamed('ticket-list-system');
@@ -135,9 +141,9 @@ class AppDrawer extends StatelessWidget {
           /// Instructions
           if (authProvider.user?.role != 'team')
             Theme(
-              data: Theme.of(context).copyWith(
-                dividerColor: Colors.transparent,
-              ),
+              data: Theme.of(
+                context,
+              ).copyWith(dividerColor: Colors.transparent),
               child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 20),
                 child: ExpansionTile(
@@ -160,8 +166,10 @@ class AppDrawer extends StatelessWidget {
                   children: [
                     _buildSubMenuBulletItem(
                       context,
-                      title: AppLocalizations.of(context)!
-                          .translate("gasReceiptManagerText") ??
+                      title:
+                          AppLocalizations.of(
+                            context,
+                          )!.translate("gasReceiptManagerText") ??
                           '',
                       onTap: () {
                         context.pushNamed("inst-gas-receipt");
@@ -170,7 +178,8 @@ class AppDrawer extends StatelessWidget {
                     _buildSubMenuBulletItem(
                       context,
                       title:
-                      AppLocalizations.of(context)!.translate("uberText") ?? '',
+                          AppLocalizations.of(context)!.translate("uberText") ??
+                          '',
                       onTap: () {
                         context.pushNamed("uber");
                       },
@@ -178,7 +187,10 @@ class AppDrawer extends StatelessWidget {
                     _buildSubMenuBulletItem(
                       context,
                       title:
-                      AppLocalizations.of(context)!.translate("taxManText") ?? '',
+                          AppLocalizations.of(
+                            context,
+                          )!.translate("taxManText") ??
+                          '',
                       onTap: () {
                         context.pushNamed("tax-manager");
                       },
@@ -186,7 +198,10 @@ class AppDrawer extends StatelessWidget {
                     _buildSubMenuBulletItem(
                       context,
                       title:
-                      AppLocalizations.of(context)!.translate("rentalText") ?? '',
+                          AppLocalizations.of(
+                            context,
+                          )!.translate("rentalText") ??
+                          '',
                       onTap: () {
                         context.pushNamed("rental");
                       },
@@ -199,7 +214,7 @@ class AppDrawer extends StatelessWidget {
             _buildDrawerItem(
               context,
               title:
-              AppLocalizations.of(context)?.translate("changeLang") ??
+                  AppLocalizations.of(context)?.translate("changeLang") ??
                   "Change Language",
               iconPath: AppAssets.translatorImg,
               onTap: () {
@@ -312,7 +327,10 @@ void _showUpgradeDialog(BuildContext context) {
 
               /// Title
               Text(
-                AppLocalizations.of(context)!.translate("ticketUnavailableText") ?? '',
+                AppLocalizations.of(
+                      context,
+                    )!.translate("ticketUnavailableText") ??
+                    '',
                 style: GoogleFonts.poppins(
                   fontSize: 16,
                   fontWeight: FontWeight.w600,
@@ -324,7 +342,8 @@ void _showUpgradeDialog(BuildContext context) {
 
               /// Subtitle
               Text(
-                AppLocalizations.of(context)!.translate("ticketdetailText") ?? '',
+                AppLocalizations.of(context)!.translate("ticketdetailText") ??
+                    '',
                 style: GoogleFonts.poppins(fontSize: 13, color: Colors.grey),
                 textAlign: TextAlign.center,
               ),
@@ -349,7 +368,8 @@ void _showUpgradeDialog(BuildContext context) {
                       context.pushNamed('myPlansNested');
                     },
                     child: Text(
-                      AppLocalizations.of(context)!.translate("viewPlanText") ?? '',
+                      AppLocalizations.of(context)!.translate("viewPlanText") ??
+                          '',
                       style: GoogleFonts.poppins(
                         fontSize: 13,
                         color: AppColors.whiteColor,
@@ -372,7 +392,8 @@ void _showUpgradeDialog(BuildContext context) {
                       Navigator.pop(context);
                     },
                     child: Text(
-                      AppLocalizations.of(context)!.translate("cancelText") ?? '',
+                      AppLocalizations.of(context)!.translate("cancelText") ??
+                          '',
                       style: GoogleFonts.poppins(
                         fontSize: 13,
                         color: AppColors.whiteColor,
