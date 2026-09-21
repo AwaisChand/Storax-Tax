@@ -1,4 +1,3 @@
-import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_polyline_points/flutter_polyline_points.dart';
 import 'package:go_router/go_router.dart';
@@ -47,10 +46,7 @@ class _showMapScreenState extends State<showMapScreen> {
     final auth = context.read<AuthViewModel>().user;
     final vm = context.read<GasolineViewModel>();
 
-    final int? userId =
-    (auth?.role == 'team')
-        ? auth?.userId
-        : auth?.id;
+    final int? userId = (auth?.role == 'team') ? auth?.userId : auth?.id;
     if (auth == null) return;
 
     List<LatLng> allPoints = [];
@@ -78,7 +74,7 @@ class _showMapScreenState extends State<showMapScreen> {
             data.routePolyline!,
           );
           final List<LatLng> segmentPoints =
-          decoded.map((p) => LatLng(p.latitude, p.longitude)).toList();
+              decoded.map((p) => LatLng(p.latitude, p.longitude)).toList();
 
           allPoints.addAll(segmentPoints);
 
@@ -161,19 +157,23 @@ class _showMapScreenState extends State<showMapScreen> {
   @override
   Widget build(BuildContext context) {
     LatLng initialTarget =
-    _allRoutePoints.isNotEmpty
-        ? _allRoutePoints.first
-        : const LatLng(31.4815, 74.3030);
+        _allRoutePoints.isNotEmpty
+            ? _allRoutePoints.first
+            : const LatLng(31.4815, 74.3030);
 
     return Scaffold(
       appBar: CustomAppBar(
         text1: AppLocalizations.of(context)!.translate("showMapText") ?? '',
         text2: "",
-        onBackTap:
-            () => Future.microtask(() {
-          context.goNamed("bottomNavBar");
-          BottomNavBar.of(context)?.switchTab(1);
-        }),
+        onBackTap: () {
+          Future.microtask(() {
+            if (!mounted) return;
+            final bottomNav = BottomNavBar.of(context);
+            context.goNamed("bottomNavBar");
+            bottomNav?.goToDashboard();
+            Navigator.of(context).popUntil((route) => route.isFirst);
+          });
+        },
         showBackButton: true,
       ),
 

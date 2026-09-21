@@ -28,10 +28,10 @@ class InstructionsViewModel extends ChangeNotifier {
       final response = await instructionsRepository.instructionsRepo();
 
       if (response.status == 1) {
-        _instructions = response.data!;
-        Utils.toastMessage(response.success!);
-      } else {
-        Utils.toastMessage(response.success!);
+        _instructions = response.data ?? [];
+      }
+      if (context.mounted) {
+        Utils.toastMessage(_localizedSuccess(context, response));
       }
 
       if (kDebugMode) {
@@ -45,4 +45,11 @@ class InstructionsViewModel extends ChangeNotifier {
     }
   }
 
+  String _localizedSuccess(BuildContext context, InstructionsModel response) {
+    final locale = Localizations.localeOf(context).languageCode;
+    if (locale == 'fr' && (response.successFr ?? '').isNotEmpty) {
+      return response.successFr!;
+    }
+    return response.success ?? '';
+  }
 }

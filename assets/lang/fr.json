@@ -511,6 +511,7 @@
   "gasReceiptManagerText": "Gestionnaire de reçus d'essence",
   "uberText": "UBER TPS/TVQ",
   "taxManText": "Gestionnaire d'impôts",
+  "kmTrackingText": "Suivi du kilométrage",
   "rentalText": "Gestionnaire de propriétés locatives",
 
 
@@ -519,6 +520,7 @@
   "gasTitleText": "Gas Receipts Manager - Guide d'instructions",
   "quebecTitleText": "Uber GST/QST Reporting - Guide simplifié",
   "tmTitleText": "Tax Manager - Guide simplifié IA",
+  "kmTitleText": "Suivi du kilométrage - Guide d'utilisation",
   "rentalTitleText": "Gestionnaire de propriétés locatives",
 
   "ticketUnavailableText": "Billets de support indisponibles",

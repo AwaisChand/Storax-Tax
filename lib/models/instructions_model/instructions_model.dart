@@ -1,13 +1,15 @@
 class InstructionsModel {
   int? status;
   String? success;
+  String? successFr;
   List<InstructionData>? data;
 
-  InstructionsModel({this.status, this.success, this.data});
+  InstructionsModel({this.status, this.success, this.successFr, this.data});
 
   InstructionsModel.fromJson(Map<String, dynamic> json) {
     status = json['status'];
     success = json['success'];
+    successFr = json['success_fr'];
     if (json['data'] != null) {
       data = <InstructionData>[];
       json['data'].forEach((v) {
@@ -20,6 +22,7 @@ class InstructionsModel {
     final Map<String, dynamic> json = {};
     json['status'] = status;
     json['success'] = success;
+    json['success_fr'] = successFr;
     if (data != null) {
       json['data'] = data!.map((v) => v.toJson()).toList();
     }
@@ -31,10 +34,9 @@ class InstructionData {
   String? slug;
   String? type;
   String? pdfUrl;
-  dynamic legacyPdfUrl;
+  LegacyPdfUrl? legacyPdfUrl;
   TitleModel? title;
   TitleModel? navLabel;
-
   StepsModel? steps;
   SectionsModel? sections;
 
@@ -53,15 +55,19 @@ class InstructionData {
     slug = json['slug'];
     type = json['type'];
     pdfUrl = json['pdf_url'];
-    legacyPdfUrl = json['legacy_pdf_url'];
-    title =
-    json['title'] != null ? TitleModel.fromJson(json['title']) : null;
+    if (json['legacy_pdf_url'] is Map<String, dynamic>) {
+      legacyPdfUrl = LegacyPdfUrl.fromJson(json['legacy_pdf_url']);
+    }
+    title = json['title'] != null ? TitleModel.fromJson(json['title']) : null;
     navLabel =
-    json['nav_label'] != null ? TitleModel.fromJson(json['nav_label']) : null;
-
+        json['nav_label'] != null
+            ? TitleModel.fromJson(json['nav_label'])
+            : null;
     steps = json['steps'] != null ? StepsModel.fromJson(json['steps']) : null;
     sections =
-    json['sections'] != null ? SectionsModel.fromJson(json['sections']) : null;
+        json['sections'] != null
+            ? SectionsModel.fromJson(json['sections'])
+            : null;
   }
 
   Map<String, dynamic> toJson() {
@@ -69,12 +75,36 @@ class InstructionData {
     json['slug'] = slug;
     json['type'] = type;
     json['pdf_url'] = pdfUrl;
-    json['legacy_pdf_url'] = legacyPdfUrl;
+    json['legacy_pdf_url'] = legacyPdfUrl?.toJson();
     if (title != null) json['title'] = title!.toJson();
     if (navLabel != null) json['nav_label'] = navLabel!.toJson();
     if (steps != null) json['steps'] = steps!.toJson();
     if (sections != null) json['sections'] = sections!.toJson();
     return json;
+  }
+
+  String localizedTitle(String locale) =>
+      locale == 'fr' ? (title?.fr ?? title?.en ?? '') : (title?.en ?? '');
+
+  String localizedNavLabel(String locale) =>
+      locale == 'fr'
+          ? (navLabel?.fr ?? navLabel?.en ?? '')
+          : (navLabel?.en ?? '');
+}
+
+class LegacyPdfUrl {
+  TitleModel? ca;
+  TitleModel? us;
+
+  LegacyPdfUrl({this.ca, this.us});
+
+  LegacyPdfUrl.fromJson(Map<String, dynamic> json) {
+    ca = json['ca'] != null ? TitleModel.fromJson(json['ca']) : null;
+    us = json['us'] != null ? TitleModel.fromJson(json['us']) : null;
+  }
+
+  Map<String, dynamic> toJson() {
+    return {'ca': ca?.toJson(), 'us': us?.toJson()};
   }
 }
 
@@ -90,10 +120,7 @@ class TitleModel {
   }
 
   Map<String, dynamic> toJson() {
-    return {
-      'en': en,
-      'fr': fr,
-    };
+    return {'en': en, 'fr': fr};
   }
 }
 
@@ -134,12 +161,7 @@ class StepItem {
   String? questionHtml;
   String? answerHtml;
 
-  StepItem({
-    this.question,
-    this.answer,
-    this.questionHtml,
-    this.answerHtml,
-  });
+  StepItem({this.question, this.answer, this.questionHtml, this.answerHtml});
 
   StepItem.fromJson(Map<String, dynamic> json) {
     question = json['question'];
@@ -221,12 +243,7 @@ class SectionStep {
   String? screenshot;
   String? screenshotUrl;
 
-  SectionStep({
-    this.text,
-    this.textHtml,
-    this.screenshot,
-    this.screenshotUrl,
-  });
+  SectionStep({this.text, this.textHtml, this.screenshot, this.screenshotUrl});
 
   SectionStep.fromJson(Map<String, dynamic> json) {
     text = json['text'];

@@ -506,6 +506,7 @@
   "gasReceiptManagerText": "Gas Receipts Manager",
   "uberText": "UBER GST/QST",
   "taxManText": "Tax Manager",
+  "kmTrackingText": "KM Tracking",
   "rentalText": "Rental Property Management",
 
 
@@ -514,6 +515,7 @@
   "gasTitleText": "Gas Receipts Manager - Instruction Guide",
   "quebecTitleText": "Uber GST/QST Reporting - Simplified Guide",
   "tmTitleText": "Tax Manager - AI Simplified Guide",
+  "kmTitleText": "KM Tracking - User Guide",
   "rentalTitleText": "Rental property manager",
 
   "ticketUnavailableText": "Support Tickets Unavailable",

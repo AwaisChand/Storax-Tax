@@ -200,6 +200,17 @@ class AppDrawer extends StatelessWidget {
                       title:
                           AppLocalizations.of(
                             context,
+                          )!.translate("kmTrackingText") ??
+                          '',
+                      onTap: () {
+                        context.pushNamed("inst-km-tracking");
+                      },
+                    ),
+                    _buildSubMenuBulletItem(
+                      context,
+                      title:
+                          AppLocalizations.of(
+                            context,
                           )!.translate("rentalText") ??
                           '',
                       onTap: () {

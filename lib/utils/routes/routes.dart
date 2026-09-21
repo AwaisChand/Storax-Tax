@@ -29,6 +29,7 @@ import 'package:storatax/screens/support_tickets/create_ticket/create_ticket_scr
 import 'package:storatax/screens/support_tickets/support_tickets_list_screen/support_tickets_list_screen.dart';
 
 import '../../screens/bottom_nav_bar/bottom_nav_bar_screens/rental_property/rental_property_screens/entry/entry_screens/all_regular_entry_screen.dart';
+import '../../screens/instructions/instructions_screens/km_tracking_screen.dart';
 import '../../screens/instructions/instructions_screens/tax_manager_screen.dart';
 
 final GlobalKey<NavigatorState> rootNavigatorKey = GlobalKey<NavigatorState>();
@@ -233,6 +234,11 @@ class AppRouter {
         path: '/tax-manager',
         name: 'tax-manager',
         builder: (context, state) => TaxManagerScreen(),
+      ),
+      GoRoute(
+        path: '/inst-km-tracking',
+        name: 'inst-km-tracking',
+        builder: (context, state) => const KmTrackingInstructionScreen(),
       ),
       GoRoute(
         path: '/rental',
