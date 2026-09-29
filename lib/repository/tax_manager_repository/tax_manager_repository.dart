@@ -19,32 +19,16 @@ class TaxManagerRepository {
 
   Future<dynamic> createFileRepo({
     required Map<String, dynamic> fields,
-    required List<File> files,
   }) async {
     try {
-      final Map<String, File> fileMap = {};
-      for (int i = 0; i < files.length; i++) {
-        final original = files[i];
-        taxManagerScanLog(
-          'createFileRepo: file[$i] incoming path=${original.path}',
-        );
-        final normalized = await normalizeScanUploadToJpegIfNeeded(
-          original,
-          logFlow: 'TaxManagerCreate',
-        );
-        try {
-          final len = await normalized.length();
-          taxManagerScanLog(
-            'createFileRepo: file[$i] after normalize path=${normalized.path} bytes=$len',
-          );
-        } catch (_) {}
-        fileMap['files[$i]'] = normalized;
-      }
+      taxManagerScanLog(
+        'createFileRepo: fields=${fields.keys.toList()} '
+        'redacted_temp_path=${fields['redacted_temp_path']}',
+      );
 
       dynamic response = await baseApiServices.multipartPostRequest(
         AppUrl.createFileEndPoint,
         fields: fields,
-        files: fileMap,
       );
 
       debugPrint("Raw API response JSON: $response");
@@ -118,37 +102,17 @@ class TaxManagerRepository {
   Future<dynamic> updateFileRepo({
     required int id,
     required Map<String, dynamic> fields,
-    List<File>? filesPath,
   }) async {
     try {
       final String urlWithId = "${AppUrl.filesEndPoint}/$id";
-
-      Map<String, File>? fileMap;
-      if (filesPath != null && filesPath.isNotEmpty) {
-        fileMap = {};
-        for (int i = 0; i < filesPath.length; i++) {
-          final original = filesPath[i];
-          taxManagerScanLog(
-            'updateFileRepo: file[$i] incoming path=${original.path}',
-          );
-          final normalized = await normalizeScanUploadToJpegIfNeeded(
-            original,
-            logFlow: 'TaxManagerUpdate',
-          );
-          try {
-            final len = await normalized.length();
-            taxManagerScanLog(
-              'updateFileRepo: file[$i] after normalize path=${normalized.path} bytes=$len',
-            );
-          } catch (_) {}
-          fileMap['files[$i]'] = normalized;
-        }
-      }
+      taxManagerScanLog(
+        'updateFileRepo: fields=${fields.keys.toList()} '
+        'redacted_temp_path=${fields['redacted_temp_path']}',
+      );
 
       dynamic response = await baseApiServices.multipartPostRequest(
         urlWithId,
         fields: fields,
-        files: fileMap,
       );
 
       debugPrint("Update File API response: $response");

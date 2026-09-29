@@ -196,35 +196,40 @@ class _ViewFileDetailState extends State<ViewFileDetail> {
                         Wrap(
                           spacing: 10,
                           runSpacing: 10,
-                          children: uploadsList.map((upload) {
+                          children: uploadsList.asMap().entries.map((entry) {
+                            final index = entry.key;
+                            final upload = entry.value;
                             return Stack(
                               children: [
-                                ClipRRect(
-                                  borderRadius: BorderRadius.circular(8),
-                                  child: CachedNetworkImage(
-                                    imageUrl: upload.filePath ?? '',
-                                    width: 80,
-                                    height: 80,
-                                    fit: BoxFit.cover,
-                                    placeholder: (context, url) =>
-                                        Container(
-                                          width: 80,
-                                          height: 80,
-                                          color: Colors.grey.shade300,
-                                          child: const Center(
-                                            child:
-                                            CircularProgressIndicator(
-                                                strokeWidth: 2),
-                                          ),
-                                        ),
-                                    errorWidget:
-                                        (context, url, error) => Container(
+                                GestureDetector(
+                                  onTap: () => _openImageViewer(index),
+                                  child: ClipRRect(
+                                    borderRadius: BorderRadius.circular(8),
+                                    child: CachedNetworkImage(
+                                      imageUrl: upload.filePath ?? '',
                                       width: 80,
                                       height: 80,
-                                      color: Colors.grey.shade200,
-                                      child: const Icon(
-                                        Icons.broken_image,
-                                        size: 40,
+                                      fit: BoxFit.cover,
+                                      placeholder: (context, url) =>
+                                          Container(
+                                            width: 80,
+                                            height: 80,
+                                            color: Colors.grey.shade300,
+                                            child: const Center(
+                                              child:
+                                              CircularProgressIndicator(
+                                                  strokeWidth: 2),
+                                            ),
+                                          ),
+                                      errorWidget:
+                                          (context, url, error) => Container(
+                                        width: 80,
+                                        height: 80,
+                                        color: Colors.grey.shade200,
+                                        child: const Icon(
+                                          Icons.broken_image,
+                                          size: 40,
+                                        ),
                                       ),
                                     ),
                                   ),
@@ -278,6 +283,28 @@ class _ViewFileDetailState extends State<ViewFileDetail> {
     );
   }
 
+  void _openImageViewer(int initialIndex) {
+    final urls =
+        uploadsList
+            .map((e) => e.filePath ?? '')
+            .where((url) => url.isNotEmpty)
+            .toList();
+    if (urls.isEmpty) return;
+
+    Navigator.of(context).push(
+      PageRouteBuilder(
+        opaque: true,
+        barrierColor: Colors.black,
+        pageBuilder: (_, __, ___) {
+          return _FullScreenImageViewer(
+            imageUrls: urls,
+            initialIndex: initialIndex.clamp(0, urls.length - 1),
+          );
+        },
+      ),
+    );
+  }
+
   Widget _rowWidget(String text1, String text2) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -299,6 +326,99 @@ class _ViewFileDetailState extends State<ViewFileDetail> {
           ),
         ),
       ],
+    );
+  }
+}
+
+class _FullScreenImageViewer extends StatefulWidget {
+  const _FullScreenImageViewer({
+    required this.imageUrls,
+    required this.initialIndex,
+  });
+
+  final List<String> imageUrls;
+  final int initialIndex;
+
+  @override
+  State<_FullScreenImageViewer> createState() => _FullScreenImageViewerState();
+}
+
+class _FullScreenImageViewerState extends State<_FullScreenImageViewer> {
+  late final PageController _pageController;
+  late int _index;
+
+  @override
+  void initState() {
+    super.initState();
+    _index = widget.initialIndex;
+    _pageController = PageController(initialPage: widget.initialIndex);
+  }
+
+  @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.black,
+      body: Stack(
+        children: [
+          PageView.builder(
+            controller: _pageController,
+            itemCount: widget.imageUrls.length,
+            onPageChanged: (value) => setState(() => _index = value),
+            itemBuilder: (context, index) {
+              return InteractiveViewer(
+                minScale: 1,
+                maxScale: 5,
+                child: Center(
+                  child: CachedNetworkImage(
+                    imageUrl: widget.imageUrls[index],
+                    fit: BoxFit.contain,
+                    placeholder: (_, __) => const Center(
+                      child: CircularProgressIndicator(
+                        color: Colors.white,
+                        strokeWidth: 2,
+                      ),
+                    ),
+                    errorWidget: (_, __, ___) => const Icon(
+                      Icons.broken_image,
+                      color: Colors.white54,
+                      size: 48,
+                    ),
+                  ),
+                ),
+              );
+            },
+          ),
+          SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              child: Row(
+                children: [
+                  IconButton(
+                    onPressed: () => Navigator.of(context).pop(),
+                    icon: const Icon(Icons.close, color: Colors.white),
+                  ),
+                  const Spacer(),
+                  if (widget.imageUrls.length > 1)
+                    Text(
+                      '${_index + 1} / ${widget.imageUrls.length}',
+                      style: GoogleFonts.poppins(
+                        color: Colors.white70,
+                        fontSize: 13,
+                      ),
+                    ),
+                  const SizedBox(width: 12),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

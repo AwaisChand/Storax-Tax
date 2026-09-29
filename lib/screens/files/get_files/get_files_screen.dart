@@ -11,7 +11,6 @@ import '../../../utils/utils.dart';
 import '../../../view_models/pricing_plans_view_model/pricing_plans_view_model.dart';
 import '../../../view_models/tax_manager_view_model/tax_manager_view_model.dart';
 import '../dialog_box.dart';
-import '../scan_tax_manager/scan_tax_manager_screen.dart';
 import '../update_file/update_file_screen.dart';
 import '../view_file_detail/view_file_detail.dart';
 import '../widgets.dart';
@@ -71,21 +70,12 @@ class _GetFilesScreenState extends State<GetFilesScreen> {
           floatingActionButton: FloatingActionButton(
             heroTag: null,
             onPressed: () {
-              if (isBusinessTaxManager) {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => CreateTaxManagerScreen(),
-                  ),
-                );
-              } else {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => ScanTaxManagerScreen(),
-                  ),
-                );
-              }
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const CreateTaxManagerScreen(),
+                ),
+              );
             },
             child: Icon(Icons.add, size: 40),
           ),

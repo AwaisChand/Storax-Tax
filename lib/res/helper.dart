@@ -20,7 +20,9 @@ Future<String> getCountryCode() async {
     }
 
     Position position = await Geolocator.getCurrentPosition(
-      desiredAccuracy: LocationAccuracy.high,
+      locationSettings: const LocationSettings(
+        accuracy: LocationAccuracy.high,
+      ),
     );
 
     List<Placemark> placemarks = await placemarkFromCoordinates(
@@ -108,7 +110,7 @@ Future<void> startSubscriptionFlow(
 
     final paymentMethodId = setupIntent.paymentMethodId;
 
-    if (paymentMethodId == null) {
+    if (paymentMethodId.isEmpty) {
       Utils.toastMessage("Payment method not found");
       return;
     }
@@ -148,6 +150,8 @@ Future<void> startSubscriptionFlow(
 
     // ✅ STEP 6: Call paymentApi
     debugPrint("🚀 STEP 6: Call paymentApi");
+
+    if (!context.mounted) return;
 
     await provider.paymentApi(context, {
       "subscription_id": subscriptionId,
@@ -260,7 +264,7 @@ Future saveSubscriptionFlow(
 
     debugPrint("💳 PAYMENT METHOD ID: $paymentMethodId");
 
-    if (paymentMethodId == null) {
+    if (paymentMethodId.isEmpty) {
       Utils.toastMessage("Payment method not found");
       return;
     }
@@ -296,6 +300,8 @@ Future saveSubscriptionFlow(
     }
 
     debugPrint("✅ SUBSCRIPTION ID: $subscriptionId");
+
+    if (!context.mounted) return;
 
     /// ✅ STEP 8: SAVE SUBSCRIPTION
     await provider.saveSubscriptionApi(context, {

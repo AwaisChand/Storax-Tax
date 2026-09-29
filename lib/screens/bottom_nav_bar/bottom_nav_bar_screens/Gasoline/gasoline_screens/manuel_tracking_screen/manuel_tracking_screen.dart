@@ -36,8 +36,6 @@ class _ManuelTrackingScreenState extends State<ManuelTrackingScreen> {
 
   static const LatLng _defaultCenter = LatLng(31.4815, 74.3030);
 
-  bool _isLoadingLocation = true;
-
   List<Map<String, dynamic>> routePoints = [
     {
       'id': 'start_point',
@@ -82,7 +80,6 @@ class _ManuelTrackingScreenState extends State<ManuelTrackingScreen> {
           'lat': userCoordinates.latitude,
           'lng': userCoordinates.longitude,
         };
-        _isLoadingLocation = false;
       });
 
       _updateMapElements();
@@ -93,9 +90,7 @@ class _ManuelTrackingScreenState extends State<ManuelTrackingScreen> {
         );
       }
     } catch (e) {
-      setState(() {
-        _isLoadingLocation = false;
-      });
+      debugPrint("Location error: $e");
     }
   }
 
@@ -351,7 +346,7 @@ class _ManuelTrackingScreenState extends State<ManuelTrackingScreen> {
     );
 
     if (pickedDate != null) {
-      if (!mounted) return;
+      if (!context.mounted) return;
       final TimeOfDay? pickedTime = await showTimePicker(
         context: context,
         initialTime: TimeOfDay.fromDateTime(selectedDateTime),

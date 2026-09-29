@@ -1,10 +1,18 @@
 import 'dart:io';
 
+import 'package:cunning_document_scanner/cunning_document_scanner.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_image_compress/flutter_image_compress.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:google_mlkit_document_scanner/google_mlkit_document_scanner.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
+import 'package:path/path.dart' as path;
+import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:storatax/res/components/app_text_field.dart';
+import 'package:storatax/screens/files/scan_tax_manager/crop_document_dialog.dart';
+import 'package:storatax/screens/files/scan_tax_manager/scanned_receipt.dart';
 import 'package:storatax/view_models/auth_view_model/auth_view_model.dart';
 import 'package:storatax/view_models/tax_manager_view_model/tax_manager_view_model.dart';
 
@@ -12,77 +20,803 @@ import '../../../res/app_assets.dart';
 import '../../../res/components/app_localization.dart';
 import '../../../utils/app_colors.dart';
 import '../../../utils/camera_permission.dart';
+import '../../../utils/scan_upload_file.dart';
 import '../../../utils/utils.dart';
 import '../../../view_models/pricing_plans_view_model/pricing_plans_view_model.dart';
 
 class CreateTaxManagerScreen extends StatefulWidget {
-  const CreateTaxManagerScreen({super.key, this.receiptData, this.receiptFile});
+  const CreateTaxManagerScreen({
+    super.key,
+    this.receiptData,
+    this.receiptFile,
+    this.receiptRedactedTempPath,
+  });
+
   final Map<String, dynamic>? receiptData;
   final File? receiptFile;
+  final String? receiptRedactedTempPath;
 
   @override
   State<CreateTaxManagerScreen> createState() => _CreateTaxManagerScreenState();
 }
 
 class _CreateTaxManagerScreenState extends State<CreateTaxManagerScreen> {
-  final List<String> categories = ['Income', 'Expenses', 'Deductions'];
-  final List<String> years = List.generate(7, (i) {
-    final currentYear = DateTime.now().year;
-    return '${currentYear - i}';
-  });
+  static const int _yearWindow = 7;
+  static const int _maxFileBytes = 5 * 1024 * 1024;
+  static const Color _borderGrey = Color(0xFFD0D5DD);
+  static const Color _panelBorder = Color(0xFFD6DCEA);
+  static const Color _chooserFill = Color(0xFFF8F9FB);
+  static const Color _mutedText = Color(0xFF6B7280);
+  static const Color _hintText = Color(0xFF8B93A7);
+
+  late final List<String> _years;
   String? selectedYear;
   DateTime? selectedDate;
   String? selectedCategory;
-  String? selectedFilePath;
-  late String fileName;
 
-  TextEditingController fileNameController = TextEditingController();
-  TextEditingController commentsController = TextEditingController();
+  final TextEditingController fileNameController = TextEditingController();
+  final TextEditingController commentsController = TextEditingController();
+  final List<ScannedReceipt> _receipts = [];
+  bool _isIngesting = false;
+
+  String _t(String key) => AppLocalizations.of(context)?.translate(key) ?? '';
+
+  bool get _isBusinessTaxManager {
+    final plans = context.read<PricingPlansViewModel>();
+    return plans.myPlans
+        .map((p) => p.name?.toLowerCase().trim() ?? '')
+        .any((name) => name.contains('business tax manager'));
+  }
+
+  bool _isYearAllowed(int year) {
+    final now = DateTime.now();
+    return year >= now.year - (_yearWindow - 1) && year <= now.year;
+  }
+
+  String? _redactedPathOf(ScannedReceipt receipt) {
+    final fromReceipt = receipt.redactedTempPath;
+    if (fromReceipt != null && fromReceipt.isNotEmpty) return fromReceipt;
+    return receipt.scanData?['redacted_temp_path']?.toString();
+  }
 
   @override
   void initState() {
     super.initState();
+    final now = DateTime.now();
+    _years = List.generate(_yearWindow, (i) => '${now.year - i}');
+    selectedYear = now.year.toString();
+    selectedDate = now;
 
-    final currentYear = DateTime.now().year.toString();
-    if (years.contains(currentYear)) {
-      selectedYear = currentYear;
-      selectedDate = DateTime.now();
-    }
     final data = widget.receiptData;
-    final authViewModel = context.read<AuthViewModel>();
-
-    fileName =
-        widget.receiptFile != null
-            ? widget.receiptFile!.path.split('/').last
-            : 'No file chosen';
-
     if (data != null) {
       final yearFromData = int.tryParse(data['year'].toString());
-      final now = DateTime.now();
-      final minYear = now.year - 6;
-      final maxYear = now.year;
-
-      if (yearFromData != null &&
-          yearFromData >= minYear &&
-          yearFromData <= maxYear) {
-        selectedYear = yearFromData.toString();
-      } else {
-        selectedYear = null; // Year is out of allowed range -> show empty
-      }
-
-      fileNameController.text = data['file_name'] ?? 'No File';
-      selectedCategory = data['category'];
+      selectedYear =
+          yearFromData != null && _isYearAllowed(yearFromData)
+              ? yearFromData.toString()
+              : null;
+      fileNameController.text = data['file_name']?.toString() ?? '';
+      selectedCategory = data['category']?.toString();
       if (data['date'] != null) {
-        selectedDate = DateTime.tryParse(data['date']);
+        selectedDate =
+            DateTime.tryParse(data['date'].toString()) ?? selectedDate;
       }
     }
+
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      final provider = context.read<TaxManagerViewModel>();
-      provider.getCategoryApi(context);
-    });
-    Future.microtask(() {
+      if (!mounted) return;
+      context.read<TaxManagerViewModel>().getCategoryApi(context);
       context.read<AuthViewModel>().clearPickedImages();
+      if (widget.receiptFile != null) {
+        _seedIncomingReceipt();
+      }
     });
+  }
+
+  @override
+  void dispose() {
+    fileNameController.dispose();
+    commentsController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _seedIncomingReceipt() async {
+    final file = widget.receiptFile;
+    if (file == null) return;
+    var size = 0;
+    try {
+      size = await file.length();
+    } catch (_) {}
+    if (!mounted) return;
+    setState(() {
+      _receipts.add(
+        ScannedReceipt(
+          id: 'seed_${DateTime.now().millisecondsSinceEpoch}',
+          file: file,
+          displayName: path.basename(file.path),
+          status: 'ready',
+          sizeBytes: size,
+          scanData: widget.receiptData,
+          redactedTempPath:
+              widget.receiptRedactedTempPath ??
+              widget.receiptData?['redacted_temp_path']?.toString(),
+        ),
+      );
+    });
+  }
+
+  Future<bool> _ensureFileSizeOk(File file) async {
+    try {
+      if (await file.length() > _maxFileBytes) {
+        Utils.toastMessage(_t('fileTooLargeText'));
+        return false;
+      }
+    } catch (_) {}
+    return true;
+  }
+
+  Future<File> _copyToTemp(File original) async {
+    final dir = await getTemporaryDirectory();
+    final newPath =
+        '${dir.path}/${DateTime.now().millisecondsSinceEpoch}_${path.basename(original.path)}';
+    return original.copy(newPath);
+  }
+
+  Future<File> _prepareCameraImage(File file) async {
+    var persisted = file;
+    try {
+      persisted = await _copyToTemp(file);
+    } catch (_) {}
+
+    try {
+      final dir = await getTemporaryDirectory();
+      final target =
+          '${dir.path}/tax_detect_${DateTime.now().millisecondsSinceEpoch}.jpg';
+      final out = await FlutterImageCompress.compressAndGetFile(
+        persisted.absolute.path,
+        target,
+        quality: 90,
+        format: CompressFormat.jpeg,
+        autoCorrectionAngle: true,
+      );
+      if (out != null) {
+        final jpeg = File(out.path);
+        if (await jpeg.exists() && await jpeg.length() > 0) {
+          return jpeg;
+        }
+      }
+    } catch (_) {}
+
+    return normalizeScanUploadToJpegIfNeeded(
+      persisted,
+      logFlow: 'TaxManagerDetect',
+    );
+  }
+
+  bool _guardNewFile() {
+    final blocked =
+        _isIngesting || (!_isBusinessTaxManager && _receipts.isNotEmpty);
+    if (blocked) {
+      Utils.toastMessage(_t('finishCurrentFileText'));
+      return false;
+    }
+    return true;
+  }
+
+  Future<void> _openCropThenAdd(File image, {ScannedReceipt? replace}) async {
+    if (!mounted) return;
+    final result = await CropDocumentDialog.open(
+      context,
+      imageFile: image,
+      fileName: path.basename(image.path),
+    );
+    if (!mounted || result == null) return;
+
+    var size = 0;
+    try {
+      size = await result.file.length();
+    } catch (_) {}
+
+    final tempPath =
+        result.redactedTempPath ??
+        result.scanData?['redacted_temp_path']?.toString();
+
+    setState(() {
+      if (replace != null) {
+        replace
+          ..file = result.file
+          ..displayName = result.fileName
+          ..sizeBytes = size
+          ..scanData = result.scanData
+          ..redactedTempPath = tempPath
+          ..status = 'ready';
+      } else {
+        if (!_isBusinessTaxManager) _receipts.clear();
+        _receipts.add(
+          ScannedReceipt(
+            id: '${DateTime.now().millisecondsSinceEpoch}_${_receipts.length}',
+            file: result.file,
+            displayName: result.fileName,
+            status: 'ready',
+            sizeBytes: size,
+            scanData: result.scanData,
+            redactedTempPath: tempPath,
+          ),
+        );
+      }
+    });
+    _applyScanDataIfEmpty(result.scanData);
+  }
+
+  Future<void> _showPickSheet() async {
+    if (!_guardNewFile()) return;
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (sheetContext) {
+        return Padding(
+          padding: const EdgeInsets.all(20),
+          child: Wrap(
+            children: [
+              ListTile(
+                leading: Icon(
+                  Icons.photo_library,
+                  color: AppColors.goldenOrangeColor,
+                ),
+                title: Text(_t('galleryText')),
+                onTap: () async {
+                  Navigator.pop(sheetContext);
+                  await _pickFromGallery();
+                },
+              ),
+              ListTile(
+                leading: Icon(
+                  Icons.camera_alt,
+                  color: AppColors.goldenOrangeColor,
+                ),
+                title: Text(_t('cameraText')),
+                onTap: () async {
+                  Navigator.pop(sheetContext);
+                  await _startSmartCameraCapture();
+                },
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Future<void> _pickFromGallery() async {
+    if (!_guardNewFile()) return;
+    try {
+      final image = await ImagePicker().pickImage(source: ImageSource.gallery);
+      if (image == null) return;
+      _isIngesting = true;
+      final raw = File(image.path);
+      if (!await _ensureFileSizeOk(raw)) return;
+      await _openCropThenAdd(raw);
+    } catch (e) {
+      debugPrint('Error picking image: $e');
+    } finally {
+      _isIngesting = false;
+    }
+  }
+
+  Future<void> _startSmartCameraCapture() async {
+    if (!_guardNewFile()) return;
+    final granted = await ensureCameraPermission(context);
+    if (!granted) return;
+
+    _isIngesting = true;
+    try {
+      if (Platform.isAndroid) {
+        final scanner = DocumentScanner(
+          options: DocumentScannerOptions(
+            documentFormats: {DocumentFormat.jpeg},
+            mode: ScannerMode.full,
+            isGalleryImport: false,
+            pageLimit: 1,
+          ),
+        );
+        final result = await scanner.scanDocument();
+        if (result.images != null && result.images!.isNotEmpty) {
+          await _processCameraFile(File(result.images!.first));
+        }
+        await scanner.close();
+      } else if (Platform.isIOS) {
+        final pictures = await CunningDocumentScanner.getPictures(
+          noOfPages: 1,
+          isGalleryImportAllowed: true,
+        );
+        if (pictures != null && pictures.isNotEmpty) {
+          var cleanedPath = pictures.first;
+          if (cleanedPath.startsWith('file://')) {
+            cleanedPath = cleanedPath.replaceFirst('file://', '');
+          }
+          await _processCameraFile(File(Uri.decodeFull(cleanedPath)));
+        }
+      }
+    } catch (e) {
+      if (!e.toString().toLowerCase().contains('cancel')) {
+        Utils.toastMessage(_t('cameraLaunchFailedText'));
+      }
+    } finally {
+      _isIngesting = false;
+    }
+  }
+
+  Future<void> _processCameraFile(File file) async {
+    var retry = 0;
+    while (!await file.exists() && retry < 5) {
+      await Future.delayed(const Duration(milliseconds: 200));
+      retry++;
+    }
+    if (!await file.exists()) {
+      Utils.toastMessage(_t('scannedFileNotFoundText'));
+      return;
+    }
+    if (!await _ensureFileSizeOk(file)) return;
+    final prepared = await _prepareCameraImage(file);
+    if (!mounted) return;
+    await _openCropThenAdd(prepared);
+  }
+
+  void _applyScanDataIfEmpty(Map<String, dynamic>? data) {
+    if (data == null) return;
+    setState(() {
+      if (fileNameController.text.trim().isEmpty) {
+        fileNameController.text = data['file_name']?.toString() ?? '';
+      }
+      selectedCategory ??= data['category']?.toString();
+      if (selectedDate == null && data['date'] != null) {
+        selectedDate = DateTime.tryParse(data['date'].toString());
+      }
+      final yearFromData = int.tryParse(data['year']?.toString() ?? '');
+      if (yearFromData != null && _isYearAllowed(yearFromData)) {
+        selectedYear ??= yearFromData.toString();
+      }
+    });
+  }
+
+  bool _attachRedactedTempPaths(
+    Map<String, dynamic> fields, {
+    required bool isBusiness,
+  }) {
+    final paths = <String>[];
+
+    if (isBusiness) {
+      if (_receipts.isEmpty) {
+        Utils.toastMessage(_t('addAtLeastOneFileText'));
+        return false;
+      }
+      for (final receipt in _receipts) {
+        final pathValue = _redactedPathOf(receipt);
+        if (pathValue == null || pathValue.isEmpty) {
+          Utils.toastMessage(_t('scanEachFileBeforeSaveText'));
+          return false;
+        }
+        paths.add(pathValue);
+      }
+    } else {
+      final pathValue =
+          widget.receiptRedactedTempPath ??
+          widget.receiptData?['redacted_temp_path']?.toString() ??
+          (_receipts.isEmpty ? null : _redactedPathOf(_receipts.first));
+      if (pathValue == null || pathValue.isEmpty) {
+        Utils.toastMessage(_t('scanDocumentBeforeSaveText'));
+        return false;
+      }
+      paths.add(pathValue);
+    }
+
+    if (paths.length == 1) {
+      fields['redacted_temp_path'] = paths.first;
+    } else {
+      for (var i = 0; i < paths.length; i++) {
+        fields['redacted_temp_path[$i]'] = paths[i];
+      }
+    }
+    return true;
+  }
+
+  void _onSave({
+    required TaxManagerViewModel provider,
+    required bool isBusiness,
+  }) {
+    if (selectedYear == null) {
+      Utils.toastMessage(_t('pleaseSelectYear'));
+      return;
+    }
+    if (fileNameController.text.trim().isEmpty) {
+      Utils.toastMessage(_t('pleaseEnterFileNameText'));
+      return;
+    }
+    if (selectedCategory == null) {
+      Utils.toastMessage(_t('pleaseSelectCategoryText'));
+      return;
+    }
+    if (selectedDate == null) {
+      Utils.toastMessage(_t('pleaseSelectDateText'));
+      return;
+    }
+
+    final fields = <String, dynamic>{
+      'year': selectedYear,
+      'file_name': fileNameController.text.trim(),
+      'category': selectedCategory,
+      'date': DateFormat('yyyy-MM-dd').format(selectedDate!),
+      'comments': commentsController.text,
+    };
+
+    if (!_attachRedactedTempPaths(fields, isBusiness: isBusiness)) return;
+    provider.createFileApi(context, fields);
+  }
+
+  InputDecoration get _inputDecoration => InputDecoration(
+    filled: true,
+    fillColor: Colors.white,
+    contentPadding: const EdgeInsets.symmetric(vertical: 13, horizontal: 15),
+    enabledBorder: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(10),
+      borderSide: BorderSide(color: AppColors.blackColor, width: 0.5),
+    ),
+    focusedBorder: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(10),
+      borderSide: BorderSide(color: AppColors.blackColor, width: 0.5),
+    ),
+  );
+
+  Widget _fieldLabel(String text) {
+    return Text(
+      text,
+      style: GoogleFonts.poppins(fontSize: 12, fontWeight: FontWeight.w500),
+    );
+  }
+
+  Widget _fileChooserRow({
+    required String actionLabel,
+    required String chosenLabel,
+    required VoidCallback onTap,
+  }) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(6),
+      child: Container(
+        height: 44,
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(6),
+          border: Border.all(color: _borderGrey),
+        ),
+        clipBehavior: Clip.antiAlias,
+        child: Row(
+          children: [
+            Container(
+              height: double.infinity,
+              padding: const EdgeInsets.symmetric(horizontal: 14),
+              decoration: const BoxDecoration(
+                color: _chooserFill,
+                border: Border(right: BorderSide(color: _borderGrey)),
+              ),
+              alignment: Alignment.center,
+              child: Text(
+                actionLabel,
+                style: GoogleFonts.poppins(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w500,
+                  color: const Color(0xFF444444),
+                ),
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                chosenLabel,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: GoogleFonts.poppins(fontSize: 13, color: _mutedText),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _uploadPanel({required List<Widget> children}) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.fromLTRB(16, 16, 16, 14),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: _panelBorder),
+      ),
+      child: Column(children: children),
+    );
+  }
+
+  Widget _receiptList() {
+    return Column(
+      children:
+          _receipts.map((receipt) {
+            return Padding(
+              padding: const EdgeInsets.only(top: 12),
+              child: ScannedReceiptCard(
+                receipt: receipt,
+                onRemove: () {
+                  setState(
+                    () => _receipts.removeWhere((r) => r.id == receipt.id),
+                  );
+                },
+              ),
+            );
+          }).toList(),
+    );
+  }
+
+  Widget _buildTaxManagerScan() {
+    final chosenLabel =
+        _receipts.isEmpty ? _t('noFileChosenText') : _receipts.first.label;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          '${_t('uploadReceiptText')} *',
+          style: const TextStyle(
+            fontSize: 14,
+            fontWeight: FontWeight.w600,
+            color: Colors.black,
+          ),
+        ),
+        const SizedBox(height: 8),
+        _uploadPanel(
+          children: [
+            _fileChooserRow(
+              actionLabel: _t('chooseFileText'),
+              chosenLabel: chosenLabel,
+              onTap: _showPickSheet,
+            ),
+            const SizedBox(height: 10),
+            Text(
+              _t('dropFilesHintText'),
+              textAlign: TextAlign.center,
+              style: GoogleFonts.poppins(
+                fontSize: 12,
+                height: 1.4,
+                color: _hintText,
+              ),
+            ),
+          ],
+        ),
+        _receiptList(),
+      ],
+    );
+  }
+
+  Widget _buildBusinessUpload() {
+    final chosenLabel =
+        _receipts.isEmpty
+            ? _t('noFileChosenText')
+            : '${_receipts.length} ${_t('filesChosenText')}';
+
+    return Column(
+      children: [
+        _uploadPanel(
+          children: [
+            _fileChooserRow(
+              actionLabel: _t('chooseFilesText'),
+              chosenLabel: chosenLabel,
+              onTap: _showPickSheet,
+            ),
+            const SizedBox(height: 12),
+            ElevatedButton(
+              onPressed: _showPickSheet,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.goldenOrangeColor,
+                foregroundColor: Colors.white,
+                elevation: 0,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 22,
+                  vertical: 10,
+                ),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(6),
+                ),
+              ),
+              child: Text(
+                _t('addMoreFilesText'),
+                style: GoogleFonts.poppins(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+            const SizedBox(height: 10),
+            Text(
+              _t('dropFilesHintText'),
+              textAlign: TextAlign.center,
+              style: GoogleFonts.poppins(
+                fontSize: 12,
+                height: 1.4,
+                color: _hintText,
+              ),
+            ),
+          ],
+        ),
+        _receiptList(),
+      ],
+    );
+  }
+
+  Widget _buildForm() {
+    final provider = context.read<TaxManagerViewModel>();
+    final isFrench = Localizations.localeOf(context).languageCode == 'fr';
+    final plans = context.watch<PricingPlansViewModel>();
+    final isBusiness = plans.myPlans
+        .map((p) => p.name?.toLowerCase().trim() ?? '')
+        .any((name) => name.contains('business tax manager'));
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        if (!isBusiness) _buildTaxManagerScan(),
+        if (!isBusiness) const SizedBox(height: 16),
+        _fieldLabel(_t('taxSummaryText')),
+        const SizedBox(height: 6),
+        DropdownButtonFormField<String>(
+          decoration: _inputDecoration,
+          hint: Text(_t('selectYearText')),
+          value: selectedYear,
+          items:
+              _years
+                  .map(
+                    (year) => DropdownMenuItem(value: year, child: Text(year)),
+                  )
+                  .toList(),
+          onChanged: (value) {
+            setState(() {
+              selectedYear = value;
+              if (value != null) {
+                final year = int.parse(value);
+                final now = DateTime.now();
+                selectedDate = DateTime(year, now.month, now.day);
+              }
+            });
+          },
+        ),
+        const SizedBox(height: 12),
+        AppTextField(
+          controller: fileNameController,
+          hintText: _t('fileNameText'),
+          textInputType: TextInputType.name,
+        ),
+        const SizedBox(height: 12),
+        _fieldLabel(_t('selectCateText')),
+        const SizedBox(height: 6),
+        DropdownButtonFormField<String>(
+          decoration: _inputDecoration,
+          hint: Text(_t('chooseOneText')),
+          value: selectedCategory,
+          items:
+              provider.data
+                  .where((e) => e.backendValue != null)
+                  .map(
+                    (cat) => DropdownMenuItem<String>(
+                      value: cat.backendValue,
+                      child: Text(cat.getDisplayLabel(isFrench)),
+                    ),
+                  )
+                  .toList(),
+          onChanged: (value) => setState(() => selectedCategory = value),
+        ),
+        const SizedBox(height: 12),
+        _fieldLabel(_t('choiceYearText')),
+        const SizedBox(height: 6),
+        InkWell(
+          onTap: () async {
+            final now = DateTime.now();
+            final picked = await showDatePicker(
+              context: context,
+              initialDate: selectedDate ?? now,
+              firstDate: DateTime(now.year - (_yearWindow - 1), 1, 1),
+              lastDate: now,
+            );
+            if (picked != null) {
+              setState(() => selectedDate = picked);
+            }
+          },
+          child: InputDecorator(
+            decoration: _inputDecoration.copyWith(
+              suffixIcon: Icon(
+                Icons.calendar_today,
+                size: 20,
+                color: AppColors.goldenOrangeColor,
+              ),
+            ),
+            child: Text(
+              selectedDate != null
+                  ? DateFormat('MM/dd/yyyy').format(selectedDate!)
+                  : _t('datePlaceholderText'),
+              style: TextStyle(
+                color:
+                    selectedDate != null
+                        ? AppColors.blackColor
+                        : Colors.grey.shade600,
+              ),
+            ),
+          ),
+        ),
+        const SizedBox(height: 20),
+        if (isBusiness) _buildBusinessUpload(),
+        if (isBusiness) const SizedBox(height: 15),
+        AppTextField(
+          controller: commentsController,
+          hintText: _t('commentsText'),
+          textInputType: TextInputType.text,
+          maxLines: 3,
+        ),
+        const SizedBox(height: 8),
+        Align(
+          alignment: Alignment.topRight,
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              MaterialButton(
+                height: 40,
+                color: AppColors.lightPinkColor,
+                elevation: 0,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                onPressed: () => Navigator.of(context).pop(),
+                child: Text(
+                  _t('cancelText'),
+                  style: GoogleFonts.poppins(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w400,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 10),
+              MaterialButton(
+                height: 40,
+                color: AppColors.goldenOrangeColor,
+                elevation: 0,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                onPressed:
+                    provider.isLoading
+                        ? null
+                        : () =>
+                            _onSave(provider: provider, isBusiness: isBusiness),
+                child:
+                    provider.isLoading
+                        ? SizedBox(
+                          height: 25,
+                          width: 25,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: AppColors.blackColor,
+                          ),
+                        )
+                        : Text(
+                          _t('saveText'),
+                          style: GoogleFonts.poppins(
+                            fontSize: 15,
+                            fontWeight: FontWeight.w400,
+                          ),
+                        ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
   }
 
   @override
@@ -92,19 +826,12 @@ class _CreateTaxManagerScreenState extends State<CreateTaxManagerScreen> {
         return Scaffold(
           resizeToAvoidBottomInset: true,
           appBar: CustomAppBar(
-            text1:
-                AppLocalizations.of(
-                  context,
-                )!.translate("createTaxManagerText") ??
-                '',
+            text1: _t('createTaxManagerText'),
             showBackButton: true,
-            onBackTap: () {
-              Navigator.of(context).pop();
-            },
+            onBackTap: () => Navigator.of(context).pop(),
           ),
           body: Stack(
             children: [
-              // Background image
               Container(
                 width: double.infinity,
                 height: double.infinity,
@@ -127,544 +854,14 @@ class _CreateTaxManagerScreenState extends State<CreateTaxManagerScreen> {
                     ),
                   )
                   : SingleChildScrollView(
-                    physics: BouncingScrollPhysics(),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Padding(
-                          padding: const EdgeInsets.only(
-                            top: 20,
-                            right: 20,
-                            left: 20,
-                            bottom: 20,
-                          ),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [buildForm()],
-                          ),
-                        ),
-                      ],
-                    ),
+                    physics: const BouncingScrollPhysics(),
+                    padding: const EdgeInsets.all(20),
+                    child: _buildForm(),
                   ),
             ],
           ),
         );
       },
-    );
-  }
-
-  Widget buildForm() {
-    final provider = context.read<TaxManagerViewModel>();
-    final authProvider = context.read<AuthViewModel>();
-    final categories =
-        provider.data
-            .map((cat) => cat.value ?? "")
-            .where((val) => val.isNotEmpty)
-            .toSet()
-            .toList();
-
-    if (selectedCategory != null && selectedCategory!.isNotEmpty) {
-      if (!categories.contains(selectedCategory)) {
-        categories.insert(0, selectedCategory!);
-      }
-    }
-    final isFrench = Localizations.localeOf(context).languageCode == 'fr';
-
-    final plans = context.watch<PricingPlansViewModel>();
-    final planNames =
-        plans.myPlans.map((p) => p.name?.toLowerCase().trim() ?? '').toList();
-
-    final isBusinessTaxManager = planNames.any(
-      (n) => n.contains('business tax manager'),
-    );
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        if (!isBusinessTaxManager)
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              "${AppLocalizations.of(context)!.translate("uploadReceiptText") ?? ''} *",
-              style: TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
-                color: Colors.black,
-              ),
-            ),
-            const SizedBox(height: 6),
-            GestureDetector(
-              onTap: () {},
-              child: Container(
-                height: 45,
-                decoration: BoxDecoration(
-                  border: Border.all(color: Colors.grey.shade400),
-                  borderRadius: BorderRadius.circular(6),
-                  color: Colors.grey.shade100,
-                ),
-                child: Row(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 14),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        border: Border(
-                          right: BorderSide(color: Colors.grey.shade400),
-                        ),
-                      ),
-                      child: Center(
-                        child: Text(
-                          "Choose File",
-                          style: TextStyle(
-                            color: Colors.blue.shade700,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Text(
-                        fileName,
-                        style: TextStyle(fontSize: 14, color: Colors.grey.shade600),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 16),
-        Text(
-          AppLocalizations.of(context)!.translate("taxSummaryText") ?? '',
-          style: GoogleFonts.poppins(fontSize: 12, fontWeight: FontWeight.w500),
-        ),
-        const SizedBox(height: 6),
-        DropdownButtonFormField<String>(
-          decoration: InputDecoration(
-            filled: true,
-            fillColor: Colors.white,
-            contentPadding: const EdgeInsets.symmetric(
-              vertical: 13,
-              horizontal: 15,
-            ),
-            enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(10),
-              borderSide: BorderSide(color: AppColors.blackColor, width: 0.5),
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(10),
-              borderSide: BorderSide(color: AppColors.blackColor, width: 0.5),
-            ),
-          ),
-          hint: Text(
-            AppLocalizations.of(context)!.translate("selectYearText") ?? '',
-          ),
-          value: selectedYear,
-          items:
-              years.map((year) {
-                return DropdownMenuItem(value: year, child: Text(year));
-              }).toList(),
-
-          // 🔥 CHANGE: auto set current date in that year
-          onChanged: (value) {
-            setState(() {
-              selectedYear = value;
-              if (value != null) {
-                final year = int.parse(value);
-                final now = DateTime.now();
-                selectedDate = DateTime(year, now.month, now.day);
-              }
-            });
-          },
-        ),
-        const SizedBox(height: 12),
-
-        // File Name
-        AppTextField(
-          controller: fileNameController,
-          hintText:
-              AppLocalizations.of(context)!.translate("fileNameText") ?? '',
-          textInputType: TextInputType.name,
-        ),
-        const SizedBox(height: 12),
-
-        // Category Dropdown
-        Text(
-          AppLocalizations.of(context)!.translate("selectCateText") ?? '',
-          style: GoogleFonts.poppins(fontSize: 12, fontWeight: FontWeight.w500),
-        ),
-        const SizedBox(height: 6),
-        DropdownButtonFormField<String>(
-          decoration: InputDecoration(
-            filled: true,
-            fillColor: Colors.white,
-            contentPadding: const EdgeInsets.symmetric(
-              vertical: 13,
-              horizontal: 15,
-            ),
-            enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(10),
-              borderSide: BorderSide(color: AppColors.blackColor, width: 0.5),
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(10),
-              borderSide: BorderSide(color: AppColors.blackColor, width: 0.5),
-            ),
-          ),
-          hint: Text(isFrench ? "Choisir" : "Choose One"),
-
-          /// Selected backend value
-          value: selectedCategory,
-
-          items:
-              provider.data.where((e) => e.backendValue != null).map((cat) {
-                return DropdownMenuItem<String>(
-                  value: cat.backendValue,
-                  child: Text(cat.getDisplayLabel(isFrench)),
-                );
-              }).toList(),
-
-          onChanged: (value) {
-            setState(() {
-              selectedCategory = value;
-            });
-
-            debugPrint("Selected backend value: $selectedCategory");
-          },
-        ),
-
-        const SizedBox(height: 12),
-
-        // Date Picker
-        Text(
-          AppLocalizations.of(context)!.translate("choiceYearText") ?? '',
-          style: GoogleFonts.poppins(fontSize: 12, fontWeight: FontWeight.w500),
-        ),
-        const SizedBox(height: 6),
-        InkWell(
-          onTap: () async {
-            final now = DateTime.now();
-
-            final picked = await showDatePicker(
-              context: context,
-              initialDate: selectedDate ?? now,
-              firstDate: DateTime(now.year - 6, 1, 1), // last 7 years
-              lastDate: now, // today
-            );
-
-            if (picked != null) {
-              setState(() {
-                selectedDate = picked;
-              });
-            }
-          },
-          child: InputDecorator(
-            decoration: InputDecoration(
-              filled: true,
-              fillColor: Colors.white,
-              contentPadding: const EdgeInsets.symmetric(
-                vertical: 13,
-                horizontal: 15,
-              ),
-              enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(10),
-                borderSide: BorderSide(color: AppColors.blackColor, width: 0.5),
-              ),
-              focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(10),
-                borderSide: BorderSide(color: AppColors.blackColor, width: 0.5),
-              ),
-              suffixIcon: Icon(
-                Icons.calendar_today,
-                size: 20,
-                color: AppColors.goldenOrangeColor,
-              ),
-            ),
-            child: Text(
-              selectedDate != null
-                  ? "${selectedDate!.month}/${selectedDate!.day}/${selectedDate!.year}"
-                  : "mm/dd/yyyy",
-              style: TextStyle(
-                color:
-                    selectedDate != null ? Colors.black : Colors.grey.shade600,
-              ),
-            ),
-          ),
-        ),
-        const SizedBox(height: 20),
-
-        // Upload File Section
-        Consumer<AuthViewModel>(
-          builder: (context, authProvider, child) {
-            final plans = context.watch<PricingPlansViewModel>();
-            final planNames =
-                plans.myPlans
-                    .map((p) => p.name?.toLowerCase().trim() ?? '')
-                    .toList();
-
-            final isBusinessTaxManager = planNames.any(
-              (n) => n.contains('business tax manager'),
-            );
-
-            if (!isBusinessTaxManager) {
-              return const SizedBox.shrink();
-            }
-
-            return Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                border: Border.all(
-                  color: AppColors.goldenOrangeColor,
-                  style: BorderStyle.solid,
-                  width: 1.5,
-                ),
-                borderRadius: BorderRadius.circular(12),
-                color: Colors.orange.shade50,
-              ),
-              child: Column(
-                children: [
-                  const Icon(
-                    Icons.cloud_upload_outlined,
-                    size: 50,
-                    color: Colors.orange,
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    AppLocalizations.of(context)!.translate("updateFileText") ??
-                        '',
-                    style: GoogleFonts.poppins(
-                      fontWeight: FontWeight.w700,
-                      fontSize: 15,
-                      color: AppColors.pureGrayColor,
-                    ),
-                  ),
-                  Text(
-                    AppLocalizations.of(
-                          context,
-                        )!.translate("copyAttachmentText") ??
-                        '',
-                    style: GoogleFonts.poppins(
-                      fontWeight: FontWeight.w400,
-                      fontSize: 15,
-                      color: AppColors.pureGrayColor,
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-
-                  ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.goldenOrangeColor,
-                    ),
-                    onPressed: () async {
-                      showModalBottomSheet(
-                        context: context,
-                        shape: const RoundedRectangleBorder(
-                          borderRadius: BorderRadius.vertical(
-                            top: Radius.circular(16),
-                          ),
-                        ),
-                        builder: (context) {
-                          return Padding(
-                            padding: const EdgeInsets.all(20),
-                            child: Wrap(
-                              children: [
-                                ListTile(
-                                  leading: const Icon(
-                                    Icons.photo_library,
-                                    color: Colors.orange,
-                                  ),
-                                  title: Text(
-                                    AppLocalizations.of(
-                                          context,
-                                        )!.translate("galleryText") ??
-                                        '',
-                                  ),
-                                  onTap: () async {
-                                    Navigator.pop(context);
-                                    await authProvider.pickMultipleImages();
-                                  },
-                                ),
-                                ListTile(
-                                  leading: const Icon(
-                                    Icons.camera_alt,
-                                    color: Colors.orange,
-                                  ),
-                                  title: Text(
-                                    AppLocalizations.of(
-                                          context,
-                                        )!.translate("cameraText") ??
-                                        '',
-                                  ),
-                                  onTap: () async {
-                                    Navigator.pop(context);
-                                    if (!await ensureCameraPermission(
-                                      context,
-                                    )) {
-                                      return;
-                                    }
-                                    await authProvider
-                                        .pickSingleImageFromCamera();
-                                  },
-                                ),
-                              ],
-                            ),
-                          );
-                        },
-                      );
-                    },
-                    child: Text(
-                      AppLocalizations.of(
-                            context,
-                          )!.translate("chooseFileText") ??
-                          '',
-                    ),
-                  ),
-
-                  const SizedBox(height: 10),
-
-                  if (authProvider.pickedImages.isNotEmpty)
-                    Column(
-                      children:
-                          authProvider.pickedImages.map((img) {
-                            return Padding(
-                              padding: const EdgeInsets.only(top: 8),
-                              child: Row(
-                                children: [
-                                  Image.file(
-                                    File(img.path),
-                                    width: 50,
-                                    height: 50,
-                                    fit: BoxFit.cover,
-                                  ),
-                                  const SizedBox(width: 10),
-                                  Expanded(
-                                    child: Text(
-                                      img.path.split('/').last,
-                                      style: const TextStyle(
-                                        color: Colors.black87,
-                                        fontSize: 13,
-                                        fontStyle: FontStyle.italic,
-                                      ),
-                                      overflow: TextOverflow.ellipsis,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            );
-                          }).toList(),
-                    ),
-                ],
-              ),
-            );
-          },
-        ),
-        SizedBox(height: 15),
-        AppTextField(
-          controller: commentsController,
-          hintText:
-              AppLocalizations.of(context)!.translate("commentsText") ?? '',
-          textInputType: TextInputType.text,
-          maxLines: 3,
-        ),
-        const SizedBox(height: 8),
-
-        Align(
-          alignment: Alignment.topRight,
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              MaterialButton(
-                height: 40,
-                color: AppColors.lightPinkColor,
-                elevation: 0,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                onPressed: () {},
-                child: Text(
-                  AppLocalizations.of(context)!.translate("cancelText") ?? '',
-                  style: GoogleFonts.poppins(
-                    textStyle: const TextStyle(
-                      fontSize: 15,
-                      fontWeight: FontWeight.w400,
-                    ),
-                  ),
-                ),
-              ),
-              const SizedBox(width: 10),
-              MaterialButton(
-                height: 40,
-                color: AppColors.goldenOrangeColor,
-                elevation: 0,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                onPressed: () {
-                  if (selectedYear == null) {
-                    Utils.toastMessage("Please select year");
-                  } else if (fileNameController.text.isEmpty) {
-                    Utils.toastMessage("Please enter file name");
-                  } else if (selectedCategory == null) {
-                    Utils.toastMessage("Please select category");
-                  } else if (selectedDate == null) {
-                    Utils.toastMessage("Please select date");
-                  } else {
-                    Map<String, dynamic> fields = {
-                      'year': selectedYear,
-                      'file_name': fileNameController.text.trim(),
-                      'category': selectedCategory,
-                      'date': DateFormat('yyyy-MM-dd').format(selectedDate!),
-                      'comments': commentsController.text,
-                    };
-
-                    if (!isBusinessTaxManager) {
-                      provider.createFileApi(
-                        context,
-                        fields,
-                        widget.receiptFile != null ? [widget.receiptFile!] : [],
-                      );
-                    } else {
-                      provider.createFileApi(
-                        context,
-                        fields,
-                        authProvider.pickedImages
-                            .map((x) => File(x.path))
-                            .toList(),
-                      );
-                    }
-                  }
-                },
-                child:
-                    provider.isLoading
-                        ? Center(
-                          child: SizedBox(
-                            height: 25,
-                            width: 25,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                              color: AppColors.blackColor,
-                            ),
-                          ),
-                        )
-                        : Text(
-                          AppLocalizations.of(context)!.translate("saveText") ??
-                              '',
-                          style: GoogleFonts.poppins(
-                            textStyle: const TextStyle(
-                              fontSize: 15,
-                              fontWeight: FontWeight.w400,
-                            ),
-                          ),
-                        ),
-              ),
-            ],
-          ),
-        ),
-      ],
     );
   }
 }

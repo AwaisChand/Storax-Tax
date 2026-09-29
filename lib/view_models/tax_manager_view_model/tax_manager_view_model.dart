@@ -73,16 +73,13 @@ class TaxManagerViewModel extends ChangeNotifier {
   Future<void> createFileApi(
     BuildContext context,
     Map<String, dynamic> fields,
-    List<File> files,
   ) async {
     loading = true;
     try {
       debugPrint("Create file fields: $fields");
-      debugPrint("files path: ${files.map((f) => f.path).toList()}");
 
       final response = await taxManagerRepository.createFileRepo(
         fields: fields,
-        files: files,
       );
 
       if (response["status"].toString() == "1") {
@@ -186,21 +183,14 @@ class TaxManagerViewModel extends ChangeNotifier {
     required int id,
     required BuildContext context,
     required Map<String, dynamic> fields,
-    List<File>? avatarFiles, // ✅ plural for clarity
   }) async {
     loading = true;
     try {
       debugPrint("Update file fields: $fields");
-      if (avatarFiles != null && avatarFiles.isNotEmpty) {
-        debugPrint("Files path: ${avatarFiles.map((f) => f.path).toList()}");
-      } else {
-        debugPrint("No files selected for update.");
-      }
 
       final response = await taxManagerRepository.updateFileRepo(
         id: id,
         fields: fields,
-        filesPath: avatarFiles, // ✅ directly pass list
       );
 
       // ✅ Success check
@@ -422,9 +412,6 @@ class TaxManagerViewModel extends ChangeNotifier {
   ///Scan Tax Manager Api
 
   Future<Map<String, dynamic>?> scanTaxManagerApi(File? avatarFile) async {
-    loading = true;
-    notifyListeners();
-
     try {
       if (avatarFile != null && await avatarFile.exists()) {
         taxManagerScanLog(
@@ -463,9 +450,6 @@ class TaxManagerViewModel extends ChangeNotifier {
       taxManagerScanLog('scanTaxManagerApi VM ERROR: $e');
       debugPrintStack(stackTrace: stackTrace);
       return null;
-    } finally {
-      loading = false;
-      notifyListeners();
     }
   }
   ///create personal info api
