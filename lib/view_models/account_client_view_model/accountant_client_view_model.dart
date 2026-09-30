@@ -1,9 +1,9 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:storatax/data/network/network_api_service.dart';
 import 'package:storatax/models/get_accountants_model/get_accountants_model.dart';
 import 'package:storatax/repository/accountant_client_repo/accountant_client_repo.dart';
+
 import '../../utils/utils.dart';
 
 class AccountantClientViewModel extends ChangeNotifier {
@@ -14,20 +14,15 @@ class AccountantClientViewModel extends ChangeNotifier {
   bool _hasMoreData = true;
   bool _connectAccountantLoading = false;
 
-
   bool get isLoading => _isLoading;
   bool get isLoadingMore => _isLoadingMore;
   bool get hasMoreData => _hasMoreData;
   bool get connectAccountantLoading => _connectAccountantLoading;
 
-
   int _currentPage = 1;
   int _totalPages = 1;
   int? _selectedAccountantId;
   int? get selectedAccountantId => _selectedAccountantId;
-
-
-
 
   String? _searchQuery;
 
@@ -54,23 +49,26 @@ class AccountantClientViewModel extends ChangeNotifier {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setInt('selected_accountant_id', id);
   }
+
   ///get accountant id to sp
   Future<int?> loadSelectedAccountantId() async {
     final prefs = await SharedPreferences.getInstance();
     return prefs.getInt('selected_accountant_id');
   }
+
   ///remove accountant id to sp
   Future<bool?> removeAccountantId() async {
     final prefs = await SharedPreferences.getInstance();
     return prefs.remove('selected_accountant_id');
   }
+
   /// ✅ Get accountants with pagination and optional search
   Future<void> getAccountants(
-      BuildContext context, {
-        int page = 1,
-        bool isLoadMore = false,
-        String? search,
-      }) async {
+    BuildContext context, {
+    int page = 1,
+    bool isLoadMore = false,
+    String? search,
+  }) async {
     if (_isLoading || _isLoadingMore) return;
 
     if (isLoadMore) {
@@ -132,7 +130,10 @@ class AccountantClientViewModel extends ChangeNotifier {
   }
 
   /// ✅ Refresh first page with current or new search term
-  Future<void> refreshAccountants(BuildContext context, {String? search}) async {
+  Future<void> refreshAccountants(
+    BuildContext context, {
+    String? search,
+  }) async {
     _currentPage = 1;
     _totalPages = 1;
     _hasMoreData = true;
@@ -173,12 +174,17 @@ class AccountantClientViewModel extends ChangeNotifier {
 
   ///Disconnect to accountant Api
 
-  Future<void> disconnectAccountantApi(BuildContext context, dynamic data) async {
+  Future<void> disconnectAccountantApi(
+    BuildContext context,
+    dynamic data,
+  ) async {
     cAccountantLoading = true;
     try {
       debugPrint("Disconnect Accountant data: $data");
 
-      final response = await _accountantClientRepo.disconnectAccountantRepo(data);
+      final response = await _accountantClientRepo.disconnectAccountantRepo(
+        data,
+      );
 
       if (response["status"].toString() == "1") {
         Utils.toastMessage(response["success"]);
@@ -200,5 +206,4 @@ class AccountantClientViewModel extends ChangeNotifier {
       cAccountantLoading = false;
     }
   }
-
 }

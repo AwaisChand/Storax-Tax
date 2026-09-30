@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'package:storatax/screens/support_tickets/widgets/feature_dropdown_widget.dart';
-import 'package:storatax/screens/support_tickets/widgets/top_button_widget.dart';
 
 import '../../../res/app_assets.dart';
 import '../../../res/components/app_drawer.dart';

@@ -62,7 +62,7 @@ class _AddReceiptDataScreenState extends State<AddReceiptDataScreen> {
               onPrimary: Colors.white,
               onSurface: Colors.black,
             ),
-            dialogBackgroundColor: Colors.white,
+            dialogTheme: DialogThemeData(backgroundColor: Colors.white),
           ),
           child: child!,
         );
@@ -88,26 +88,26 @@ class _AddReceiptDataScreenState extends State<AddReceiptDataScreen> {
       });
     } else {
       // For non-US users, calculate as before
-      double percentageGST_HST = hstActual > 0 ? hstActual : gstActual;
+      double percentagegstHst = hstActual > 0 ? hstActual : gstActual;
       double percentagePST = pstActual;
 
       double beforeTax =
-          totalAmount / (1 + (percentageGST_HST + percentagePST) / 100);
+          totalAmount / (1 + (percentagegstHst + percentagePST) / 100);
 
-      double fetchedGST_HST = beforeTax * (percentageGST_HST / 100);
+      double fetchedgstHst = beforeTax * (percentagegstHst / 100);
       double fetchedPST = beforeTax * (percentagePST / 100);
 
       setState(() {
         beforeTaxController.text = beforeTax.toStringAsFixed(2);
 
         if (hstActual > 0) {
-          hst = fetchedGST_HST;
+          hst = fetchedgstHst;
         } else {
-          gst = fetchedGST_HST;
+          gst = fetchedgstHst;
         }
 
         pst = fetchedPST;
-        totalTaxesValue = fetchedGST_HST + fetchedPST;
+        totalTaxesValue = fetchedgstHst + fetchedPST;
       });
     }
   }
@@ -119,9 +119,10 @@ class _AddReceiptDataScreenState extends State<AddReceiptDataScreen> {
     final data = widget.receiptData;
     final authViewModel = context.read<AuthViewModel>();
 
-    fileName = widget.receiptFile != null
-        ? widget.receiptFile!.path.split('/').last
-        : 'No file chosen';
+    fileName =
+        widget.receiptFile != null
+            ? widget.receiptFile!.path.split('/').last
+            : 'No file chosen';
 
     // Initialize controllers
     merchantController.text = '';
@@ -137,11 +138,11 @@ class _AddReceiptDataScreenState extends State<AddReceiptDataScreen> {
       date = date.trim();
 
       final formats = [
-        "yyyy-MM-dd",   // 2015-03-24
-        "dd MMM yyyy",  // 23 Feb 2026
-        "dd/MM/yyyy",   // 24/03/2015
-        "MM/dd/yyyy",   // 03/24/2015
-        "dd-MM-yyyy",   // 24-03-2015
+        "yyyy-MM-dd", // 2015-03-24
+        "dd MMM yyyy", // 23 Feb 2026
+        "dd/MM/yyyy", // 24/03/2015
+        "MM/dd/yyyy", // 03/24/2015
+        "dd-MM-yyyy", // 24-03-2015
       ];
 
       for (final format in formats) {
@@ -155,8 +156,7 @@ class _AddReceiptDataScreenState extends State<AddReceiptDataScreen> {
 
     if (data != null) {
       merchantController.text = data['trader'] ?? 'No Merchant';
-      beforeTaxController.text =
-          data['before_tax_amount']?.toString() ?? '';
+      beforeTaxController.text = data['before_tax_amount']?.toString() ?? '';
       referenceController.text = data['invoice_no'] ?? '';
 
       totalAmount = (data['total'] ?? 0).toDouble();
@@ -222,13 +222,11 @@ class _AddReceiptDataScreenState extends State<AddReceiptDataScreen> {
         return Scaffold(
           resizeToAvoidBottomInset: false,
           appBar: CustomAppBar(
-             text1:AppLocalizations.of(
-              context,
-            )!.translate("addNewReceiptText") ??
+            text1:
+                AppLocalizations.of(context)!.translate("addNewReceiptText") ??
                 '',
-            text2: AppLocalizations.of(
-              context,
-            )!.translate("descNewReceiptText") ??
+            text2:
+                AppLocalizations.of(context)!.translate("descNewReceiptText") ??
                 '',
             showBackButton: true,
             onBackTap: () {
@@ -253,7 +251,6 @@ class _AddReceiptDataScreenState extends State<AddReceiptDataScreen> {
 
               Column(
                 children: [
-
                   Expanded(
                     child: SingleChildScrollView(
                       child: Padding(
@@ -547,7 +544,7 @@ class _AddReceiptDataScreenState extends State<AddReceiptDataScreen> {
                                         gasoline.createGasolineApi(
                                           context,
                                           fields,
-                                          widget.receiptFile
+                                          widget.receiptFile,
                                         );
                                       }
                                     },

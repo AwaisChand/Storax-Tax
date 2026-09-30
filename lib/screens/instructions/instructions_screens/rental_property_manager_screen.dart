@@ -152,7 +152,7 @@ class _RentalPropertyManagerScreenState extends State<RentalPropertyManagerScree
                                         ],
                                       ),
                                     );
-                                  }).toList(),
+                                  }),
                                 ],
                               );
                             }).toList(),

@@ -51,7 +51,7 @@ class GenericDropdown<T> extends StatelessWidget {
           hint: hint != null
               ? Text(hint!, style: GoogleFonts.poppins(fontWeight: FontWeight.w400))
               : null,
-          value: value,
+          initialValue: value,
           items: items,
           onChanged: onChanged,
         ),

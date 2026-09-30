@@ -366,7 +366,7 @@ class _CreatePersonalFileScreenState extends State<CreatePersonalFileScreen> {
                                       )!.translate("selectYearText") ??
                                       '',
                                 ),
-                                value: selectedYear,
+                                initialValue: selectedYear,
                                 items:
                                     years
                                         .toSet()
@@ -676,7 +676,7 @@ class _CreatePersonalFileScreenState extends State<CreatePersonalFileScreen> {
                                           });
                                         },
                                       );
-                                    }).toList(),
+                                    }),
                                   ],
                                 ),
                               ),

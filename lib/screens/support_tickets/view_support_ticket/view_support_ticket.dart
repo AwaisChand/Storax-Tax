@@ -263,7 +263,7 @@ class _ViewSupportTicketState extends State<ViewSupportTicket> {
                 width: double.infinity,
                 padding: const EdgeInsets.all(15),
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.9),
+                  color: Colors.white.withValues(alpha: 0.9),
                   border: Border.all(color: Colors.grey.shade300, width: 1),
                   borderRadius: BorderRadius.circular(12),
                 ),
@@ -320,7 +320,7 @@ class _ViewSupportTicketState extends State<ViewSupportTicket> {
                                 ),
                                 boxShadow: [
                                   BoxShadow(
-                                    color: Colors.black.withOpacity(0.05),
+                                    color: Colors.black.withValues(alpha: 0.05),
                                     blurRadius: 4,
                                     offset: const Offset(0, 2),
                                   ),

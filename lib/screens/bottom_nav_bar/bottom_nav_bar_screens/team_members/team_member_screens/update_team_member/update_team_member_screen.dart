@@ -35,25 +35,24 @@ class _UpdateTeamMemberScreenState extends State<UpdateTeamMemberScreen> {
     lastNameController.text = widget.data.lastName ?? '';
     emailController.text = widget.data.email ?? '';
 
-    // Convert teamFor to List<String> safely
+    // Convert teamFor (String?) to List<String> safely
     List<String> teams = [];
     final teamData = widget.data.teamFor;
 
-    if (teamData is String) {
-      // Try parsing JSON first
+    if (teamData != null && teamData.isNotEmpty) {
       try {
-        final parsed =
+        teams =
             teamData.startsWith('[')
-                ? List<String>.from(
-                  teamData.replaceAll(RegExp(r'[\[\]\"]'), '').split(','),
-                )
-                : [teamData];
-        teams = parsed.map((e) => e.trim()).toList();
+                ? teamData
+                    .replaceAll(RegExp(r'[\[\]\"]'), '')
+                    .split(',')
+                    .map((e) => e.trim())
+                    .where((e) => e.isNotEmpty)
+                    .toList()
+                : [teamData.trim()];
       } catch (_) {
         teams = [teamData];
       }
-    } else if (teamData is List) {
-      teams = teamData!.map((e) => e.toString()).toList();
     }
 
     // Initialize checkboxes based on existing member's teams

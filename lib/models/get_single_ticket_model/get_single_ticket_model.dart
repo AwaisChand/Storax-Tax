@@ -137,7 +137,7 @@ class Messages {
     data['user_name'] = userName;
     data['role'] = role;
     data['message'] = message;
-    if (this.attachments != null) {
+    if (attachments != null) {
       data['attachments'] = attachments!.map((v) => v.toJson()).toList();
     }
     data['created_at'] = createdAt;

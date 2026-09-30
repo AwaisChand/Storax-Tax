@@ -122,7 +122,7 @@ Widget merchantSection(GasolineViewModel gasolineVM) {
     width: double.infinity,
     padding: const EdgeInsets.all(16),
     decoration: BoxDecoration(
-      color: Colors.white.withOpacity(0.6),
+      color: Colors.white.withValues(alpha: 0.6),
       borderRadius: BorderRadius.circular(10),
       border: Border.all(color: Colors.grey.shade300, width: 0.5),
     ),

@@ -232,7 +232,7 @@ Future showTransactionFilterReportDialog(BuildContext context) async {
                         const SizedBox(width: 10),
                         Flexible(
                           child: DropdownButtonFormField<String>(
-                            value: selectedYear,
+                            initialValue: selectedYear,
                             isExpanded: true,
                             hint: Text(
                               AppLocalizations.of(
@@ -275,7 +275,7 @@ Future showTransactionFilterReportDialog(BuildContext context) async {
                       children: [
                         Expanded(
                           child: DropdownButtonFormField<String>(
-                            value: selectedSortBy,
+                            initialValue: selectedSortBy,
                             hint: Text(
                               AppLocalizations.of(
                                     context,
@@ -336,7 +336,7 @@ Future showTransactionFilterReportDialog(BuildContext context) async {
                         const SizedBox(width: 10),
                         Expanded(
                           child: DropdownButtonFormField<String>(
-                            value: selectedOrder,
+                            initialValue: selectedOrder,
                             hint: Text(
                               AppLocalizations.of(
                                     context,
@@ -440,14 +440,18 @@ Future showTransactionFilterReportDialog(BuildContext context) async {
 
                             String? formattedMonth;
                             if (selectedMonth != null) {
-                              formattedMonth = DateFormat('yyyy-MM').format(selectedMonth!);
+                              formattedMonth = DateFormat(
+                                'yyyy-MM',
+                              ).format(selectedMonth!);
 
                               // Build print URL
-                              String printUrl = "https://storatax.com/api/gasolines/gasoline-transactions/report/print?"
+                              String printUrl =
+                                  "https://storatax.com/api/gasolines/gasoline-transactions/report/print?"
                                   "year=${selectedMonth!.year}&month=$formattedMonth&language=fr";
                               debugPrint("Print report URL: $printUrl");
                             } else if (selectedYear != null) {
-                              String printUrl = "https://storatax.com/api/gasolines/gasoline-transactions/report/print?"
+                              String printUrl =
+                                  "https://storatax.com/api/gasolines/gasoline-transactions/report/print?"
                                   "year=$selectedYear&month=&language=fr";
                               debugPrint("Print report URL: $printUrl");
                             }
@@ -457,9 +461,18 @@ Future showTransactionFilterReportDialog(BuildContext context) async {
                               context,
                               year: selectedYear,
                               month: formattedMonth,
-                              fromDate: fromController.text.isEmpty ? null : fromController.text,
-                              toDate: toController.text.isEmpty ? null : toController.text,
-                              sortBy: selectedSortBy != null ? mapSortByToApi(selectedSortBy!) : null,
+                              fromDate:
+                                  fromController.text.isEmpty
+                                      ? null
+                                      : fromController.text,
+                              toDate:
+                                  toController.text.isEmpty
+                                      ? null
+                                      : toController.text,
+                              sortBy:
+                                  selectedSortBy != null
+                                      ? mapSortByToApi(selectedSortBy!)
+                                      : null,
                               sortOrder: selectedOrder,
                             );
 

@@ -82,7 +82,7 @@ class _ChartSelectorState extends State<ChartSelectorWidget> {
           width: double.infinity,
           padding: EdgeInsets.only(top: 20, right: 20, left: 20),
           decoration: BoxDecoration(
-            color: AppColors.whiteColor.withOpacity(0.6),
+            color: AppColors.whiteColor.withValues(alpha: 0.6),
             borderRadius: BorderRadius.circular(10),
             border: Border.all(color: AppColors.mediumGrayColor, width: 0.5),
           ),
@@ -195,7 +195,7 @@ class _ChartSelectorState extends State<ChartSelectorWidget> {
           ),
           margin: const EdgeInsets.only(top: 10),
           decoration: BoxDecoration(
-            color: AppColors.whiteColor.withOpacity(0.6),
+            color: AppColors.whiteColor.withValues(alpha: 0.6),
             borderRadius: BorderRadius.circular(10),
             border: Border.all(color: AppColors.mediumGrayColor, width: 0.5),
           ),
@@ -271,7 +271,7 @@ class _ChartSelectorState extends State<ChartSelectorWidget> {
             bottom: 10,
           ),
           decoration: BoxDecoration(
-            color: AppColors.whiteColor.withOpacity(0.6),
+            color: AppColors.whiteColor.withValues(alpha: 0.6),
             borderRadius: BorderRadius.circular(10),
             border: Border.all(color: AppColors.mediumGrayColor, width: 0.5),
           ),
@@ -421,7 +421,7 @@ class _ChartSelectorState extends State<ChartSelectorWidget> {
             width: 25,
             decoration: BoxDecoration(
               border: Border.all(
-                color: isVisible ? color : color.withOpacity(0.3),
+                color: isVisible ? color : color.withValues(alpha: 0.3),
                 width: 1.5,
               ),
             ),
@@ -455,7 +455,7 @@ class _ChartSelectorState extends State<ChartSelectorWidget> {
           Container(
             height: 10,
             width: 25,
-            color: isVisible ? color : color.withOpacity(0.3),
+            color: isVisible ? color : color.withValues(alpha: 0.3),
           ),
           const SizedBox(width: 5),
           Text(

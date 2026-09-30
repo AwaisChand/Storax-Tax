@@ -1,2 +1,5 @@
 #include? "Pods/Target Support Files/Pods-Runner/Pods-Runner.release.xcconfig"
 #include "Generated.xcconfig"
+// Override Flutter's ML Kit workaround (excludes arm64). Required for
+// Apple Silicon iOS 26+ simulators which no longer support x86_64/Rosetta.
+EXCLUDED_ARCHS[sdk=iphonesimulator*]=i386

@@ -8,14 +8,11 @@ import 'package:storatax/view_models/trip_view_model/trip_view_model.dart';
 import '../res/app_assets.dart';
 import '../res/components/app_localization.dart';
 
-
 class Utils {
+  static bool isYearly = false;
+  static String? selectedMode;
 
- static bool isYearly = false;
- static String? selectedMode;
-
-
- static toastMessage(String message) {
+  static void toastMessage(String message) {
     Fluttertoast.showToast(
       msg: message,
       textColor: AppColors.whiteColor,
@@ -24,14 +21,14 @@ class Utils {
   }
   //  set height
 
-  static setHeight(BuildContext context) {
+  static double setHeight(BuildContext context) {
     double height = MediaQuery.of(context).size.height;
     return height;
   }
 
   // set width
 
-  static setWidth(BuildContext context) {
+  static double setWidth(BuildContext context) {
     double width = MediaQuery.of(context).size.width;
     return width;
   }
@@ -84,23 +81,21 @@ class Utils {
     return Color(int.parse(hex, radix: 16));
   }
 
-
-
   /// Validation Custom date
- static bool validateCustomDate({
-   required String tabMode,
-   required TripViewModel vm,
- }) {
-   if (tabMode.toLowerCase() == 'custom') {
-     if (vm.fromDate == null || vm.toDate == null) {
-       Utils.toastMessage("Please enter your from and to date first.");
-       return false;
-     }
-   }
-   return true;
- }
+  static bool validateCustomDate({
+    required String tabMode,
+    required TripViewModel vm,
+  }) {
+    if (tabMode.toLowerCase() == 'custom') {
+      if (vm.fromDate == null || vm.toDate == null) {
+        Utils.toastMessage("Please enter your from and to date first.");
+        return false;
+      }
+    }
+    return true;
+  }
 
-  static showPasswordInfoDialog(context) {
+  static Future<dynamic> showPasswordInfoDialog(context) {
     return showDialog(
       context: context,
       builder:
@@ -132,8 +127,7 @@ class Utils {
                 ),
                 SizedBox(height: 4),
                 Text(
-                  AppLocalizations.of(context)!.translate("incUpperText") ??
-                      '',
+                  AppLocalizations.of(context)!.translate("incUpperText") ?? '',
                   style: GoogleFonts.montserrat(
                     color: Colors.white,
                     fontWeight: FontWeight.w400,
@@ -142,8 +136,7 @@ class Utils {
                 ),
                 SizedBox(height: 4),
                 Text(
-                  AppLocalizations.of(context)!.translate("incLowerText") ??
-                      '',
+                  AppLocalizations.of(context)!.translate("incLowerText") ?? '',
                   style: GoogleFonts.montserrat(
                     color: Colors.white,
                     fontWeight: FontWeight.w400,
@@ -152,8 +145,7 @@ class Utils {
                 ),
                 SizedBox(height: 4),
                 Text(
-                  AppLocalizations.of(context)!.translate("incNumText") ??
-                      '',
+                  AppLocalizations.of(context)!.translate("incNumText") ?? '',
                   style: GoogleFonts.montserrat(
                     color: Colors.white,
                     fontWeight: FontWeight.w400,
@@ -267,7 +259,6 @@ class Utils {
     String title = "Scan Failed",
     required String message,
   }) {
-    if (context == null) return;
     showDialog(
       context: context,
       builder:

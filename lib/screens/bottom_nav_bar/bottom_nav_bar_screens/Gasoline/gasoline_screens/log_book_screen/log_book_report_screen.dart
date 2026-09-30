@@ -462,7 +462,7 @@ class _LogBookReportScreenState extends State<LogBookReportScreen> {
                           AppLocalizations.of(context)!.translate("yearText") ??
                               '',
                         ),
-                        value: selectedYear,
+                        initialValue: selectedYear,
                         items:
                             years.map((year) {
                               return DropdownMenuItem(

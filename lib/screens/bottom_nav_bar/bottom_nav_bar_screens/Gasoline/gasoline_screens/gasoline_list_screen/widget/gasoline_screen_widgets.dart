@@ -245,7 +245,7 @@ Future showFilterDialog(BuildContext context) async {
                         const SizedBox(width: 10),
                         Expanded(
                           child: DropdownButtonFormField<String>(
-                            value: selectedYear,
+                            initialValue: selectedYear,
                             decoration: _input("Year"),
                             items:
                                 yearItems

@@ -84,7 +84,7 @@ Future showFilterDialog(BuildContext context) async {
                         Expanded(
                           child: DropdownButtonFormField<String>(
                             isExpanded: true,
-                            value: selectedYear,
+                            initialValue: selectedYear,
                             items: past7Years.map((year) {
                               return DropdownMenuItem(
                                 value: year,

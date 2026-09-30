@@ -9,7 +9,6 @@ import 'package:storatax/view_models/auth_view_model/auth_view_model.dart';
 import 'package:storatax/view_models/ticket_support_view_model/ticket_support_view_model.dart';
 
 import '../../../res/components/app_localization.dart';
-import '../../../utils/app_colors.dart';
 
 class CreateTicketForm extends StatefulWidget {
   const CreateTicketForm({super.key});

@@ -70,7 +70,7 @@ class MonthlyBarChart extends StatelessWidget {
             barTouchData: BarTouchData(
               enabled: true,
               touchTooltipData: BarTouchTooltipData(
-                getTooltipItem: (group, _, rod, __) {
+                getTooltipItem: (group, _, rod, _) {
                   final month = monthlyTrend[group.x].month ?? '';
                   return BarTooltipItem(
                     '$month\n${currency.format(rod.toY)}',

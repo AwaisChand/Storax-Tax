@@ -60,7 +60,7 @@ Widget buildForwardMultipleButton(BuildContext context) {
       ),
       SizedBox(width: 10),
       if (!isBusinessTaxManager &&
-          authProvider.user?.regCountry?.toLowerCase() != 'us')
+          authProvider.user?.regCountry.toLowerCase() != 'us')
         SizedBox(
           width: Utils.setHeight(context) * 0.2,
           child: MaterialButton(
@@ -352,7 +352,7 @@ Future showFilterDialog(BuildContext context) async {
                         Expanded(
                           child: DropdownButtonFormField<String>(
                             isExpanded: true,
-                            value: selectedYear,
+                            initialValue: selectedYear,
                             items:
                                 past7Years.map((year) {
                                   return DropdownMenuItem(

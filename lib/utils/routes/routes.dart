@@ -19,7 +19,6 @@ import 'package:storatax/screens/instructions/instructions_screens/rental_proper
 import 'package:storatax/screens/instructions/instructions_screens/uber_screen.dart';
 import 'package:storatax/screens/plan_summary_screen/my_plans_screen.dart';
 import 'package:storatax/screens/dashboard/dashboard_screen.dart';
-import 'package:storatax/screens/plan_summary_screen/more_plan_summary_screen.dart';
 import 'package:storatax/screens/pricing_plans/get_more_plans/get_more_plans_screen.dart';
 import 'package:storatax/screens/select_tax_professional/select_tax_professional_screen.dart';
 import 'package:storatax/screens/files/create_tax_manager/create_tax_manager_screen.dart';

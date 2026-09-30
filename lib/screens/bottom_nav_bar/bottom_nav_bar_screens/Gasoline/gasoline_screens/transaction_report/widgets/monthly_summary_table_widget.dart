@@ -43,7 +43,7 @@ class MonthlyTransactionTable extends StatelessWidget {
           margin: const EdgeInsets.only(bottom: 20),
           padding: const EdgeInsets.only(left: 20, top: 10, right: 20),
           decoration: BoxDecoration(
-            color: AppColors.whiteColor.withOpacity(0.6),
+            color: AppColors.whiteColor.withValues(alpha: 0.6),
             borderRadius: BorderRadius.circular(10),
             border: Border.all(
               color: AppColors.mediumGrayColor,
@@ -71,8 +71,8 @@ class MonthlyTransactionTable extends StatelessWidget {
                 child: DataTable(
                   columnSpacing: 20,
                   horizontalMargin: 10,
-                  headingRowColor: MaterialStateProperty.all(
-                    AppColors.goldenOrangeColor.withOpacity(0.1),
+                  headingRowColor: WidgetStateProperty.all(
+                    AppColors.goldenOrangeColor.withValues(alpha: 0.1),
                   ),
                   columns: [
                     _col('Date'),
@@ -123,8 +123,8 @@ class MonthlyTransactionTable extends StatelessWidget {
                     /// Summary Row
                     if (summary != null)
                       DataRow(
-                        color: MaterialStateProperty.all(
-                          AppColors.goldenOrangeColor.withOpacity(0.1),
+                        color: WidgetStateProperty.all(
+                          AppColors.goldenOrangeColor.withValues(alpha: 0.1),
                         ),
                         cells: [
                           _boldCell('Total'),

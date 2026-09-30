@@ -311,7 +311,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                                 ),
                                 SizedBox(height: 20),
                                 DropdownButtonFormField<String>(
-                                  value:
+                                  initialValue:
                                       provinceList.contains(selectedIndex)
                                           ? selectedIndex
                                           : null,
@@ -340,7 +340,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                                       borderRadius: BorderRadius.circular(8),
                                       borderSide: BorderSide(
                                         color: AppColors.mediumGrayColor
-                                            .withOpacity(0.5),
+                                            .withValues(alpha: 0.5),
                                       ),
                                     ),
                                   ),
@@ -393,13 +393,12 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                                   onPressed: () {
                                     final Map<String, dynamic> fields = {
                                       'first_name':
-                                      firstNameController.text.trim(),
+                                          firstNameController.text.trim(),
 
                                       'last_name':
-                                      lastNameController.text.trim(),
+                                          lastNameController.text.trim(),
 
-                                      'email':
-                                      emailController.text.trim(),
+                                      'email': emailController.text.trim(),
                                     };
 
                                     // Add province only when selected

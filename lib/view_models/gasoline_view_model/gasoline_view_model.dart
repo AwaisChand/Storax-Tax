@@ -103,7 +103,7 @@ class GasolineViewModel extends ChangeNotifier {
   ActiveTripModel? _activeTripModel;
   ActiveTripModel? get activeTripModel => _activeTripModel;
 
-  List<Trips> _trips = [];
+  final List<Trips> _trips = [];
   List<Trips> get trips => _trips;
 
   TripReportModel? _tripReportModel;

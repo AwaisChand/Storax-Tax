@@ -7,12 +7,12 @@ class EditableDualStepper extends StatefulWidget {
   final Function(double) onFetchedChanged;
 
   const EditableDualStepper({
-    Key? key,
+    super.key,
     required this.actualValue,
     required this.fetchedValue,
     required this.onActualChanged,
     required this.onFetchedChanged,
-  }) : super(key: key);
+  });
 
   @override
   State<EditableDualStepper> createState() => _EditableDualStepperState();

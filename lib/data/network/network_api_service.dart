@@ -9,7 +9,6 @@ import 'base_api_service.dart';
 import 'package:path/path.dart';
 import 'package:http_parser/http_parser.dart';
 import 'package:path/path.dart' as path_helper;
-import 'package:mime/mime.dart';
 
 
 class NetworkApiService extends BaseApiServices {

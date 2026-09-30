@@ -33,7 +33,7 @@ class PricingPlansViewModel extends ChangeNotifier {
   List<client.Plans> _clientPlans = [];
   List<client.Plans> get clientPlans => _clientPlans;
 
-  List<client.Features> _features = [];
+  final List<client.Features> _features = [];
   List<client.Features> get features => _features;
 
   PlanDetailModel? _planDetailModel;

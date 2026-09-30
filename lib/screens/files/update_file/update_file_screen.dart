@@ -614,7 +614,7 @@ class _UpdateFileScreenState extends State<UpdateFileScreen> {
         DropdownButtonFormField<String>(
           decoration: _inputDecoration,
           hint: Text(_t('selectYearText')),
-          value: _years.contains(selectedYear) ? selectedYear : null,
+          initialValue: _years.contains(selectedYear) ? selectedYear : null,
           items:
               _years
                   .map(
@@ -644,7 +644,7 @@ class _UpdateFileScreenState extends State<UpdateFileScreen> {
         DropdownButtonFormField<String>(
           decoration: _inputDecoration,
           hint: Text(_t('chooseOneText')),
-          value: categoryValue,
+          initialValue: categoryValue,
           items:
               provider.data
                   .where((e) => e.backendValue != null)

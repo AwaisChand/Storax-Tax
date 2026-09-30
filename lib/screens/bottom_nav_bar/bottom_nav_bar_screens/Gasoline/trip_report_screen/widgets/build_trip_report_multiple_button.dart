@@ -89,8 +89,9 @@ Widget buildMultipleTripReportButtons(BuildContext context, String tabMode) {
               borderRadius: BorderRadius.circular(8),
             ),
             onPressed: () {
-              if (!Utils.validateCustomDate(tabMode: tabMode, vm: tripVM))
+              if (!Utils.validateCustomDate(tabMode: tabMode, vm: tripVM)) {
                 return;
+              }
 
               showForwardTripReportDialog(context, tabMode);
             },
@@ -131,8 +132,9 @@ Widget buildMultipleTripReportButtons(BuildContext context, String tabMode) {
               borderRadius: BorderRadius.circular(8),
             ),
             onPressed: () async {
-              if (!Utils.validateCustomDate(tabMode: tabMode, vm: tripVM))
+              if (!Utils.validateCustomDate(tabMode: tabMode, vm: tripVM)) {
                 return;
+              }
 
               String? formattedFromDate;
               String? formattedToDate;

@@ -7,7 +7,6 @@ import 'package:storatax/models/get_user_profile/get_user_profile.dart';
 import '../../data/network/base_api_service.dart';
 import '../../data/network/network_api_service.dart';
 import '../../res/app_url.dart' show AppUrl;
-import '../../utils/scan_upload_file.dart';
 import 'package:image/image.dart' as img;
 import 'package:path/path.dart' as path_helper;
 

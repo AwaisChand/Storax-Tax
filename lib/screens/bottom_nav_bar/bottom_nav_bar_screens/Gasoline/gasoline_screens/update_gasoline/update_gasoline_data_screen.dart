@@ -71,13 +71,13 @@ class _UpdateGasolineDataScreenState extends State<UpdateGasolineDataScreen> {
         beforeTaxController.text = beforeTaxAmount.toStringAsFixed(2);
       });
     } else {
-      double percentageGST_HST = hstActual > 0 ? hstActual : gstActual;
+      double percentagegstHst = hstActual > 0 ? hstActual : gstActual;
       double percentagePST = pstActual;
 
       double beforeTax =
-          totalAmount / (1 + (percentageGST_HST + percentagePST) / 100);
+          totalAmount / (1 + (percentagegstHst + percentagePST) / 100);
 
-      double fetchedGST_HST = beforeTax * (percentageGST_HST / 100);
+      double fetchedgstHst = beforeTax * (percentagegstHst / 100);
       double fetchedPST = beforeTax * (percentagePST / 100);
 
       setState(() {
@@ -85,9 +85,9 @@ class _UpdateGasolineDataScreenState extends State<UpdateGasolineDataScreen> {
         beforeTaxController.text = beforeTaxAmount.toStringAsFixed(2);
 
         if (hstActual > 0) {
-          hst = double.parse(fetchedGST_HST.toStringAsFixed(2));
+          hst = double.parse(fetchedgstHst.toStringAsFixed(2));
         } else {
-          gst = double.parse(fetchedGST_HST.toStringAsFixed(2));
+          gst = double.parse(fetchedgstHst.toStringAsFixed(2));
         }
 
         pst = double.parse(fetchedPST.toStringAsFixed(2));
@@ -111,8 +111,7 @@ class _UpdateGasolineDataScreenState extends State<UpdateGasolineDataScreen> {
               primary: Colors.orange,
               onPrimary: Colors.white,
               onSurface: Colors.black,
-            ),
-            dialogBackgroundColor: Colors.white,
+            ), dialogTheme: DialogThemeData(backgroundColor: Colors.white),
           ),
           child: child!,
         );
@@ -373,7 +372,7 @@ class _UpdateGasolineDataScreenState extends State<UpdateGasolineDataScreen> {
                                                   width: double.infinity,
                                                   height: 200,
                                                   decoration: BoxDecoration(
-                                                    color: Colors.black.withOpacity(0.3),
+                                                    color: Colors.black.withValues(alpha: 0.3),
                                                     borderRadius: BorderRadius.circular(8),
                                                   ),
                                                   child: const Center(

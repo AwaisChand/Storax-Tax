@@ -87,15 +87,13 @@ Future showFilterDialog(BuildContext context, int planId) async {
   // IncomeTypeOption? selectedIncomeType;
 
   final List<IncomeTypeOption> dynamicIncomeOptions =
-      planId != null
-          ? rentalVM.getIncomeTypeOptions(planId).map((e) {
+      rentalVM.getIncomeTypeOptions(planId).map((e) {
             return IncomeTypeOption(
               id: e.id,
               name: e.name,
               rawEntry: e.rawEntry ?? e,
             );
-          }).toList()
-          : [];
+          }).toList();
 
   final List<ExpenseType> caExpenseTypes = [
     ExpenseType(key: 'Advertising', en: 'Advertising', fr: 'Publicité'),
@@ -363,7 +361,7 @@ Future showFilterDialog(BuildContext context, int planId) async {
                         const SizedBox(width: 10),
                         Expanded(
                           child: DropdownButtonFormField<String>(
-                            value: selectedYear,
+                            initialValue: selectedYear,
                             items:
                                 past7Years
                                     .map(
@@ -422,7 +420,7 @@ Future showFilterDialog(BuildContext context, int planId) async {
                               ),
                               const SizedBox(height: 10),
                               DropdownButtonFormField<IncomeTypeOption>(
-                                value: selectedIncomeType != null
+                                initialValue: selectedIncomeType != null
                                     ? dynamicIncomeOptions.firstWhere(
                                       (item) => item.id == selectedIncomeType!.id,
                                 )
@@ -473,7 +471,7 @@ Future showFilterDialog(BuildContext context, int planId) async {
                               ),
                               const SizedBox(height: 10),
                               DropdownButtonFormField<ExpenseType>(
-                                value: selectedExpenseType != null
+                                initialValue: selectedExpenseType != null
                                     ? dynamicExpenseOptions.firstWhere(
                                       (item) => item.key == selectedExpenseType!.key,
                                 )

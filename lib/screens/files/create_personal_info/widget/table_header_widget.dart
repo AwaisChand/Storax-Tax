@@ -321,8 +321,7 @@ class _DateFieldState extends State<DateField> {
                     primary: Colors.orange,
                     onPrimary: Colors.white,
                     onSurface: Colors.black,
-                  ),
-                  dialogBackgroundColor: Colors.white,
+                  ), dialogTheme: DialogThemeData(backgroundColor: Colors.white),
                 ),
                 child: child!,
               );
@@ -403,7 +402,7 @@ class _DropdownFieldState extends State<DropdownField> {
       width: widget.width,
       margin: const EdgeInsets.only(right: 8, bottom: 8),
       child: DropdownButtonFormField<String>(
-        value: selectedValue,
+        initialValue: selectedValue,
         isExpanded: true,
         items:
             widget.items

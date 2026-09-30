@@ -50,7 +50,7 @@ class StaticNameYearInputField extends StatelessWidget {
             margin: const EdgeInsets.symmetric(horizontal: 8.0),
             decoration: BoxDecoration(
               border: Border.all(
-                color: AppColors.blackColor.withOpacity(0.2),
+                color: AppColors.blackColor.withValues(alpha: 0.2),
                 width: 0.5,
               ),
               borderRadius: BorderRadius.circular(10),

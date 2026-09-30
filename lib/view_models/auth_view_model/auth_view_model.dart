@@ -6,12 +6,12 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:go_router/go_router.dart';
+import 'package:image/image.dart' as img;
 import 'package:image_picker/image_picker.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:storatax/models/get_user_profile/get_user_profile.dart';
-import 'package:image/image.dart' as img;
-import 'package:path_provider/path_provider.dart';
 
 import '../../models/login_model/login_model.dart';
 import '../../repository/auth_repository/auth_repository.dart';
@@ -33,7 +33,7 @@ class AuthViewModel extends ChangeNotifier {
   File? _tempPickedImage;
   File? get pickedImage => _pickedImage ?? _tempPickedImage;
 
-  List<XFile> _pickedImages = [];
+  final List<XFile> _pickedImages = [];
   List<XFile> get pickedImages => _pickedImages;
 
   final ImagePicker _picker = ImagePicker();
@@ -208,7 +208,7 @@ class AuthViewModel extends ChangeNotifier {
   ///Pick Multiple Images from gallery
   Future<void> pickMultipleImages() async {
     try {
-      final List<XFile>? images = await _picker.pickMultiImage();
+      final List<XFile> images = await _picker.pickMultiImage();
       if (images != null && images.isNotEmpty) {
         _pickedImages.addAll(images);
         notifyListeners();
@@ -231,7 +231,9 @@ class AuthViewModel extends ChangeNotifier {
 
       // 3. Save to a clean temporary file with a clear .jpg extension
       final tempDir = await getTemporaryDirectory();
-      final sanitizedFile = File('${tempDir.path}/clean_avatar_${DateTime.now().millisecondsSinceEpoch}.jpg');
+      final sanitizedFile = File(
+        '${tempDir.path}/clean_avatar_${DateTime.now().millisecondsSinceEpoch}.jpg',
+      );
 
       return await sanitizedFile.writeAsBytes(jpgBytes);
     } catch (e) {
@@ -593,11 +595,11 @@ class AuthViewModel extends ChangeNotifier {
   ///Update User Profile Api
 
   Future<void> updateProfileApi(
-      BuildContext context,
-      Map<String, dynamic> fields,
-      File? avatarFile, {
-        VoidCallback? onInvalidAvatar,
-      }) async {
+    BuildContext context,
+    Map<String, dynamic> fields,
+    File? avatarFile, {
+    VoidCallback? onInvalidAvatar,
+  }) async {
     loading = true;
     notifyListeners();
 
@@ -608,36 +610,27 @@ class AuthViewModel extends ChangeNotifier {
       debugPrint("Avatar: ${avatarFile?.path}");
       debugPrint("==========================================");
 
-      final response =
-      await authRepository.updateProfileRepo(
+      final response = await authRepository.updateProfileRepo(
         fields: fields,
         avatarFile: avatarFile,
       );
 
-      debugPrint(
-        "Update Profile Response: $response",
-      );
-
+      debugPrint("Update Profile Response: $response");
 
       // ============================================================
       // SAFETY CHECK
       // ============================================================
 
       if (response is! Map) {
-        Utils.toastMessage(
-          "Unexpected server response.",
-        );
+        Utils.toastMessage("Unexpected server response.");
         return;
       }
-
 
       // ============================================================
       // RESPONSE STATUS
       // ============================================================
 
-      final status =
-      response["status"]?.toString();
-
+      final status = response["status"]?.toString();
 
       // ============================================================
       // ERROR RESPONSE
@@ -646,23 +639,17 @@ class AuthViewModel extends ChangeNotifier {
       if (status == "0") {
         final message = response["message"];
 
-
         // ----------------------------------------------------------
         // Avatar validation error
         // ----------------------------------------------------------
 
-        if (message is Map &&
-            message["avatar"] != null) {
-          final avatarError =
-          message["avatar"];
+        if (message is Map && message["avatar"] != null) {
+          final avatarError = message["avatar"];
 
-          String errorText =
-              "Invalid avatar.";
+          String errorText = "Invalid avatar.";
 
-          if (avatarError is List &&
-              avatarError.isNotEmpty) {
-            errorText =
-                avatarError.first.toString();
+          if (avatarError is List && avatarError.isNotEmpty) {
+            errorText = avatarError.first.toString();
           } else if (avatarError is String) {
             errorText = avatarError;
           }
@@ -670,13 +657,10 @@ class AuthViewModel extends ChangeNotifier {
           // Reset selected image in UI
           onInvalidAvatar?.call();
 
-          Utils.toastMessage(
-            errorText,
-          );
+          Utils.toastMessage(errorText);
 
           return;
         }
-
 
         // ----------------------------------------------------------
         // Other validation errors
@@ -686,49 +670,36 @@ class AuthViewModel extends ChangeNotifier {
           String? errorText;
 
           for (final value in message.values) {
-            if (value is List &&
-                value.isNotEmpty) {
-              errorText =
-                  value.first.toString();
+            if (value is List && value.isNotEmpty) {
+              errorText = value.first.toString();
               break;
             }
 
-            if (value is String &&
-                value.isNotEmpty) {
+            if (value is String && value.isNotEmpty) {
               errorText = value;
               break;
             }
           }
 
-          Utils.toastMessage(
-            errorText ?? "Something went wrong.",
-          );
+          Utils.toastMessage(errorText ?? "Something went wrong.");
 
           return;
         }
-
 
         // ----------------------------------------------------------
         // String error
         // ----------------------------------------------------------
 
-        if (message is String &&
-            message.isNotEmpty) {
-          Utils.toastMessage(
-            message,
-          );
+        if (message is String && message.isNotEmpty) {
+          Utils.toastMessage(message);
 
           return;
         }
 
-
-        Utils.toastMessage(
-          "Something went wrong.",
-        );
+        Utils.toastMessage("Something went wrong.");
 
         return;
       }
-
 
       // ============================================================
       // SUCCESS
@@ -737,16 +708,11 @@ class AuthViewModel extends ChangeNotifier {
       if (status == "1") {
         await getUserProfileApi(context);
 
-        final successMessage =
-        response["message"];
+        final successMessage = response["message"];
 
-        if (successMessage is String &&
-            successMessage.isNotEmpty) {
-          Utils.toastMessage(
-            successMessage,
-          );
+        if (successMessage is String && successMessage.isNotEmpty) {
+          Utils.toastMessage(successMessage);
         }
-
 
         // Navigate after profile update
         Future.microtask(() {
@@ -754,47 +720,31 @@ class AuthViewModel extends ChangeNotifier {
             return;
           }
 
-          context.goNamed(
-            "bottomNavBar",
-          );
+          context.goNamed("bottomNavBar");
 
-          BottomNavBar.of(context)
-              ?.switchTab(0);
+          BottomNavBar.of(context)?.switchTab(0);
         });
 
         return;
       }
 
-
       // ============================================================
       // UNKNOWN STATUS
       // ============================================================
 
-      final message =
-      response["message"];
+      final message = response["message"];
 
-      if (message is String &&
-          message.isNotEmpty) {
-        Utils.toastMessage(
-          message,
-        );
+      if (message is String && message.isNotEmpty) {
+        Utils.toastMessage(message);
       } else {
-        Utils.toastMessage(
-          "Unexpected server response.",
-        );
+        Utils.toastMessage("Unexpected server response.");
       }
     } catch (e, st) {
-      debugPrint(
-        "Update Profile error: $e",
-      );
+      debugPrint("Update Profile error: $e");
 
-      debugPrint(
-        "$st",
-      );
+      debugPrint("$st");
 
-      Utils.toastMessage(
-        "Error: ${e.toString()}",
-      );
+      Utils.toastMessage("Error: ${e.toString()}");
     } finally {
       loading = false;
       notifyListeners();
@@ -892,18 +842,20 @@ class AuthViewModel extends ChangeNotifier {
 
       notifyListeners();
 
-      final String subStatus = _user?.status?.toString().toLowerCase() ?? 'unpaid';
+      final String subStatus =
+          _user?.status.toString().toLowerCase() ?? 'unpaid';
 
       if (subStatus == 'unpaid') {
         Navigator.pushAndRemoveUntil(
           context,
           MaterialPageRoute(
-            builder: (context) => PlanSummaryScreen(
-              planId: _user?.planId ?? 1,
-              userId: _user?.id.toString(),
-            ),
+            builder:
+                (context) => PlanSummaryScreen(
+                  planId: _user?.planId ?? 1,
+                  userId: _user?.id.toString(),
+                ),
           ),
-              (route) => false,
+          (route) => false,
         );
       } else {
         await context.read<PricingPlansViewModel>().myPlansApi(context);

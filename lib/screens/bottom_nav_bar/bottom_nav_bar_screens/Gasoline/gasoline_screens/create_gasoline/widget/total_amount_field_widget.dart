@@ -5,10 +5,10 @@ class TotalAmountField extends StatefulWidget {
   final Function(double) onChanged;
 
   const TotalAmountField({
-    Key? key,
+    super.key,
     required this.value,
     required this.onChanged,
-  }) : super(key: key);
+  });
 
   @override
   State<TotalAmountField> createState() => _TotalAmountFieldState();

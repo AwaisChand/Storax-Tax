@@ -3,8 +3,8 @@ import Flutter
 import VisionKit
 import GoogleMaps
 
-@UIApplicationMain
-@objc class AppDelegate: FlutterAppDelegate, VNDocumentCameraViewControllerDelegate {
+@main
+@objc class AppDelegate: FlutterAppDelegate, FlutterImplicitEngineDelegate, VNDocumentCameraViewControllerDelegate {
 
     var flutterResult: FlutterResult?
 
@@ -12,37 +12,49 @@ import GoogleMaps
         _ application: UIApplication,
         didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
     ) -> Bool {
-        // Required for google_maps_flutter on iOS. Missing key causes a native crash
-        // when opening Manual Tracking / any GoogleMap screen.
+        // Required for google_maps_flutter on iOS.
         GMSServices.provideAPIKey("AIzaSyBx7X2S83I4ei7X51AOUOiqiaj-e7gHO0E")
+        return super.application(application, didFinishLaunchingWithOptions: launchOptions)
+    }
 
-        GeneratedPluginRegistrant.register(with: self)
-        let ok = super.application(application, didFinishLaunchingWithOptions: launchOptions)
-
-        guard let controller = window?.rootViewController as? FlutterViewController else {
-            return ok
-        }
+    func didInitializeImplicitFlutterEngine(_ engineBridge: FlutterImplicitEngineBridge) {
+        GeneratedPluginRegistrant.register(with: engineBridge.pluginRegistry)
 
         let channel = FlutterMethodChannel(
             name: "vision_scanner",
-            binaryMessenger: controller.binaryMessenger
+            binaryMessenger: engineBridge.applicationRegistrar.messenger()
         )
 
-        channel.setMethodCallHandler { (call, result) in
-            if call.method == "scanDocument" {
+        channel.setMethodCallHandler { [weak self] (call, result) in
+            guard let self = self else { return }
 
-                /// ✅ Prevent multiple calls
+            if call.method == "scanDocument" {
                 if self.flutterResult != nil {
-                    result(FlutterError(code: "ALREADY_ACTIVE", message: "Scanner already active", details: nil))
+                    result(FlutterError(
+                        code: "ALREADY_ACTIVE",
+                        message: "Scanner already active",
+                        details: nil
+                    ))
                     return
                 }
 
                 self.flutterResult = result
+
+                guard let controller = self.topViewController() else {
+                    result(nil)
+                    self.flutterResult = nil
+                    return
+                }
+
                 self.openScanner(controller: controller)
             }
         }
+    }
 
-        return ok
+    private func topViewController() -> UIViewController? {
+        let scenes = UIApplication.shared.connectedScenes.compactMap { $0 as? UIWindowScene }
+        let windows = scenes.flatMap { $0.windows }
+        return (windows.first { $0.isKeyWindow } ?? windows.first)?.rootViewController
     }
 
     func openScanner(controller: UIViewController) {
@@ -59,7 +71,7 @@ import GoogleMaps
         }
     }
 
-    // ✅ Success
+    // Success
     func documentCameraViewController(
         _ controller: VNDocumentCameraViewController,
         didFinishWith scan: VNDocumentCameraScan
@@ -77,7 +89,7 @@ import GoogleMaps
 
                 DispatchQueue.main.async {
                     self.flutterResult?(filePath)
-                    self.flutterResult = nil /// ✅ reset
+                    self.flutterResult = nil
                 }
             } else {
                 DispatchQueue.main.async {
@@ -88,7 +100,7 @@ import GoogleMaps
         }
     }
 
-    // ❌ Cancel
+    // Cancel
     func documentCameraViewControllerDidCancel(
         _ controller: VNDocumentCameraViewController
     ) {
@@ -100,7 +112,7 @@ import GoogleMaps
         }
     }
 
-    // ❌ Error
+    // Error
     func documentCameraViewController(
         _ controller: VNDocumentCameraViewController,
         didFailWithError error: Error

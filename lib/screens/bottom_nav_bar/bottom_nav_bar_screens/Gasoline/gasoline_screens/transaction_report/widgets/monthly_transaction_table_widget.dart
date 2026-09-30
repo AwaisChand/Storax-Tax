@@ -200,7 +200,7 @@ class MerchantTransactionTable extends StatelessWidget {
     );
 
     return DataRow(
-      color: MaterialStateProperty.all(Colors.grey.shade100),
+      color: WidgetStateProperty.all(Colors.grey.shade100),
       cells: [
         DataCell(Text("Total", style: totalStyle)),
         const DataCell(Text("")),

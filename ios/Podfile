@@ -25,10 +25,16 @@ end
 
 require File.expand_path(File.join('packages', 'flutter_tools', 'bin', 'podhelper'), flutter_root)
 
+# Allows Google ML Kit to run on Apple Silicon iOS 26+ simulators.
+require File.expand_path(
+  '.symlinks/plugins/google_mlkit_commons/ios/scripts/apple_silicon_simulator',
+  __dir__,
+)
+
 flutter_ios_podfile_setup
 
 target 'Runner' do
-  use_frameworks!
+  use_frameworks! :linkage => :static
 
   flutter_install_all_ios_pods File.dirname(File.realpath(__FILE__))
   target 'RunnerTests' do
@@ -56,6 +62,10 @@ post_install do |installer|
         'PERMISSION_LOCATION_WHENINUSE=1',
         'PERMISSION_MICROPHONE=1',
       ]
+      # Do not exclude arm64 for simulators (required on Apple Silicon + iOS 26+).
+      config.build_settings.delete('EXCLUDED_ARCHS[sdk=iphonesimulator*]')
     end
   end
+
+  mlkit_apple_silicon_simulator_patch(installer)
 end

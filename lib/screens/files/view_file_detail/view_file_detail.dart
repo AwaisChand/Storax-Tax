@@ -295,7 +295,7 @@ class _ViewFileDetailState extends State<ViewFileDetail> {
       PageRouteBuilder(
         opaque: true,
         barrierColor: Colors.black,
-        pageBuilder: (_, __, ___) {
+        pageBuilder: (_, _, _) {
           return _FullScreenImageViewer(
             imageUrls: urls,
             initialIndex: initialIndex.clamp(0, urls.length - 1),
@@ -378,13 +378,13 @@ class _FullScreenImageViewerState extends State<_FullScreenImageViewer> {
                   child: CachedNetworkImage(
                     imageUrl: widget.imageUrls[index],
                     fit: BoxFit.contain,
-                    placeholder: (_, __) => const Center(
+                    placeholder: (_, _) => const Center(
                       child: CircularProgressIndicator(
                         color: Colors.white,
                         strokeWidth: 2,
                       ),
                     ),
-                    errorWidget: (_, __, ___) => const Icon(
+                    errorWidget: (_, _, _) => const Icon(
                       Icons.broken_image,
                       color: Colors.white54,
                       size: 48,

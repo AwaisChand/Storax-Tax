@@ -10,7 +10,7 @@ import '../../../../../../../utils/utils.dart';
 import '../../../../../res/components/app_localization.dart';
 
 class UpdateViewrPermissionScreen extends StatefulWidget {
-  UpdateViewrPermissionScreen({super.key, required this.data});
+  const UpdateViewrPermissionScreen({super.key, required this.data});
   final Data data;
 
   @override

@@ -3,7 +3,6 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:storatax/res/components/app_button.dart';
 import 'package:storatax/screens/bottom_nav_bar/bottom_nav_bar_screens/uber_quebec/uber_quebec_screens/gst_qst_reporting_screen/gst_qst_reporting_screen.dart';
 import 'package:storatax/utils/app_colors.dart';
-import 'package:storatax/utils/routes/routes_name.dart';
 import 'package:storatax/utils/utils.dart';
 
 import '../../../../../../res/app_assets.dart';

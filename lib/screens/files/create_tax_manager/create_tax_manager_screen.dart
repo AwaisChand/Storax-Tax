@@ -670,7 +670,7 @@ class _CreateTaxManagerScreenState extends State<CreateTaxManagerScreen> {
         DropdownButtonFormField<String>(
           decoration: _inputDecoration,
           hint: Text(_t('selectYearText')),
-          value: selectedYear,
+          initialValue: selectedYear,
           items:
               _years
                   .map(
@@ -700,7 +700,7 @@ class _CreateTaxManagerScreenState extends State<CreateTaxManagerScreen> {
         DropdownButtonFormField<String>(
           decoration: _inputDecoration,
           hint: Text(_t('chooseOneText')),
-          value: selectedCategory,
+          initialValue: selectedCategory,
           items:
               provider.data
                   .where((e) => e.backendValue != null)

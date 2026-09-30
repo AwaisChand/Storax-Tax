@@ -8,8 +8,6 @@ import 'package:storatax/models/get_gasoline_list_model/get_gasoline_list_model.
 import 'package:storatax/models/get_gasoline_report_model/get_gasoline_report_model.dart';
 import 'package:storatax/models/get_transaction_report_model/get_transaction_report_model.dart';
 import 'package:storatax/models/get_trip_detail_model/get_trip_detail_model.dart';
-import 'package:storatax/models/list_auto_trips_model/list_auto_trips_model.dart';
-import 'package:storatax/models/trip_details_model.dart';
 
 import '../../data/network/base_api_service.dart';
 import '../../data/network/network_api_service.dart';

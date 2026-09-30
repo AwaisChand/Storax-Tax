@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter/foundation.dart';
+import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
 import 'package:storatax/models/get_rental_property_plan_model/get_rental_property_plan_model.dart';
 import 'package:storatax/models/rental_property_models/account_setting_model/account_setting_model.dart';
@@ -9,10 +10,9 @@ import 'package:storatax/models/rental_property_models/database_entry_model/data
 import 'package:storatax/models/rental_property_models/get_all_regular_entries_model/get_all_regular_entries_model.dart';
 import 'package:storatax/models/rental_property_models/get_income_types_model/get_income_types_model.dart';
 import 'package:storatax/models/rental_property_models/property_owner_model/property_owner_model.dart';
-import 'package:http/http.dart' as http;
+
 import '../../data/network/base_api_service.dart';
 import '../../data/network/network_api_service.dart';
-import '../../models/get_reports_model/get_reports_model.dart';
 import '../../res/app_url.dart';
 import '../../utils/scan_upload_file.dart';
 
@@ -220,19 +220,24 @@ class RentalPropertyRepository {
       final queryParams = <String, String>{
         'planId': planId.toString(),
         if (year != null) 'year': year,
-        if (fromDate != null) 'from_date': DateFormat('yyyy-MM-dd').format(fromDate),
+        if (fromDate != null)
+          'from_date': DateFormat('yyyy-MM-dd').format(fromDate),
         if (toDate != null) 'to_date': DateFormat('yyyy-MM-dd').format(toDate),
         if (month != null) 'month': DateFormat('MMMM').format(month),
         if (incomeTypeId != null) 'income_type_id': incomeTypeId.toString(),
         if (expenseType != null) 'expense_type': expenseType,
       };
 
-      final uri = Uri.parse(AppUrl.entriesEndPoint).replace(queryParameters: queryParams);
+      final uri = Uri.parse(
+        AppUrl.entriesEndPoint,
+      ).replace(queryParameters: queryParams);
 
       debugPrint("Raw API request URL: $uri");
 
       // 3️⃣ Call API
-      final dynamic response = await baseApiServices.getRequestToken(uri.toString());
+      final dynamic response = await baseApiServices.getRequestToken(
+        uri.toString(),
+      );
 
       debugPrint("Raw API response JSON: $response");
 
@@ -248,9 +253,6 @@ class RentalPropertyRepository {
       );
     }
   }
-
-
-
 
   ///Create Entries
 
@@ -306,16 +308,9 @@ class RentalPropertyRepository {
     try {
       final url = Uri.parse(
         AppUrl.forwardMultipleEntriesEndPoint,
-      ).replace(
-        queryParameters: {
-          'language': language,
-        },
-      );
+      ).replace(queryParameters: {'language': language});
 
-      final response = await baseApiServices.postRequest(
-        url.toString(),
-        data,
-      );
+      final response = await baseApiServices.postRequest(url.toString(), data);
 
       debugPrint("response$response");
       debugPrint("Api url: $url");
@@ -330,17 +325,14 @@ class RentalPropertyRepository {
   ///Forward Report
 
   Future<dynamic> forwardReportEndPointRepo(
-      dynamic data,
-      String? language,
-      ) async {
+    dynamic data,
+    String? language,
+  ) async {
     try {
       final url =
           "${AppUrl.forwardReportEndPoint}?language=${language ?? 'en'}";
 
-      dynamic response = await baseApiServices.postRequest(
-        url,
-        data,
-      );
+      dynamic response = await baseApiServices.postRequest(url, data);
 
       debugPrint("Response: $response");
       debugPrint("Api url: $url");
@@ -439,12 +431,12 @@ class RentalPropertyRepository {
       final queryParams = <String, String>{
         'planId': planId.toString(),
         if (year != null) 'year': year,
-        if (fromDate != null) 'from_date': DateFormat('yyyy-MM-dd').format(fromDate),
+        if (fromDate != null)
+          'from_date': DateFormat('yyyy-MM-dd').format(fromDate),
         if (toDate != null) 'to_date': DateFormat('yyyy-MM-dd').format(toDate),
         if (month != null) 'month': DateFormat('MMMM').format(month),
-        if(language !=null) 'language': language
+        if (language != null) 'language': language,
       };
-
 
       // Build full URL with query parameters if present
       if (queryParams.isNotEmpty) {
@@ -537,9 +529,9 @@ class RentalPropertyRepository {
 
       final url = Uri.parse(
         "${AppUrl.allRegularEntriesPrintEndPoint}"
-            "?year=$year"
-            "&planId=$clientPlansId"
-            "&language=$language",
+        "?year=$year"
+        "&planId=$clientPlansId"
+        "&language=$language",
       );
 
       debugPrint("Generate Report API: $url");
@@ -570,7 +562,6 @@ class RentalPropertyRepository {
     }
   }
 
-
   Future<Map<String, dynamic>> printT776Repo({
     required int clientPlansId,
     required int year,
@@ -579,10 +570,12 @@ class RentalPropertyRepository {
     final networkApiService = NetworkApiService();
     final token = await networkApiService.getToken();
 
-    if (token == null) return {"status": 0, "success": "Authorization token not found"};
+    if (token == null)
+      return {"status": 0, "success": "Authorization token not found"};
 
     final url = Uri.parse(
-        "${AppUrl.printT776EndPoint}?client_plans_id=$clientPlansId&year=$year&language=$language");
+      "${AppUrl.printT776EndPoint}?client_plans_id=$clientPlansId&year=$year&language=$language",
+    );
 
     debugPrint("📡 Calling Report T776 API: $url");
 
@@ -608,7 +601,10 @@ class RentalPropertyRepository {
       }
     }
 
-    return {"status": 0, "success": "Unexpected response (status: ${response.statusCode})"};
+    return {
+      "status": 0,
+      "success": "Unexpected response (status: ${response.statusCode})",
+    };
   }
 
   Future<Map<String, dynamic>> printF1040Repo({
@@ -619,10 +615,12 @@ class RentalPropertyRepository {
     final networkApiService = NetworkApiService();
     final token = await networkApiService.getToken();
 
-    if (token == null) return {"status": 0, "success": "Authorization token not found"};
+    if (token == null)
+      return {"status": 0, "success": "Authorization token not found"};
 
     final url = Uri.parse(
-        "${AppUrl.printF1040EndPoint}?client_plans_id=$clientPlansId&year=$year&language=$language");
+      "${AppUrl.printF1040EndPoint}?client_plans_id=$clientPlansId&year=$year&language=$language",
+    );
 
     debugPrint("📡 Calling Report F1040 API: $url");
 
@@ -648,7 +646,9 @@ class RentalPropertyRepository {
       }
     }
 
-    return {"status": 0, "success": "Unexpected response (status: ${response.statusCode})"};
+    return {
+      "status": 0,
+      "success": "Unexpected response (status: ${response.statusCode})",
+    };
   }
-
 }

@@ -111,8 +111,9 @@ class AmountByMonthChartWidget extends StatelessWidget {
                           'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
                           'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
                         ];
-                        if (value.toInt() < 0 || value.toInt() > 11)
+                        if (value.toInt() < 0 || value.toInt() > 11) {
                           return const SizedBox.shrink();
+                        }
                         return SideTitleWidget(
                           meta: meta,
                           child: Text(

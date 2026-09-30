@@ -764,7 +764,7 @@ class _AllTripsScreenState extends State<AllTripsScreen> {
                       width: 52,
                       height: 52,
                       decoration: BoxDecoration(
-                        color: const Color(0xFF1E88E5).withOpacity(0.1),
+                        color: const Color(0xFF1E88E5).withValues(alpha: 0.1),
                         shape: BoxShape.circle,
                       ),
                       child: const Icon(

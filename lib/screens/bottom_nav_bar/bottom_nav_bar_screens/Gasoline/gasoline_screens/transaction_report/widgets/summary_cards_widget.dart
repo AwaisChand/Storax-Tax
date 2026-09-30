@@ -215,8 +215,8 @@ class SummaryCardsWidget extends StatelessWidget {
                 child: LinearProgressIndicator(
                   value: progress.clamp(0.0, 1.0),
                   minHeight: 6,
-                  backgroundColor: (progressColor ?? textColor).withOpacity(
-                    0.3,
+                  backgroundColor: (progressColor ?? textColor).withValues(
+                    alpha: 0.3,
                   ),
                   valueColor: AlwaysStoppedAnimation<Color>(
                     progressColor ?? textColor,

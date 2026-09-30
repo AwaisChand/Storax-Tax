@@ -5,10 +5,10 @@ class StaticDualStepper extends StatelessWidget {
   final double fetchedValue;
 
   const StaticDualStepper({
-    Key? key,
+    super.key,
     required this.actualValue,
     required this.fetchedValue,
-  }) : super(key: key);
+  });
 
   String formatActual(double value) {
     return value % 1 == 0 ? value.toStringAsFixed(0) : value.toStringAsFixed(3);

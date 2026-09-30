@@ -14,7 +14,6 @@ import 'package:storatax/view_models/auth_view_model/auth_view_model.dart';
 
 import '../../../res/components/app_localization.dart';
 import '../../../res/components/app_text_field.dart';
-import '../../bottom_nav_bar/bottom_nav_bar.dart';
 import '../../plan_summary_screen/plan_summary_screen.dart';
 
 class ClientPlanRegister extends StatefulWidget {

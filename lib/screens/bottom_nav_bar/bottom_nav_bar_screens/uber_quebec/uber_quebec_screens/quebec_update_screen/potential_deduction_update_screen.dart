@@ -42,23 +42,17 @@ class _PotentialDeductionUpdateScreenState
     km1 = widget.quebecModel.onTripMileage ?? 0.0;
     km2 = widget.quebecModel.onlineMileage ?? 0.0;
 
-    if (widget.quebecModel.periodFrom != null) {
-      _periodFrom = DateTime.tryParse(widget.quebecModel.periodFrom!);
-      if (_periodFrom != null) {
-        _periodFromController.text = Utils.formatDate(_periodFrom!);
-      }
+    _periodFrom = DateTime.tryParse(widget.quebecModel.periodFrom!);
+    if (_periodFrom != null) {
+      _periodFromController.text = Utils.formatDate(_periodFrom!);
     }
-    if (widget.quebecModel.periodTo != null) {
-      _periodTo = DateTime.tryParse(widget.quebecModel.periodTo!);
-      if (_periodTo != null) {
-        _periodToController.text = Utils.formatDate(_periodTo!);
-      }
+    _periodTo = DateTime.tryParse(widget.quebecModel.periodTo!);
+    if (_periodTo != null) {
+      _periodToController.text = Utils.formatDate(_periodTo!);
     }
-    if (widget.quebecModel.dueDate != null) {
-      _dueDate = DateTime.tryParse(widget.quebecModel.dueDate!);
-      if (_dueDate != null) {
-        _dueDateController.text = Utils.formatDate(_dueDate!);
-      }
+    _dueDate = DateTime.tryParse(widget.quebecModel.dueDate!);
+    if (_dueDate != null) {
+      _dueDateController.text = Utils.formatDate(_dueDate!);
     }
   }
 

@@ -628,8 +628,9 @@ class _AddReceiptScanScreenState extends State<AddReceiptScanScreen>
                                                   final image =
                                                       await auth
                                                           .pickImageFromGallery();
-                                                  if (image != null)
+                                                  if (image != null) {
                                                     handleImage(image);
+                                                  }
                                                 },
                                               ),
 
@@ -710,7 +711,7 @@ class _AddReceiptScanScreenState extends State<AddReceiptScanScreen>
                                     if (isAutoScanning)
                                       Container(
                                         decoration: BoxDecoration(
-                                          color: Colors.black.withOpacity(0.4),
+                                          color: Colors.black.withValues(alpha: 0.4),
                                           borderRadius: BorderRadius.circular(
                                             10,
                                           ),

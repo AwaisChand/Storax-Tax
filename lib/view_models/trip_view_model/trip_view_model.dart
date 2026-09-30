@@ -89,7 +89,7 @@ class TripViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  bool _logBookRejectLoading = false;
+  final bool _logBookRejectLoading = false;
 
   bool get logBookRejectLoading => _logBookRejectLoading;
 

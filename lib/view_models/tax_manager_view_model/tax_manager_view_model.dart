@@ -590,7 +590,7 @@ class TaxManagerViewModel extends ChangeNotifier {
         language: language, // ✅ forwarded
       );
 
-      if (result != null && result["status"] == 1 && result["file"] != null) {
+      if (result["status"] == 1 && result["file"] != null) {
         // ✅ Save PDF to local
         final response = result["file"] as http.Response;
         final tempDir = await getTemporaryDirectory();
@@ -600,7 +600,7 @@ class TaxManagerViewModel extends ChangeNotifier {
         return filePath;
       } else {
         final message =
-        (result != null && result["success"] is String)
+        (result["success"] is String)
             ? result["success"] as String
             : "Please update your account settings to proceed";
 

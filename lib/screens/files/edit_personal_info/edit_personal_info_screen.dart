@@ -279,7 +279,7 @@ class _EditPersonalInfoScreenState extends State<EditPersonalInfoScreen> {
                                 )!.translate("selectYearText") ??
                                 '',
                           ),
-                          value: selectedYear,
+                          initialValue: selectedYear,
                           items:
                               years
                                   .map(
@@ -567,7 +567,7 @@ class _EditPersonalInfoScreenState extends State<EditPersonalInfoScreen> {
                                     });
                                   },
                                 );
-                              }).toList(),
+                              }),
                             ],
                           ),
                         ),

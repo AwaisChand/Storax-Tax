@@ -282,7 +282,7 @@ class _BottomNavBarState extends State<BottomNavBar>
             (i) => Navigator(
               key: _navigatorKeys[i],
               onGenerateInitialRoutes:
-                  (_, __) => [MaterialPageRoute(builder: (_) => screens[i])],
+                  (_, _) => [MaterialPageRoute(builder: (_) => screens[i])],
             ),
           ),
         ),
