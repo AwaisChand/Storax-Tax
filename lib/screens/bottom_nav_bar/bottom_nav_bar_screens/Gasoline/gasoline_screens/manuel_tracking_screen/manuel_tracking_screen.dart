@@ -1,12 +1,16 @@
 import 'dart:convert';
+import 'dart:io';
+
+import 'package:flutter/foundation.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_polyline_points/flutter_polyline_points.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:http/http.dart' as http;
 import 'package:provider/provider.dart';
 import 'package:storatax/screens/bottom_nav_bar/bottom_nav_bar_screens/Gasoline/gasoline_screens/manuel_tracking_screen/show_map_screen.dart';
+import 'package:storatax/utils/google_maps_config.dart';
 import 'package:storatax/view_models/auth_view_model/auth_view_model.dart';
 
 import '../../../../../../res/components/app_drawer.dart';
@@ -35,6 +39,7 @@ class _ManuelTrackingScreenState extends State<ManuelTrackingScreen> {
   DateTime selectedDateTime = DateTime.now();
 
   static const LatLng _defaultCenter = LatLng(31.4815, 74.3030);
+  bool _locationGranted = false;
 
   List<Map<String, dynamic>> routePoints = [
     {
@@ -51,12 +56,21 @@ class _ManuelTrackingScreenState extends State<ManuelTrackingScreen> {
 
   List<Map<String, dynamic>> routeLegsData = [];
 
-  final String apiKey = "AIzaSyBx7X2S83I4ei7X51AOUOiqiaj-e7gHO0E";
-
   @override
   void initState() {
     super.initState();
     _determineAndSetUserPosition();
+  }
+
+  LocationSettings _locationSettings() {
+    if (Platform.isIOS) {
+      return AppleSettings(
+        accuracy: LocationAccuracy.best,
+        activityType: ActivityType.otherNavigation,
+        pauseLocationUpdatesAutomatically: false,
+      );
+    }
+    return const LocationSettings(accuracy: LocationAccuracy.high);
   }
 
   Future<void> _determineAndSetUserPosition() async {
@@ -68,11 +82,22 @@ class _ManuelTrackingScreenState extends State<ManuelTrackingScreen> {
       if (permission == LocationPermission.denied) {
         permission = await Geolocator.requestPermission();
       }
+      if (permission == LocationPermission.denied ||
+          permission == LocationPermission.deniedForever) {
+        throw 'Location permission denied';
+      }
 
-      Position position = await Geolocator.getCurrentPosition();
+      if (mounted) {
+        setState(() => _locationGranted = true);
+      }
+
+      final Position position = await Geolocator.getCurrentPosition(
+        locationSettings: _locationSettings(),
+      );
       LatLng userCoordinates = LatLng(position.latitude, position.longitude);
       String address = await _getReadableAddressFromLatLng(userCoordinates);
 
+      if (!mounted) return;
       setState(() {
         routePoints[0] = {
           ...routePoints[0],
@@ -95,13 +120,17 @@ class _ManuelTrackingScreenState extends State<ManuelTrackingScreen> {
   }
 
   Future<String> _getReadableAddressFromLatLng(LatLng coords) async {
-    final url =
-        "https://maps.googleapis.com/maps/api/geocode/json?latlng=${coords.latitude},${coords.longitude}&key=$apiKey";
+    final uri = Uri.https('maps.googleapis.com', '/maps/api/geocode/json', {
+      'latlng': '${coords.latitude},${coords.longitude}',
+      'key': GoogleMapsConfig.apiKey,
+    });
 
-    final response = await http.get(Uri.parse(url));
+    final response = await GoogleMapsConfig.get(uri);
     final data = json.decode(response.body);
 
-    if (data['status'] == 'OK') {
+    if (data['status'] == 'OK' &&
+        data['results'] is List &&
+        (data['results'] as List).isNotEmpty) {
       return data['results'][0]['formatted_address'];
     }
     return "Current Location";
@@ -218,18 +247,19 @@ class _ManuelTrackingScreenState extends State<ManuelTrackingScreen> {
           .join('|');
     }
 
-    String url =
-        "https://maps.googleapis.com/maps/api/directions/json?"
-        "origin=${origin["lat"]},${origin["lng"]}"
-        "&destination=${destination["lat"]},${destination["lng"]}"
-        "&mode=driving"
-        "&key=$apiKey";
-
+    final params = <String, String>{
+      'origin': '${origin["lat"]},${origin["lng"]}',
+      'destination': '${destination["lat"]},${destination["lng"]}',
+      'mode': 'driving',
+      'key': GoogleMapsConfig.apiKey,
+    };
     if (waypoints.isNotEmpty) {
-      url += "&waypoints=$waypoints";
+      params['waypoints'] = waypoints;
     }
 
-    final response = await http.get(Uri.parse(url));
+    final response = await GoogleMapsConfig.get(
+      Uri.https('maps.googleapis.com', '/maps/api/directions/json', params),
+    );
     final data = json.decode(response.body);
 
     if (data["status"] == "OK") {
@@ -394,12 +424,20 @@ class _ManuelTrackingScreenState extends State<ManuelTrackingScreen> {
             ),
             markers: _markers,
             polylines: _polylines,
+            myLocationEnabled: _locationGranted,
+            myLocationButtonEnabled: false,
+            compassEnabled: true,
+            mapToolbarEnabled: false,
+            gestureRecognizers: <Factory<OneSequenceGestureRecognizer>>{
+              Factory<OneSequenceGestureRecognizer>(
+                () => EagerGestureRecognizer(),
+              ),
+            },
             onMapCreated: (c) {
               _mapController = c;
               _mapReady = true;
               if (routePolyline.isNotEmpty) _drawPolyline();
 
-              // Force iOS platform view to render tiles
               Future.delayed(const Duration(milliseconds: 300), () {
                 if (_mapController != null) {
                   _mapController!.animateCamera(
@@ -408,7 +446,6 @@ class _ManuelTrackingScreenState extends State<ManuelTrackingScreen> {
                 }
               });
             },
-            myLocationEnabled: true,
           ),
 
           Positioned(

@@ -8,11 +8,16 @@ import GoogleMaps
 
     var flutterResult: FlutterResult?
 
+    override init() {
+        super.init()
+        GMSServices.provideAPIKey("AIzaSyBx7X2S83I4ei7X51AOUOiqiaj-e7gHO0E")
+    }
+
     override func application(
         _ application: UIApplication,
         didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
     ) -> Bool {
-        // Required for google_maps_flutter on iOS.
+        // Required for google_maps_flutter on iOS. Must run before Flutter UI.
         GMSServices.provideAPIKey("AIzaSyBx7X2S83I4ei7X51AOUOiqiaj-e7gHO0E")
         return super.application(application, didFinishLaunchingWithOptions: launchOptions)
     }

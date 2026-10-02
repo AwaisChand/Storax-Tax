@@ -27,6 +27,12 @@
    <key>LSRequiresIPhoneOS</key>
    <true/>
 
+   <!-- Google Maps SDK for iOS -->
+   <key>GMSApiKey</key>
+   <string>AIzaSyBx7X2S83I4ei7X51AOUOiqiaj-e7gHO0E</string>
+   <key>io.flutter.embedded_views_preview</key>
+   <true/>
+
    <!-- Permissions -->
    <key>NSCameraUsageDescription</key>
    <string>Storatax needs camera access to scan receipts, documents, and capture profile photos.</string>
