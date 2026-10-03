@@ -22,15 +22,34 @@ class VerifyOtpScreen extends StatefulWidget {
 
 class _VerifyOtpScreenState extends State<VerifyOtpScreen> {
   final emailController = TextEditingController();
-  // 🔥 changed from 4 -> 6
   final otpControllers = TextEditingController();
 
   @override
   void initState() {
     super.initState();
-    if (widget.email != null) {
-      emailController.text = widget.email!;
+    _bindEmail();
+    otpControllers.clear();
+  }
+
+  @override
+  void didUpdateWidget(VerifyOtpScreen oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.email != widget.email ||
+        oldWidget.fromLogin != widget.fromLogin) {
+      _bindEmail();
+      otpControllers.clear();
     }
+  }
+
+  void _bindEmail() {
+    emailController.text = widget.email ?? '';
+  }
+
+  @override
+  void dispose() {
+    emailController.dispose();
+    otpControllers.dispose();
+    super.dispose();
   }
 
   @override
@@ -162,6 +181,7 @@ class _VerifyOtpScreenState extends State<VerifyOtpScreen> {
                                     '',
                               );
                             } else {
+                              otpControllers.clear();
                               Map data = {
                                 'email': emailController.text.toString(),
                               };

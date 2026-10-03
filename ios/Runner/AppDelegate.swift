@@ -10,7 +10,7 @@ import GoogleMaps
 
     override init() {
         super.init()
-        GMSServices.provideAPIKey("AIzaSyBx7X2S83I4ei7X51AOUOiqiaj-e7gHO0E")
+        GMSServices.provideAPIKey("AIzaSyCtVdR79rZ-cTDtXYrURz1YmGLmeCiBIDo")
     }
 
     override func application(
@@ -18,7 +18,7 @@ import GoogleMaps
         didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
     ) -> Bool {
         // Required for google_maps_flutter on iOS. Must run before Flutter UI.
-        GMSServices.provideAPIKey("AIzaSyBx7X2S83I4ei7X51AOUOiqiaj-e7gHO0E")
+        GMSServices.provideAPIKey("AIzaSyCtVdR79rZ-cTDtXYrURz1YmGLmeCiBIDo")
         return super.application(application, didFinishLaunchingWithOptions: launchOptions)
     }
 

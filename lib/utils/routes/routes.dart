@@ -60,10 +60,14 @@ class AppRouter {
         path: '/verify-otp',
         name: 'verifyOtp',
         builder: (context, state) {
-          final args = state.extra as Map<String, dynamic>;
+          final args = (state.extra as Map?)?.cast<String, dynamic>() ?? {};
+          final email = args["email"]?.toString() ?? '';
+          final fromLogin = args["fromLogin"] == true;
+          final session = args["otpSession"]?.toString() ?? '';
           return VerifyOtpScreen(
-            fromLogin: args["fromLogin"] ?? false,
-            email: args["email"] ?? '',
+            key: ValueKey('otp_${email}_${fromLogin}_$session'),
+            fromLogin: fromLogin,
+            email: email,
           );
         },
       ),

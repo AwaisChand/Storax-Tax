@@ -302,7 +302,11 @@ class AuthViewModel extends ChangeNotifier {
 
         context.goNamed(
           'verifyOtp',
-          extra: {"email": email, "fromLogin": fromLogin},
+          extra: {
+            "email": email,
+            "fromLogin": fromLogin,
+            "otpSession": DateTime.now().millisecondsSinceEpoch,
+          },
         );
       } else {
         String message = "";
@@ -829,7 +833,11 @@ class AuthViewModel extends ChangeNotifier {
         final user = User.fromJson(jsonDecode(userJson));
         context.goNamed(
           "verifyOtp",
-          extra: {"email": user.email, "fromLogin": true},
+          extra: {
+            "email": user.email,
+            "fromLogin": true,
+            "otpSession": DateTime.now().millisecondsSinceEpoch,
+          },
         );
         return;
       }
