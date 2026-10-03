@@ -3,13 +3,10 @@ import 'dart:io';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
-import 'package:geolocator/geolocator.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:storatax/models/log_book_report_model/log_book_report_model.dart';
 import 'package:storatax/repository/trip_repo/trip_repo.dart';
 
-import '../../models/active_trip_model(auto)/active_trip_model.dart';
-import '../../models/get_trip_detail_model/get_trip_detail_model.dart';
 import '../../models/list_auto_trips_model/list_auto_trips_model.dart';
 import '../../models/pending_logbook_submission_model/pending_logout_submission_model.dart';
 import '../../models/trip_report_model/trip_report_model.dart';

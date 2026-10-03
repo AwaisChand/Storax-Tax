@@ -3,17 +3,12 @@ import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
-import 'package:printing/printing.dart';
-import 'package:provider/provider.dart';
 import 'package:storatax/models/get_category_model/get_category_model.dart';
 import 'package:storatax/models/get_file_model/get_file_model.dart';
 import 'package:storatax/models/get_personal_info_model/get_personal_info_model.dart';
 import 'package:storatax/models/get_previous_info_model/get_previous_info_model.dart';
 import 'package:storatax/repository/tax_manager_repository/tax_manager_repository.dart';
-import 'package:storatax/res/app_assets.dart';
-import 'package:storatax/screens/files/create_tax_manager/create_tax_manager_screen.dart';
 import 'package:storatax/screens/files/get_files/get_files_screen.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:path_provider/path_provider.dart';
@@ -22,7 +17,6 @@ import 'package:storatax/screens/files/get_personal_info/get_personal_info_scree
 
 import '../../utils/scan_flow_log.dart';
 import '../../utils/utils.dart';
-import '../auth_view_model/auth_view_model.dart';
 
 class TaxManagerViewModel extends ChangeNotifier {
   final TaxManagerRepository taxManagerRepository = TaxManagerRepository();

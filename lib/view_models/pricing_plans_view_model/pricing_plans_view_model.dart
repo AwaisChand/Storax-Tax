@@ -12,7 +12,6 @@ import 'package:storatax/models/client_plan_model/client_plan_model.dart'
     as client;
 
 import '../../screens/bottom_nav_bar/bottom_nav_bar.dart';
-import '../../utils/routes/routes_name.dart';
 import '../../utils/utils.dart';
 
 class PricingPlansViewModel extends ChangeNotifier {

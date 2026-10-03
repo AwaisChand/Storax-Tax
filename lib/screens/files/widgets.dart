@@ -3,8 +3,6 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:month_picker_dialog/month_picker_dialog.dart';
 import 'package:provider/provider.dart';
-import 'package:storatax/screens/files/create_personal_info/create_personal_file_screen.dart';
-import 'package:storatax/screens/files/create_tax_manager/create_tax_manager_screen.dart';
 import 'package:storatax/screens/files/get_personal_info/get_personal_info_screen.dart';
 import 'package:storatax/view_models/auth_view_model/auth_view_model.dart';
 import 'package:storatax/view_models/tax_manager_view_model/tax_manager_view_model.dart';

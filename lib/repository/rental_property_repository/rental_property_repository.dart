@@ -570,8 +570,9 @@ class RentalPropertyRepository {
     final networkApiService = NetworkApiService();
     final token = await networkApiService.getToken();
 
-    if (token == null)
+    if (token == null) {
       return {"status": 0, "success": "Authorization token not found"};
+    }
 
     final url = Uri.parse(
       "${AppUrl.printT776EndPoint}?client_plans_id=$clientPlansId&year=$year&language=$language",
@@ -615,8 +616,9 @@ class RentalPropertyRepository {
     final networkApiService = NetworkApiService();
     final token = await networkApiService.getToken();
 
-    if (token == null)
+    if (token == null) {
       return {"status": 0, "success": "Authorization token not found"};
+    }
 
     final url = Uri.parse(
       "${AppUrl.printF1040EndPoint}?client_plans_id=$clientPlansId&year=$year&language=$language",

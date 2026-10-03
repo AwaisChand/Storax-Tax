@@ -1,11 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
-import '../../../../models/dependants_model/dependants_model.dart';
 import '../../../../models/get_personal_info_model/get_personal_info_model.dart'
     as personal;
 import '../../../../res/components/app_localization.dart';
-import '../create_personal_file_screen.dart';
 import 'increament_decreament_double_widget.dart';
 import 'increament_decreament_widget.dart';
 

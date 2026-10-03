@@ -3,7 +3,6 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'package:storatax/screens/bottom_nav_bar/bottom_nav_bar_screens/Gasoline/gasoline_screens/all_trips_screen/widget.dart';
 import 'package:storatax/view_models/auth_view_model/auth_view_model.dart';
-import 'package:storatax/view_models/gasoline_view_model/gasoline_view_model.dart';
 import 'package:storatax/view_models/trip_view_model/trip_view_model.dart';
 import '../../../../../../res/app_assets.dart';
 import '../../../../../../res/components/app_localization.dart';

@@ -209,7 +209,7 @@ class AuthViewModel extends ChangeNotifier {
   Future<void> pickMultipleImages() async {
     try {
       final List<XFile> images = await _picker.pickMultiImage();
-      if (images != null && images.isNotEmpty) {
+      if (images.isNotEmpty) {
         _pickedImages.addAll(images);
         notifyListeners();
       }
