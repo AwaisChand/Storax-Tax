@@ -518,6 +518,11 @@ class RentalPropertyRepository {
     required int clientPlansId,
     required int year,
     required String language,
+    DateTime? fromDate,
+    DateTime? toDate,
+    DateTime? month,
+    int? incomeTypeId,
+    String? expenseType,
   }) async {
     try {
       final networkApiService = NetworkApiService();
@@ -527,12 +532,22 @@ class RentalPropertyRepository {
         throw Exception("Authorization token not found");
       }
 
+      final queryParams = <String, String>{
+        'year': year.toString(),
+        'planId': clientPlansId.toString(),
+        'language': language,
+        if (fromDate != null)
+          'from_date': DateFormat('yyyy-MM-dd').format(fromDate),
+        if (toDate != null)
+          'to_date': DateFormat('yyyy-MM-dd').format(toDate),
+        if (month != null) 'month': DateFormat('MMMM').format(month),
+        if (incomeTypeId != null) 'income_type_id': incomeTypeId.toString(),
+        if (expenseType != null) 'expense_type': expenseType,
+      };
+
       final url = Uri.parse(
-        "${AppUrl.allRegularEntriesPrintEndPoint}"
-        "?year=$year"
-        "&planId=$clientPlansId"
-        "&language=$language",
-      );
+        AppUrl.allRegularEntriesPrintEndPoint,
+      ).replace(queryParameters: queryParams);
 
       debugPrint("Generate Report API: $url");
 

@@ -4,6 +4,7 @@ import 'package:geolocator/geolocator.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:permission_handler/permission_handler.dart' as ph;
 import 'package:provider/provider.dart';
+import 'package:storatax/screens/bottom_nav_bar/bottom_nav_bar_screens/Gasoline/gasoline_screens/gasoline_list_screen/widget/gasoline_screen_widgets.dart';
 import 'package:storatax/screens/bottom_nav_bar/bottom_nav_bar_screens/Gasoline/gasoline_screens/gasoline_list_screen/widget/tracking_mode_dialog_widget.dart';
 import 'package:storatax/screens/bottom_nav_bar/bottom_nav_bar_screens/Gasoline/gasoline_screens/log_book_screen/log_book_report_screen.dart';
 
@@ -177,8 +178,9 @@ class _MultipleRowButtonState extends State<MultipleRowButton> {
           Expanded(
             flex: 1,
             child: SizedBox(
-              height: 44,
+              height: kGasolineActionButtonHeight,
               child: MaterialButton(
+                padding: const EdgeInsets.symmetric(horizontal: 8),
                 color:
                 isAutoTracking
                     ? AppColors.redColor
@@ -186,7 +188,7 @@ class _MultipleRowButtonState extends State<MultipleRowButton> {
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(8),
                 ),
-                child: Text(
+                child: gasolineActionButtonLabel(
                   isAutoTracking
                       ? AppLocalizations.of(
                     context,
@@ -196,11 +198,6 @@ class _MultipleRowButtonState extends State<MultipleRowButton> {
                     context,
                   )!.translate("starTrackingText") ??
                       '',
-                  style: GoogleFonts.poppins(
-                    color: AppColors.whiteColor,
-                    fontSize: 14,
-                    fontWeight: FontWeight.w500,
-                  ),
                 ),
                 onPressed: () async {
                   if (_isProcessing) return;
@@ -421,24 +418,21 @@ class _MultipleRowButtonState extends State<MultipleRowButton> {
               borderRadius: BorderRadius.circular(8),
             ),
             child: Container(
-              height: 44,
+              height: kGasolineActionButtonHeight,
               decoration: BoxDecoration(
                 color: AppColors.goldenOrangeColor,
                 borderRadius: BorderRadius.circular(8),
               ),
-              padding: const EdgeInsets.symmetric(horizontal: 12),
+              padding: const EdgeInsets.symmetric(horizontal: 10),
               child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Text(
-                    "Reports",
-                    style: GoogleFonts.poppins(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w500,
-                      color: AppColors.whiteColor,
-                    ),
+                  gasolineActionButtonLabel("Reports"),
+                  Icon(
+                    Icons.arrow_drop_down,
+                    color: AppColors.whiteColor,
+                    size: 22,
                   ),
-                  Icon(Icons.arrow_drop_down, color: AppColors.whiteColor),
                 ],
               ),
             ),

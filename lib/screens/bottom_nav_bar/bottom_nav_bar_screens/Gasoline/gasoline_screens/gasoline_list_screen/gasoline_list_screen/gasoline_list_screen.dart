@@ -36,7 +36,6 @@ class _GasolineListScreenState extends State<GasolineListScreen> {
     });
   }
 
-
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   @override
   Widget build(BuildContext context) {

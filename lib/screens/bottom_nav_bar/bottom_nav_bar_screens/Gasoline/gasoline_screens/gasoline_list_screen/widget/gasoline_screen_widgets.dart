@@ -15,23 +15,43 @@ import 'gasoline_list_screen_dialog_box.dart';
 
 List<int> selectedFileGasolineIds = [];
 
+const double kGasolineActionButtonHeight = 44;
+
+TextStyle gasolineActionButtonTextStyle() {
+  return GoogleFonts.poppins(
+    color: AppColors.whiteColor,
+    fontSize: 14,
+    fontWeight: FontWeight.w500,
+    height: 1.2,
+  );
+}
+
+Widget gasolineActionButtonLabel(String text) {
+  return Text(
+    text,
+    textAlign: TextAlign.center,
+    maxLines: 2,
+    overflow: TextOverflow.ellipsis,
+    style: gasolineActionButtonTextStyle(),
+  );
+}
+
 Widget buildGasolineFilterBar(BuildContext context) {
   return GestureDetector(
     onTap: () {
       showFilterDialog(context);
     },
     child: Container(
-      height: 40,
+      height: kGasolineActionButtonHeight,
       decoration: BoxDecoration(
         color: AppColors.goldenOrangeColor,
-        borderRadius: BorderRadius.circular(10),
+        borderRadius: BorderRadius.circular(8),
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Text(
+          gasolineActionButtonLabel(
             AppLocalizations.of(context)!.translate("gasolineFilterText") ?? '',
-            style: TextStyle(color: Colors.white, fontWeight: FontWeight.w500),
           ),
           const SizedBox(width: 5),
           Image.asset(AppAssets.filterIcon, height: 15),
@@ -367,65 +387,59 @@ Widget buildForwardGasolineMultipleButton(BuildContext context) {
   return Row(
     children: [
       if (!isFreeGasPlan) ...[
-        SizedBox(
-          width: Utils.setHeight(context) * 0.2,
-          child: MaterialButton(
-            color: AppColors.goldenOrangeColor,
-            height: 40,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Text(
-              AppLocalizations.of(context)!.translate("allTripsText") ?? '',
-              textAlign: TextAlign.center,
-              style: GoogleFonts.poppins(
-                color: AppColors.whiteColor,
-                fontSize: 17,
-                fontWeight: FontWeight.w500,
+        Expanded(
+          child: SizedBox(
+            height: kGasolineActionButtonHeight,
+            child: MaterialButton(
+              padding: const EdgeInsets.symmetric(horizontal: 8),
+              color: AppColors.goldenOrangeColor,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
               ),
+              child: gasolineActionButtonLabel(
+                AppLocalizations.of(context)!.translate("allTripsText") ?? '',
+              ),
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => AllTripsScreen()),
+                );
+              },
             ),
-            onPressed: () {
-              // Navigator.pushNamed(context, RoutesNames.createTaxManager);
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => AllTripsScreen()),
-              );
-            },
           ),
         ),
-        SizedBox(width: 10),
-        SizedBox(
-          width: Utils.setHeight(context) * 0.2,
-          child: MaterialButton(
-            color: AppColors.goldenOrangeColor,
-            height: 40,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Text(
-              AppLocalizations.of(context)!.translate("gasolineForwardFileText") ?? '',
-              textAlign: TextAlign.center,
-              style: GoogleFonts.poppins(
-                color: AppColors.whiteColor,
-                fontSize: 17,
-                fontWeight: FontWeight.w500,
+        const SizedBox(width: 10),
+        Expanded(
+          child: SizedBox(
+            height: kGasolineActionButtonHeight,
+            child: MaterialButton(
+              padding: const EdgeInsets.symmetric(horizontal: 8),
+              color: AppColors.goldenOrangeColor,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
               ),
-            ),
-            onPressed: () {
-              if (selectedFileGasolineIds.isEmpty) {
-                Utils.toastMessage(
-                  AppLocalizations.of(
-                        context,
-                      )!.translate("selectFileForwardText") ??
-                      '',
+              child: gasolineActionButtonLabel(
+                AppLocalizations.of(
+                      context,
+                    )!.translate("gasolineForwardFileText") ??
+                    '',
+              ),
+              onPressed: () {
+                if (selectedFileGasolineIds.isEmpty) {
+                  Utils.toastMessage(
+                    AppLocalizations.of(
+                          context,
+                        )!.translate("selectFileForwardText") ??
+                        '',
+                  );
+                  return;
+                }
+                showMultipleForwardGasolineDialog(
+                  context,
+                  selectedFileGasolineIds,
                 );
-                return;
-              }
-              showMultipleForwardGasolineDialog(
-                context,
-                selectedFileGasolineIds,
-              );
-            },
+              },
+            ),
           ),
         ),
       ],

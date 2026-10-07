@@ -1026,6 +1026,11 @@ class RentalPropertyViewModel extends ChangeNotifier {
             year: year,
             clientPlansId: clientPlansId,
             language: language,
+            fromDate: fromDate,
+            toDate: toDate,
+            month: selectedMonth,
+            incomeTypeId: selectedIncomeType?.id,
+            expenseType: selectedExpenseType?.key,
           );
 
       final tempDir = await getTemporaryDirectory();
