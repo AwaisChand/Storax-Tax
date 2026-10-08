@@ -15,6 +15,7 @@ import '../../../../../../../res/components/app_localization.dart';
 import '../../../../../../../utils/app_colors.dart';
 import '../../../../../../../utils/camera_permission.dart';
 import '../../../../../../../utils/doc_scanner_ios_result.dart';
+import '../../../../../../../utils/scan_receipt_date.dart';
 import '../../../../../../../utils/utils.dart';
 import 'add_receipt_data_screen.dart';
 import 'package:storatax/view_models/auth_view_model/auth_view_model.dart';
@@ -179,8 +180,6 @@ class _AddReceiptScanScreenState extends State<AddReceiptScanScreen>
   //   }
   // }
 
-
-
   Future<void> startSmartCameraCapture() async {
     final granted = await ensureCameraPermission(context);
     if (!granted) {
@@ -297,6 +296,7 @@ class _AddReceiptScanScreenState extends State<AddReceiptScanScreen>
       Utils.toastMessage("Error: Scanned file not found.");
     }
   }
+
   Future<File> copyToTemp(File original) async {
     final tempDir = await getTemporaryDirectory();
     final newPath = '${tempDir.path}/${path.basename(original.path)}';
@@ -333,7 +333,10 @@ class _AddReceiptScanScreenState extends State<AddReceiptScanScreen>
       );
 
       if (croppedFile == null) {
-        docScannerLog('GasolineAddReceipt', 'handleImage crop cancelled or null');
+        docScannerLog(
+          'GasolineAddReceipt',
+          'handleImage crop cancelled or null',
+        );
         return;
       }
 
@@ -356,7 +359,10 @@ class _AddReceiptScanScreenState extends State<AddReceiptScanScreen>
       startTextCycle();
       startAutoScan(croppedImage);
     } catch (e, st) {
-      docScannerLog('GasolineAddReceipt', 'handleImage / ImageCropper error: $e');
+      docScannerLog(
+        'GasolineAddReceipt',
+        'handleImage / ImageCropper error: $e',
+      );
       debugPrintStack(stackTrace: st);
       Utils.toastMessage("Failed to crop image.");
     }
@@ -432,15 +438,24 @@ class _AddReceiptScanScreenState extends State<AddReceiptScanScreen>
             if (response["status"].toString() == "1") {
               // Critical check before Push
               if (mounted) {
+                final receiptData = Map<String, dynamic>.from(
+                  response['data'] is Map
+                      ? response['data'] as Map
+                      : <String, dynamic>{},
+                );
                 gasolineScanLog(
-                  'UI: scan success, push AddReceiptDataScreen source=$_receiptImageSource',
+                  'UI: scan success, push AddReceiptDataScreen '
+                  'source=$_receiptImageSource date=${scanField(receiptData, const ['date', 'invoice_date', 'receipt_date'])} '
+                  'year=${scanField(receiptData, const ['year'])} '
+                  'month=${scanField(receiptData, const ['month'])} '
+                  'parsed=${extractScanReceiptDate(receiptData)}',
                 );
                 Navigator.push(
                   context,
                   MaterialPageRoute(
                     builder:
                         (_) => AddReceiptDataScreen(
-                          receiptData: response['data'],
+                          receiptData: receiptData,
                           receiptFile: image,
                         ),
                   ),
@@ -460,7 +475,10 @@ class _AddReceiptScanScreenState extends State<AddReceiptScanScreen>
             );
           }
         } catch (e, st) {
-          docScannerLog('GasolineAddReceipt', 'startAutoScan / scanFileApi error: $e');
+          docScannerLog(
+            'GasolineAddReceipt',
+            'startAutoScan / scanFileApi error: $e',
+          );
           debugPrintStack(stackTrace: st);
           if (mounted) {
             setState(() => isAutoScanning = false);
@@ -711,7 +729,9 @@ class _AddReceiptScanScreenState extends State<AddReceiptScanScreen>
                                     if (isAutoScanning)
                                       Container(
                                         decoration: BoxDecoration(
-                                          color: Colors.black.withValues(alpha: 0.4),
+                                          color: Colors.black.withValues(
+                                            alpha: 0.4,
+                                          ),
                                           borderRadius: BorderRadius.circular(
                                             10,
                                           ),

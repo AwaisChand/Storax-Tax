@@ -11,6 +11,7 @@ import 'package:storatax/view_models/gasoline_view_model/gasoline_view_model.dar
 import '../../../../../../res/app_assets.dart';
 import '../../../../../../res/components/app_localization.dart';
 import '../../../../../../utils/app_colors.dart';
+import '../../../../../../utils/scan_receipt_date.dart';
 import '../../../../../../utils/utils.dart';
 import '../create_gasoline/widget/static_dual_stepper_widget.dart';
 import '../create_gasoline/widget/total_amount_field_widget.dart';
@@ -286,12 +287,15 @@ class _UpdateGasolineDataScreenState extends State<UpdateGasolineDataScreen> {
                                                   totalTaxesValue = double.tryParse(data['tax'].toString()) ?? 0;
 
                                                   // Date
-                                                  if (data['date'] != null) {
-                                                    selectedDate = DateTime.tryParse(data['date']);
-                                                    if (selectedDate != null) {
-                                                      dateController.text =
-                                                          displayDateFormat.format(selectedDate!);
-                                                    }
+                                                  final scannedDate = extractScanReceiptDate(
+                                                    data is Map
+                                                        ? Map<String, dynamic>.from(data as Map)
+                                                        : null,
+                                                  );
+                                                  if (scannedDate != null) {
+                                                    selectedDate = scannedDate;
+                                                    dateController.text =
+                                                        displayDateFormat.format(selectedDate!);
                                                   }
 
                                                   // Recalculate UI totals

@@ -10,6 +10,7 @@ import 'package:storatax/view_models/gasoline_view_model/gasoline_view_model.dar
 import '../../../../../../../res/app_assets.dart';
 import '../../../../../../../res/components/app_localization.dart';
 import '../../../../../../../utils/app_colors.dart';
+import '../../../../../../../utils/scan_receipt_date.dart';
 import '../../../../../../../utils/utils.dart';
 import '../../gasoline_list_screen/gasoline_list_screen/gasoline_list_screen.dart';
 import '../widget/static_dual_stepper_widget.dart';
@@ -42,7 +43,6 @@ class _AddReceiptDataScreenState extends State<AddReceiptDataScreen> {
 
   double totalAmount = 0.0;
   double totalTaxesValue = 12.45;
-  String dateReceivedValue = "2025-07-28";
   DateTime? selectedDate;
   late String fileName;
 
@@ -131,29 +131,6 @@ class _AddReceiptDataScreenState extends State<AddReceiptDataScreen> {
 
     dateController = TextEditingController();
 
-    /// 🔥 Helper: Flexible date parser
-    DateTime? parseDate(String? date) {
-      if (date == null || date.trim().isEmpty) return null;
-
-      date = date.trim();
-
-      final formats = [
-        "yyyy-MM-dd", // 2015-03-24
-        "dd MMM yyyy", // 23 Feb 2026
-        "dd/MM/yyyy", // 24/03/2015
-        "MM/dd/yyyy", // 03/24/2015
-        "dd-MM-yyyy", // 24-03-2015
-      ];
-
-      for (final format in formats) {
-        try {
-          return DateFormat(format).parseStrict(date);
-        } catch (_) {}
-      }
-
-      return null;
-    }
-
     if (data != null) {
       merchantController.text = data['trader'] ?? 'No Merchant';
       beforeTaxController.text = data['before_tax_amount']?.toString() ?? '';
@@ -170,43 +147,18 @@ class _AddReceiptDataScreenState extends State<AddReceiptDataScreen> {
 
       totalTaxesValue = (data['tax'] ?? 0).toDouble();
 
-      /// 🔥 FIXED DATE HANDLING
-      dateReceivedValue = data['date'] ?? '';
-
-      selectedDate = parseDate(dateReceivedValue) ?? DateTime.now();
-
-      /// Display format (UI)
+      selectedDate = extractScanReceiptDate(data) ?? DateTime.now();
       dateController.text = displayDateFormat.format(selectedDate!);
-
-      /// Debug logs (optional)
-      debugPrint("Raw API date: $dateReceivedValue");
-      debugPrint("Parsed date: $selectedDate");
+      debugPrint(
+        'Gasoline scan date raw='
+        '${scanField(data, const ['date', 'invoice_date', 'receipt_date', 'year', 'month'])} '
+        'parsed=$selectedDate',
+      );
     } else {
-      /// Default case
       selectedDate = DateTime.now();
       dateController.text = displayDateFormat.format(selectedDate!);
     }
   }
-
-  // DateTime? parseDate(String date) {
-  //   try {
-  //     return DateFormat("yyyy-MM-dd").parse(date);
-  //   } catch (_) {}
-  //
-  //   try {
-  //     return DateFormat("dd MMM yyyy").parse(date);
-  //   } catch (_) {}
-  //
-  //   try {
-  //     return DateFormat("dd/MM/yyyy").parse(date);
-  //   } catch (_) {}
-  //
-  //   try {
-  //     return DateFormat("MM/dd/yyyy").parse(date);
-  //   } catch (_) {}
-  //
-  //   return null;
-  // }
 
   @override
   Widget build(BuildContext context) {

@@ -10,6 +10,7 @@ import 'package:intl/intl.dart';
 import 'package:path/path.dart' as path;
 import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';
+import 'package:storatax/models/get_category_model/get_category_model.dart';
 import 'package:storatax/res/components/app_text_field.dart';
 import 'package:storatax/screens/files/scan_tax_manager/crop_document_dialog.dart';
 import 'package:storatax/screens/files/scan_tax_manager/scanned_receipt.dart';
@@ -49,7 +50,7 @@ class _CreateTaxManagerScreenState extends State<CreateTaxManagerScreen> {
   static const Color _mutedText = Color(0xFF6B7280);
   static const Color _hintText = Color(0xFF8B93A7);
 
-  late final List<String> _years;
+  late List<String> _years;
   String? selectedYear;
   DateTime? selectedDate;
   String? selectedCategory;
@@ -68,11 +69,6 @@ class _CreateTaxManagerScreenState extends State<CreateTaxManagerScreen> {
         .any((name) => name.contains('business tax manager'));
   }
 
-  bool _isYearAllowed(int year) {
-    final now = DateTime.now();
-    return year >= now.year - (_yearWindow - 1) && year <= now.year;
-  }
-
   String? _redactedPathOf(ScannedReceipt receipt) {
     final fromReceipt = receipt.redactedTempPath;
     if (fromReceipt != null && fromReceipt.isNotEmpty) return fromReceipt;
@@ -89,22 +85,31 @@ class _CreateTaxManagerScreenState extends State<CreateTaxManagerScreen> {
 
     final data = widget.receiptData;
     if (data != null) {
-      final yearFromData = int.tryParse(data['year'].toString());
-      selectedYear =
-          yearFromData != null && _isYearAllowed(yearFromData)
-              ? yearFromData.toString()
-              : null;
       fileNameController.text = data['file_name']?.toString() ?? '';
       selectedCategory = data['category']?.toString();
-      if (data['date'] != null) {
-        selectedDate =
-            DateTime.tryParse(data['date'].toString()) ?? selectedDate;
+      final parsedDate = _parseScanDate(
+        data['date'] ??
+            data['invoice_date'] ??
+            data['receipt_date'] ??
+            data['document_date'],
+      );
+      if (parsedDate != null) {
+        selectedDate = parsedDate;
+      }
+      var yearFromData = int.tryParse(data['year']?.toString() ?? '');
+      yearFromData ??= parsedDate?.year;
+      if (yearFromData != null) {
+        final year = yearFromData.toString();
+        _ensureYearInList(year);
+        selectedYear = year;
       }
     }
 
-    WidgetsBinding.instance.addPostFrameCallback((_) {
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
       if (!mounted) return;
-      context.read<TaxManagerViewModel>().getCategoryApi(context);
+      await context.read<TaxManagerViewModel>().getCategoryApi(context);
+      if (!mounted) return;
+      _resolveSelectedCategory();
       context.read<AuthViewModel>().clearPickedImages();
       if (widget.receiptFile != null) {
         _seedIncomingReceipt();
@@ -244,7 +249,7 @@ class _CreateTaxManagerScreenState extends State<CreateTaxManagerScreen> {
         );
       }
     });
-    _applyScanDataIfEmpty(result.scanData);
+    _applyScanData(result.scanData);
   }
 
   Future<void> _showPickSheet() async {
@@ -363,19 +368,148 @@ class _CreateTaxManagerScreenState extends State<CreateTaxManagerScreen> {
     await _openCropThenAdd(prepared);
   }
 
-  void _applyScanDataIfEmpty(Map<String, dynamic>? data) {
+  dynamic _scanField(Map<String, dynamic> data, List<String> keys) {
+    for (final key in keys) {
+      final value = data[key];
+      if (value != null && value.toString().trim().isNotEmpty) {
+        return value;
+      }
+    }
+    for (final nestedKey in ['extracted', 'fields', 'result', 'data']) {
+      final nested = data[nestedKey];
+      if (nested is Map) {
+        final found = _scanField(Map<String, dynamic>.from(nested), keys);
+        if (found != null) return found;
+      }
+    }
+    return null;
+  }
+
+  DateTime? _parseScanDate(dynamic raw) {
+    if (raw == null) return null;
+    final value = raw.toString().trim();
+    if (value.isEmpty) return null;
+
+    final iso = DateTime.tryParse(value);
+    if (iso != null) return iso;
+
+    const formats = [
+      'yyyy-MM-dd',
+      'dd MMM yyyy',
+      'dd MMMM yyyy',
+      'MMM d, yyyy',
+      'MMMM d, yyyy',
+      'dd/MM/yyyy',
+      'MM/dd/yyyy',
+      'dd-MM-yyyy',
+      'MM-dd-yyyy',
+    ];
+    for (final format in formats) {
+      try {
+        return DateFormat(format).parseStrict(value);
+      } catch (_) {}
+    }
+    return null;
+  }
+
+  String? _matchCategory(String raw, List<CategoryData> categories) {
+    final needle = raw.trim().toLowerCase();
+    if (needle.isEmpty) return null;
+
+    bool matches(CategoryData category) {
+      return [
+        category.backendValue,
+        category.value,
+        category.valueEn,
+        category.valueFr,
+        category.label,
+        category.labelEn,
+        category.labelFr,
+      ].whereType<String>().map((s) => s.trim().toLowerCase()).contains(needle);
+    }
+
+    final values =
+        categories
+            .where(matches)
+            .map((c) => c.backendValue)
+            .whereType<String>()
+            .where((v) => v.trim().isNotEmpty)
+            .toSet();
+    if (values.length == 1) return values.first;
+    return null;
+  }
+
+  void _resolveSelectedCategory() {
+    final raw = selectedCategory;
+    if (raw == null || raw.isEmpty) return;
+    final matched = _matchCategory(
+      raw,
+      context.read<TaxManagerViewModel>().data,
+    );
+    if (matched == selectedCategory) return;
+    setState(() => selectedCategory = matched);
+  }
+
+  List<DropdownMenuItem<String>> _categoryItems(
+    List<CategoryData> categories,
+    bool isFrench,
+  ) {
+    final seen = <String>{};
+    final items = <DropdownMenuItem<String>>[];
+    for (final cat in categories) {
+      final value = cat.backendValue?.trim();
+      if (value == null || value.isEmpty || !seen.add(value)) continue;
+      items.add(
+        DropdownMenuItem<String>(
+          value: value,
+          child: Text(cat.getDisplayLabel(isFrench)),
+        ),
+      );
+    }
+    return items;
+  }
+
+  void _ensureYearInList(String year) {
+    if (_years.contains(year)) return;
+    _years = [..._years, year]..sort((a, b) => b.compareTo(a));
+  }
+
+  void _applyScanData(Map<String, dynamic>? data) {
     if (data == null) return;
     setState(() {
-      if (fileNameController.text.trim().isEmpty) {
-        fileNameController.text = data['file_name']?.toString() ?? '';
+      final name = _scanField(data, ['file_name', 'filename', 'name']);
+      if (name != null && name.toString().trim().isNotEmpty) {
+        fileNameController.text = name.toString().trim();
       }
-      selectedCategory ??= data['category']?.toString();
-      if (selectedDate == null && data['date'] != null) {
-        selectedDate = DateTime.tryParse(data['date'].toString());
+
+      final category = _scanField(data, ['category'])?.toString().trim();
+      if (category != null && category.isNotEmpty) {
+        selectedCategory = _matchCategory(
+          category,
+          context.read<TaxManagerViewModel>().data,
+        );
       }
-      final yearFromData = int.tryParse(data['year']?.toString() ?? '');
-      if (yearFromData != null && _isYearAllowed(yearFromData)) {
-        selectedYear ??= yearFromData.toString();
+
+      final parsedDate = _parseScanDate(
+        _scanField(data, [
+          'date',
+          'invoice_date',
+          'receipt_date',
+          'document_date',
+          'tax_date',
+        ]),
+      );
+      if (parsedDate != null) {
+        selectedDate = parsedDate;
+      }
+
+      final yearRaw = _scanField(data, ['year']);
+      var yearFromData = int.tryParse(yearRaw?.toString() ?? '');
+      yearFromData ??= parsedDate?.year;
+      if (yearFromData != null) {
+        final year = yearFromData.toString();
+        _ensureYearInList(year);
+        selectedYear = year;
       }
     });
   }
@@ -659,6 +793,7 @@ class _CreateTaxManagerScreenState extends State<CreateTaxManagerScreen> {
     final isBusiness = plans.myPlans
         .map((p) => p.name?.toLowerCase().trim() ?? '')
         .any((name) => name.contains('business tax manager'));
+    final categoryItems = _categoryItems(provider.data, isFrench);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -668,9 +803,10 @@ class _CreateTaxManagerScreenState extends State<CreateTaxManagerScreen> {
         _fieldLabel(_t('taxSummaryText')),
         const SizedBox(height: 6),
         DropdownButtonFormField<String>(
+          key: ValueKey('create_year_$selectedYear'),
           decoration: _inputDecoration,
           hint: Text(_t('selectYearText')),
-          initialValue: selectedYear,
+          initialValue: _years.contains(selectedYear) ? selectedYear : null,
           items:
               _years
                   .map(
@@ -698,19 +834,14 @@ class _CreateTaxManagerScreenState extends State<CreateTaxManagerScreen> {
         _fieldLabel(_t('selectCateText')),
         const SizedBox(height: 6),
         DropdownButtonFormField<String>(
+          key: ValueKey('create_category_$selectedCategory'),
           decoration: _inputDecoration,
           hint: Text(_t('chooseOneText')),
-          initialValue: selectedCategory,
-          items:
-              provider.data
-                  .where((e) => e.backendValue != null)
-                  .map(
-                    (cat) => DropdownMenuItem<String>(
-                      value: cat.backendValue,
-                      child: Text(cat.getDisplayLabel(isFrench)),
-                    ),
-                  )
-                  .toList(),
+          initialValue:
+              categoryItems.any((item) => item.value == selectedCategory)
+                  ? selectedCategory
+                  : null,
+          items: categoryItems,
           onChanged: (value) => setState(() => selectedCategory = value),
         ),
         const SizedBox(height: 12),
