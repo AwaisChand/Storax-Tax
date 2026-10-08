@@ -97,7 +97,7 @@ class _AllRegularEntryScreenState extends State<AllRegularEntryScreen> {
                             const SizedBox(height: 15),
                             buildMultipleButtons(context, widget.planId),
                             const SizedBox(height: 15),
-                            rentalProvider.otherLoading
+                            rentalProvider.entriesLoading
                                 ? SizedBox(
                                   height: Utils.setHeight(context) * 0.5,
                                   child: Center(

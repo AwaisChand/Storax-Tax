@@ -19,6 +19,30 @@ class Utils {
       backgroundColor: AppColors.blackColor,
     );
   }
+
+  static String apiMessage(
+    dynamic value, {
+    String fallback = 'Something went wrong',
+  }) {
+    if (value == null) return fallback;
+    if (value is String) {
+      final trimmed = value.trim();
+      return trimmed.isEmpty ? fallback : trimmed;
+    }
+    if (value is List && value.isNotEmpty) {
+      return apiMessage(value.first, fallback: fallback);
+    }
+    if (value is Map && value.isNotEmpty) {
+      for (final key in ['message', 'success', 'error', 'en', 'fr']) {
+        if (value[key] != null) {
+          final nested = apiMessage(value[key], fallback: '');
+          if (nested.isNotEmpty) return nested;
+        }
+      }
+      return apiMessage(value.values.first, fallback: fallback);
+    }
+    return fallback;
+  }
   //  set height
 
   static double setHeight(BuildContext context) {

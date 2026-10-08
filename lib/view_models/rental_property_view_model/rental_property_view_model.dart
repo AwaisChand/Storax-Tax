@@ -46,6 +46,12 @@ class RentalPropertyViewModel extends ChangeNotifier {
   bool _otherLoading = false;
   bool get otherLoading => _otherLoading;
 
+  bool _incomeTypesLoading = false;
+  bool get incomeTypesLoading => _incomeTypesLoading;
+
+  bool _entriesLoading = false;
+  bool get entriesLoading => _entriesLoading;
+
   bool _isSaving = false;
   bool get isSaving => _isSaving;
 
@@ -56,6 +62,16 @@ class RentalPropertyViewModel extends ChangeNotifier {
 
   set otherLoad(bool setLoading) {
     _otherLoading = setLoading;
+    notifyListeners();
+  }
+
+  set incomeTypesLoad(bool setLoading) {
+    _incomeTypesLoading = setLoading;
+    notifyListeners();
+  }
+
+  set entriesLoad(bool setLoading) {
+    _entriesLoading = setLoading;
     notifyListeners();
   }
 
@@ -201,7 +217,7 @@ class RentalPropertyViewModel extends ChangeNotifier {
           .createOrUpdateAccountSettingRepo(data);
 
       if (response["status"].toString() == "1") {
-        Utils.toastMessage(response["success"]);
+        Utils.toastMessage(Utils.apiMessage(response["success"]));
 
         // Re-fetch the updated account settings for this plan
         final planId = data['client_plans_id'] as int;
@@ -212,7 +228,7 @@ class RentalPropertyViewModel extends ChangeNotifier {
         //   MaterialPageRoute(builder: (context) => RentalPropertyTabScreen()),
         // );
       } else {
-        Utils.toastMessage(response["success"]);
+        Utils.toastMessage(Utils.apiMessage(response["success"]));
       }
 
       if (kDebugMode) {
@@ -315,8 +331,7 @@ class RentalPropertyViewModel extends ChangeNotifier {
     required BuildContext context,
     required int planId,
   }) async {
-    otherLoad = true;
-    notifyListeners();
+    incomeTypesLoad = true;
     try {
       final response = await rentalPropertyRepository.getIncomeTypesRepo(
         planId: planId,
@@ -342,8 +357,7 @@ class RentalPropertyViewModel extends ChangeNotifier {
       Utils.toastMessage("Error: ${e.toString()}");
       _incomeTypes[planId] = null; // clear on error if desired
     } finally {
-      otherLoad = false;
-      notifyListeners();
+      incomeTypesLoad = false;
     }
   }
 
@@ -403,7 +417,7 @@ class RentalPropertyViewModel extends ChangeNotifier {
     dynamic data,
     required int id,
   }) async {
-    loading = true;
+    otherLoad = true;
     try {
       debugPrint("Update Income type data: $data");
 
@@ -415,7 +429,7 @@ class RentalPropertyViewModel extends ChangeNotifier {
       final planId = data['client_plans_id'] as int;
 
       if (response["status"].toString() == "1") {
-        Utils.toastMessage(response["success"]);
+        Utils.toastMessage(Utils.apiMessage(response["success"]));
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(
@@ -423,7 +437,7 @@ class RentalPropertyViewModel extends ChangeNotifier {
           ),
         );
       } else {
-        Utils.toastMessage(response["success"]);
+        Utils.toastMessage(Utils.apiMessage(response["success"]));
       }
       if (kDebugMode) {
         debugPrint("Update Income Type API Response: $response");
@@ -432,7 +446,7 @@ class RentalPropertyViewModel extends ChangeNotifier {
       debugPrint("Update Income Type error: $e $stackTrace");
       Utils.toastMessage("Error: ${e.toString()}");
     } finally {
-      loading = false;
+      otherLoad = false;
     }
   }
 
@@ -473,8 +487,7 @@ class RentalPropertyViewModel extends ChangeNotifier {
     int? incomeTypeId,
     String? expenseType,
   }) async {
-    otherLoad = true;
-    notifyListeners();
+    entriesLoad = true;
 
     try {
       final response = await rentalPropertyRepository.getAllRegularEntriesRepo(
@@ -511,8 +524,7 @@ class RentalPropertyViewModel extends ChangeNotifier {
       Utils.toastMessage("Error: ${e.toString()}");
       _getAllRegularEntries[planId] = null;
     } finally {
-      otherLoad = false;
-      notifyListeners();
+      entriesLoad = false;
     }
   }
 

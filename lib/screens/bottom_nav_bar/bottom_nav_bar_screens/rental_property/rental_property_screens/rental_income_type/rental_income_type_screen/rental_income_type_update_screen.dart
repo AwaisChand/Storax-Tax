@@ -111,11 +111,9 @@ class _RentalIncomeTypeUpdateScreenState
       builder: (context, rentalProperty, _) {
         return Scaffold(
           appBar: CustomAppBar(
-            text1:AppLocalizations.of(context)!.translate("rIncomeText") ??
-                '',
-            text2: AppLocalizations.of(
-              context,
-            )!.translate("manageIncomeText") ??
+            text1: AppLocalizations.of(context)!.translate("rIncomeText") ?? '',
+            text2:
+                AppLocalizations.of(context)!.translate("manageIncomeText") ??
                 '',
             showBackButton: true,
             onBackTap: () {
@@ -124,7 +122,8 @@ class _RentalIncomeTypeUpdateScreenState
                 MaterialPageRoute(
                   builder: (context) => RentalPropertyTabScreen(),
                 ),
-              );            },
+              );
+            },
           ),
           body: Stack(
             children: [
@@ -233,7 +232,11 @@ class _RentalIncomeTypeUpdateScreenState
                           }),
                           const SizedBox(height: 20),
                           AppButton(
-                            btnText: AppLocalizations.of(context)!.translate("saveText") ?? '',
+                            btnText:
+                                AppLocalizations.of(
+                                  context,
+                                )!.translate("saveText") ??
+                                '',
                             isLoading: rentalProperty.otherLoading,
                             onPressed: () {
                               // Validate name

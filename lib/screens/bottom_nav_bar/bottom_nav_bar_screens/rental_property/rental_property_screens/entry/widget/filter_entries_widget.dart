@@ -82,19 +82,6 @@ Future showFilterDialog(BuildContext context, int planId) async {
             : "",
   );
 
-  final rentalVM = context.read<RentalPropertyViewModel>();
-
-  // IncomeTypeOption? selectedIncomeType;
-
-  final List<IncomeTypeOption> dynamicIncomeOptions =
-      rentalVM.getIncomeTypeOptions(planId).map((e) {
-            return IncomeTypeOption(
-              id: e.id,
-              name: e.name,
-              rawEntry: e.rawEntry ?? e,
-            );
-          }).toList();
-
   final List<ExpenseType> caExpenseTypes = [
     ExpenseType(key: 'Advertising', en: 'Advertising', fr: 'Publicité'),
     ExpenseType(key: 'Insurance', en: 'Insurance', fr: 'Assurance'),
@@ -211,9 +198,13 @@ Future showFilterDialog(BuildContext context, int planId) async {
   return showDialog(
     context: context,
     builder: (context) {
-      return StatefulBuilder(
-        builder: (context, setState) {
-          return Dialog(
+      return Consumer<RentalPropertyViewModel>(
+        builder: (context, rentalVM, _) {
+          final List<IncomeTypeOption> dynamicIncomeOptions =
+              rentalVM.getIncomeTypeOptions(planId);
+          return StatefulBuilder(
+            builder: (context, setState) {
+              return Dialog(
             insetPadding: const EdgeInsets.symmetric(horizontal: 20),
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(10),
@@ -420,11 +411,18 @@ Future showFilterDialog(BuildContext context, int planId) async {
                               ),
                               const SizedBox(height: 10),
                               DropdownButtonFormField<IncomeTypeOption>(
-                                initialValue: selectedIncomeType != null
-                                    ? dynamicIncomeOptions.firstWhere(
-                                      (item) => item.id == selectedIncomeType!.id,
-                                )
-                                    : null,
+                                key: ValueKey(
+                                  'income_${dynamicIncomeOptions.length}_${selectedIncomeType?.id}',
+                                ),
+                                initialValue: () {
+                                  if (selectedIncomeType == null) return null;
+                                  for (final item in dynamicIncomeOptions) {
+                                    if (item.id == selectedIncomeType!.id) {
+                                      return item;
+                                    }
+                                  }
+                                  return null;
+                                }(),
                                 isExpanded: true,
                                 hint: Text(
                                   "Income Type",
@@ -445,11 +443,29 @@ Future showFilterDialog(BuildContext context, int planId) async {
                                     ),
                                   );
                                 }).toList(),
-                                onChanged: (val) => setState(() => selectedIncomeType = val),
+                                onChanged:
+                                    rentalVM.incomeTypesLoading
+                                        ? null
+                                        : (val) => setState(
+                                          () => selectedIncomeType = val,
+                                        ),
                                 decoration: InputDecoration(
                                   border: OutlineInputBorder(
                                     borderRadius: BorderRadius.circular(10),
                                   ),
+                                  suffixIcon:
+                                      rentalVM.incomeTypesLoading
+                                          ? const Padding(
+                                            padding: EdgeInsets.all(12),
+                                            child: SizedBox(
+                                              width: 16,
+                                              height: 16,
+                                              child: CircularProgressIndicator(
+                                                strokeWidth: 2,
+                                              ),
+                                            ),
+                                          )
+                                          : null,
                                 ),
                               )
                             ],
@@ -471,6 +487,9 @@ Future showFilterDialog(BuildContext context, int planId) async {
                               ),
                               const SizedBox(height: 10),
                               DropdownButtonFormField<ExpenseType>(
+                                key: ValueKey(
+                                  'expense_${selectedExpenseType?.key}',
+                                ),
                                 initialValue: selectedExpenseType != null
                                     ? dynamicExpenseOptions.firstWhere(
                                       (item) => item.key == selectedExpenseType!.key,
@@ -540,7 +559,7 @@ Future showFilterDialog(BuildContext context, int planId) async {
                               monthController.clear();
                             });
 
-                            provider.clearDatabaseFilters();
+                            provider.clearRegEntryFilters();
                             provider.getAllRegularEntriesApi(
                               context: context,
                               planId: planId,
@@ -615,6 +634,8 @@ Future showFilterDialog(BuildContext context, int planId) async {
                 ),
               ),
             ),
+          );
+            },
           );
         },
       );

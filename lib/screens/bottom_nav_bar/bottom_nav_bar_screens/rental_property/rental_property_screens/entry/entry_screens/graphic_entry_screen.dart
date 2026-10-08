@@ -113,12 +113,14 @@ class _GraphicEntryScreenState extends State<GraphicEntryScreen> {
 
   String? exportPdfPath;
   bool isExportPdfReady = false;
+  bool isExportPdfLoading = true;
 
   String? caReportPath;
   String? usReportPath;
 
   bool isCaReportReady = false;
   bool isUsReportReady = false;
+  bool isOfficialReportLoading = true;
 
   Future<void> _preloadReport() async {
     final rentalProvider = context.read<RentalPropertyViewModel>();
@@ -141,11 +143,44 @@ class _GraphicEntryScreenState extends State<GraphicEntryScreen> {
         isCaReportReady = false;
         isUsReportReady = false;
         isExportPdfReady = false;
+        isOfficialReportLoading = true;
+        isExportPdfLoading = true;
       });
     }
 
-    if (authProvider.user?.regCountry == "ca") {
-      final path = await rentalProvider.printReportT776Api(
+    try {
+      if (authProvider.user?.regCountry == "ca") {
+        final path = await rentalProvider.printReportT776Api(
+          clientPlansId: widget.planId!,
+          year: year,
+          language: language,
+        );
+
+        if (mounted) {
+          setState(() {
+            caReportPath = path;
+            isCaReportReady = path != null;
+            isOfficialReportLoading = false;
+          });
+        }
+      } else {
+        final path = await rentalProvider.printReportF1040(
+          clientPlansId: widget.planId!,
+          year: year,
+          language: language,
+        );
+
+        if (mounted) {
+          setState(() {
+            usReportPath = path;
+            isUsReportReady = path != null;
+            isOfficialReportLoading = false;
+          });
+        }
+      }
+
+      // 🔹 2️⃣ Export PDF (Scheduled Report)
+      final exportPath = await rentalProvider.reportScheduleApi(
         clientPlansId: widget.planId!,
         year: year,
         language: language,
@@ -153,37 +188,18 @@ class _GraphicEntryScreenState extends State<GraphicEntryScreen> {
 
       if (mounted) {
         setState(() {
-          caReportPath = path;
-          isCaReportReady = path != null;
+          exportPdfPath = exportPath;
+          isExportPdfReady = exportPath != null;
+          isExportPdfLoading = false;
         });
       }
-    } else {
-      final path = await rentalProvider.printReportF1040(
-        clientPlansId: widget.planId!,
-        year: year,
-        language: language,
-      );
-
+    } finally {
       if (mounted) {
         setState(() {
-          usReportPath = path;
-          isUsReportReady = path != null;
+          isOfficialReportLoading = false;
+          isExportPdfLoading = false;
         });
       }
-    }
-
-    // 🔹 2️⃣ Export PDF (Scheduled Report)
-    final exportPath = await rentalProvider.reportScheduleApi(
-      clientPlansId: widget.planId!,
-      year: year,
-      language: language,
-    );
-
-    if (mounted) {
-      setState(() {
-        exportPdfPath = exportPath;
-        isExportPdfReady = exportPath != null;
-      });
     }
   }
 
@@ -200,10 +216,9 @@ class _GraphicEntryScreenState extends State<GraphicEntryScreen> {
         onBackTap: () {
           Navigator.pushReplacement(
             context,
-            MaterialPageRoute(
-              builder: (context) => RentalPropertyTabScreen(),
-            ),
-          );        },
+            MaterialPageRoute(builder: (context) => RentalPropertyTabScreen()),
+          );
+        },
       ),
       body: Stack(
         children: [
@@ -254,10 +269,7 @@ class _GraphicEntryScreenState extends State<GraphicEntryScreen> {
                             await OpenFile.open(path);
                           }
                         },
-                        isLoading:
-                            authProvider.user?.regCountry == "ca"
-                                ? !isCaReportReady
-                                : !isUsReportReady,
+                        isLoading: isOfficialReportLoading,
                       ),
 
                       SizedBox(height: 10),
@@ -290,10 +302,7 @@ class _GraphicEntryScreenState extends State<GraphicEntryScreen> {
                             }
                           }
                         },
-                        isLoading:
-                            authProvider.user?.regCountry == "ca"
-                                ? !isCaReportReady
-                                : !isUsReportReady,
+                        isLoading: isOfficialReportLoading,
                       ),
 
                       const SizedBox(height: 10),
@@ -311,7 +320,7 @@ class _GraphicEntryScreenState extends State<GraphicEntryScreen> {
 
                           await OpenFile.open(exportPdfPath!);
                         },
-                        isLoading: !isExportPdfReady,
+                        isLoading: isExportPdfLoading,
                       ),
 
                       const SizedBox(height: 10),
