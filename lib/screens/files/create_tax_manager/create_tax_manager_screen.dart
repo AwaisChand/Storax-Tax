@@ -793,6 +793,8 @@ class _CreateTaxManagerScreenState extends State<CreateTaxManagerScreen> {
     final isBusiness = plans.myPlans
         .map((p) => p.name?.toLowerCase().trim() ?? '')
         .any((name) => name.contains('business tax manager'));
+    final isCanada =
+        context.read<AuthViewModel>().user?.regCountry.toLowerCase() == 'ca';
     final categoryItems = _categoryItems(provider.data, isFrench);
 
     return Column(
@@ -845,7 +847,9 @@ class _CreateTaxManagerScreenState extends State<CreateTaxManagerScreen> {
           onChanged: (value) => setState(() => selectedCategory = value),
         ),
         const SizedBox(height: 12),
-        _fieldLabel(_t('choiceYearText')),
+        _fieldLabel(
+          isCanada ? _t('taxDocumentYearText') : _t('choiceYearText'),
+        ),
         const SizedBox(height: 6),
         InkWell(
           onTap: () async {

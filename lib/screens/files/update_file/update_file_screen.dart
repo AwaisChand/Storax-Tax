@@ -598,6 +598,8 @@ class _UpdateFileScreenState extends State<UpdateFileScreen> {
     final isBusiness = plans.myPlans
         .map((p) => p.name?.toLowerCase().trim() ?? '')
         .any((name) => name.contains('business tax manager'));
+    final isCanada =
+        context.read<AuthViewModel>().user?.regCountry.toLowerCase() == 'ca';
 
     final categoryValue =
         provider.data.any((c) => c.backendValue == selectedCategory)
@@ -658,7 +660,9 @@ class _UpdateFileScreenState extends State<UpdateFileScreen> {
           onChanged: (value) => setState(() => selectedCategory = value),
         ),
         const SizedBox(height: 12),
-        _fieldLabel(_t('choiceYearText')),
+        _fieldLabel(
+          isCanada ? _t('taxDocumentYearText') : _t('choiceYearText'),
+        ),
         const SizedBox(height: 6),
         InkWell(
           onTap: () async {

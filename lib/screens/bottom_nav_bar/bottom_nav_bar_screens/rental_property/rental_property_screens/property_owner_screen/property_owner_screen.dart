@@ -347,10 +347,17 @@ class _PropertyOwnerScreenState extends State<PropertyOwnerScreen> {
                                     const SizedBox(height: 12),
 
                                     Text(
-                                      AppLocalizations.of(
-                                            context,
-                                          )!.translate("postalCodeText") ??
-                                          '',
+                                      authProvider.user?.regCountry == 'ca'
+                                          ? AppLocalizations.of(
+                                                context,
+                                              )!.translate(
+                                                "postalCodeText",
+                                              ) ??
+                                              ''
+                                          : AppLocalizations.of(
+                                                context,
+                                              )!.translate("zipCodeText") ??
+                                              'Zip Code',
                                       style: GoogleFonts.poppins(
                                         fontWeight: FontWeight.w600,
                                         fontSize: 14,
@@ -360,10 +367,19 @@ class _PropertyOwnerScreenState extends State<PropertyOwnerScreen> {
                                     AppTextField(
                                       controller: postalCodeController,
                                       hintText:
-                                          AppLocalizations.of(
-                                            context,
-                                          )!.translate("postalCodeText") ??
-                                          '',
+                                          authProvider.user?.regCountry == 'ca'
+                                              ? AppLocalizations.of(
+                                                    context,
+                                                  )!.translate(
+                                                    "postalCodeText",
+                                                  ) ??
+                                                  ''
+                                              : AppLocalizations.of(
+                                                    context,
+                                                  )!.translate(
+                                                    "zipCodeText",
+                                                  ) ??
+                                                  'Zip Code',
                                       textInputType: TextInputType.text,
                                     ),
                                     const SizedBox(height: 12),
@@ -453,7 +469,10 @@ class _PropertyOwnerScreenState extends State<PropertyOwnerScreen> {
                                               .text
                                               .isEmpty) {
                                             Utils.toastMessage(
-                                              "Please enter your postal code",
+                                              authProvider.user?.regCountry ==
+                                                      'ca'
+                                                  ? "Please enter your postal code"
+                                                  : "Please enter your zip code",
                                             );
                                             return;
                                           }
