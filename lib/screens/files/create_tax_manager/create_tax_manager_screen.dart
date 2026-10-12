@@ -802,7 +802,9 @@ class _CreateTaxManagerScreenState extends State<CreateTaxManagerScreen> {
       children: [
         if (!isBusiness) _buildTaxManagerScan(),
         if (!isBusiness) const SizedBox(height: 16),
-        _fieldLabel(_t('taxSummaryText')),
+        _fieldLabel(
+          isCanada ? _t('taxDocumentYearText') : _t('taxSummaryText'),
+        ),
         const SizedBox(height: 6),
         DropdownButtonFormField<String>(
           key: ValueKey('create_year_$selectedYear'),
@@ -847,9 +849,7 @@ class _CreateTaxManagerScreenState extends State<CreateTaxManagerScreen> {
           onChanged: (value) => setState(() => selectedCategory = value),
         ),
         const SizedBox(height: 12),
-        _fieldLabel(
-          isCanada ? _t('taxDocumentYearText') : _t('choiceYearText'),
-        ),
+        _fieldLabel(_t('choiceYearText')),
         const SizedBox(height: 6),
         InkWell(
           onTap: () async {
