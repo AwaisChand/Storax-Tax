@@ -3,7 +3,7 @@ import 'dart:io';
 import 'package:http/http.dart' as http;
 
 class GoogleMapsConfig {
-  static const apiKey = 'AIzaSyBx7X2S83I4ei7X51AOUOiqiaj-e7gHO0E';
+  static const apiKey = 'AIzaSyCtVdR79rZ-cTDtXYrURz1YmGLmeCiBIDo';
   static const iosBundleId = 'com.storatax.app';
   static const androidPackage = 'com.storatax.app';
 
@@ -13,8 +13,9 @@ class GoogleMapsConfig {
     if (Platform.isIOS) {
       return {'X-Ios-Bundle-Identifier': iosBundleId};
     }
+    // Do not send Android package without SHA-1; Google can deny Places.
     if (Platform.isAndroid) {
-      return {'X-Android-Package': androidPackage};
+      return {};
     }
     return {};
   }
