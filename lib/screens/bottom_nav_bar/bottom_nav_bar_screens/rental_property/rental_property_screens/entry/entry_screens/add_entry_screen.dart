@@ -10,14 +10,17 @@ import 'package:storatax/view_models/rental_property_view_model/rental_property_
 
 import '../../../../../../../models/expense_type_model/expense_type_model.dart';
 import '../../../../../../../models/rental_property_models/get_income_types_model/get_income_types_model.dart';
+import '../../../../../../../models/rental_property_models/regular_entry_scan_model/regular_entry_scan_model.dart';
 import '../../../../../../../res/app_assets.dart';
 import '../../../../../../../res/components/app_localization.dart';
 import '../../../../../../../res/components/drop_down_widget.dart';
 import '../../../../../../../utils/app_colors.dart';
 import '../../../../../../../utils/camera_permission.dart';
+import '../../../../../../../utils/scan_receipt_date.dart';
 import '../../../../../../../utils/utils.dart';
 import '../../rental_property_addressing/widget/increment_decrement_double_widget.dart';
 import '../../rental_property_tab_screen/rental_property_tab_screen.dart';
+import '../widget/receipt_scan_overlay.dart';
 
 class AddEntryScreen extends StatefulWidget {
   const AddEntryScreen({super.key, this.planId});
@@ -51,7 +54,8 @@ class _AddEntryScreenState extends State<AddEntryScreen> {
     ExpenseType(
       key: 'Professional fees',
       en: 'Professional fees',
-      fr: 'Honoraires professionnels (comprend les frais juridiques et comptables)',
+      fr:
+          'Honoraires professionnels (comprend les frais juridiques et comptables)',
     ),
     ExpenseType(
       key: 'Management and administration fees',
@@ -66,7 +70,8 @@ class _AddEntryScreenState extends State<AddEntryScreen> {
     ExpenseType(
       key: 'Salaries wages and benefits',
       en: 'Salaries wages and benefits',
-      fr: "Salaires, traitements et avantages sociaux(y compris les cotisations de l'employeur)",
+      fr:
+          "Salaires, traitements et avantages sociaux(y compris les cotisations de l'employeur)",
     ),
     ExpenseType(
       key: 'Property taxes',
@@ -78,7 +83,8 @@ class _AddEntryScreenState extends State<AddEntryScreen> {
     ExpenseType(
       key: 'Motor vehicle expenses',
       en: 'Motor vehicle expenses',
-      fr: 'Dépenses liées aux véhicules à moteur (sans la déduction pour amortissement)',
+      fr:
+          'Dépenses liées aux véhicules à moteur (sans la déduction pour amortissement)',
     ),
     ExpenseType(
       key: 'Other expenses (BusAuto)',
@@ -135,11 +141,7 @@ class _AddEntryScreenState extends State<AddEntryScreen> {
       en: 'Depreciation expense or depletion',
       fr: "Dépenses d'amortissement ou d'épuisement",
     ),
-    ExpenseType(
-      key: 'Other (list)',
-      en: 'Other (list)',
-      fr: 'Autre (Liste)',
-    ),
+    ExpenseType(key: 'Other (list)', en: 'Other (list)', fr: 'Autre (Liste)'),
   ];
 
   List<ExpenseType> getExpenseTypes(BuildContext context) {
@@ -174,89 +176,162 @@ class _AddEntryScreenState extends State<AddEntryScreen> {
     });
   }
 
+  bool _isPdfFile(File file) => file.path.toLowerCase().endsWith('.pdf');
+
+  Future<void> _pickFromGallery() async {
+    final picked = await context.read<AuthViewModel>().pickImageFromGallery();
+    if (!mounted || picked == null) return;
+    await _scanReceipt(picked);
+  }
+
+  Future<void> _pickFromCamera() async {
+    if (!await ensureCameraPermission(context)) return;
+    if (!mounted) return;
+    final picked =
+        await context.read<AuthViewModel>().pickSingleImageFromCamera();
+    if (!mounted || picked == null) return;
+    await _scanReceipt(picked);
+  }
+
+  Future<void> _pickFromPdf() async {
+    final picked = await context.read<AuthViewModel>().pickPdfFile();
+    if (!mounted || picked == null) return;
+    await _scanReceipt(picked);
+  }
+
+  Future<void> _scanReceipt(File file) async {
+    setState(() {
+      selectedImage = file;
+    });
+    final rentalVM = context.read<RentalPropertyViewModel>();
+    final data = await rentalVM.scanRegularEntryApi(file);
+    if (!mounted || data == null) return;
+    _applyScanResult(data);
+  }
+
+  void _applyScanResult(RegularEntryScanData data) {
+    final matched = _matchExpenseType(data.expenseType);
+    final parsedDate = extractScanReceiptDate({
+      if (data.date != null) 'date': data.date,
+    });
+    setState(() {
+      selectedType = typeExpense;
+      if (parsedDate != null) {
+        selectedDate = parsedDate;
+      }
+      if (data.amount != null) {
+        personalUsePercentage = data.amount!;
+      }
+      if (matched != null) {
+        selectedExpenseType = matched;
+      }
+    });
+  }
+
+  String? _matchExpenseType(String? raw) {
+    if (raw == null || raw.trim().isEmpty) return null;
+    final normalized = raw.trim().toLowerCase();
+    for (final type in getExpenseTypes(context)) {
+      if (type.key.toLowerCase() == normalized ||
+          type.en.toLowerCase() == normalized ||
+          type.fr.toLowerCase() == normalized) {
+        return type.key;
+      }
+    }
+    return null;
+  }
+
   @override
   Widget build(BuildContext context) {
     return Consumer<RentalPropertyViewModel>(
       builder: (context, rentalVM, _) {
-        return Scaffold(
-          // extendBodyBehindAppBar: true,
-          resizeToAvoidBottomInset: false,
-          appBar: CustomAppBar(
-            text1:
-                AppLocalizations.of(context)!.translate("addEntryText") ?? '',
-            showBackButton: true,
-            onBackTap: () {
-              Navigator.pushReplacement(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => RentalPropertyTabScreen(),
-                ),
-              );
-            },
-          ),
-          body: Stack(
-            children: [
-              // Background image
-              Container(
-                width: double.infinity,
-                height: double.infinity,
-                decoration: BoxDecoration(
-                  image: DecorationImage(
-                    image: AssetImage(AppAssets.backgroundImg),
-                    fit: BoxFit.cover,
+        return PopScope(
+          canPop: !rentalVM.scanLoading,
+          child: Scaffold(
+            // extendBodyBehindAppBar: true,
+            resizeToAvoidBottomInset: false,
+            appBar: CustomAppBar(
+              text1:
+                  AppLocalizations.of(context)!.translate("addEntryText") ?? '',
+              showBackButton: true,
+              onBackTap: () {
+                if (rentalVM.scanLoading) return;
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => RentalPropertyTabScreen(),
+                  ),
+                );
+              },
+            ),
+            body: Stack(
+              children: [
+                // Background image
+                Container(
+                  width: double.infinity,
+                  height: double.infinity,
+                  decoration: BoxDecoration(
+                    image: DecorationImage(
+                      image: AssetImage(AppAssets.backgroundImg),
+                      fit: BoxFit.cover,
+                    ),
                   ),
                 ),
-              ),
-              rentalVM.otherLoading
-                  ? Center(
-                    child: SizedBox(
-                      height: 25,
-                      width: 25,
-                      child: CircularProgressIndicator(
-                        color: AppColors.blackColor,
-                      ),
-                    ),
-                  )
-                  : SingleChildScrollView(
-                    physics: BouncingScrollPhysics(),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Padding(
-                          padding: const EdgeInsets.only(
-                            top: 20,
-                            right: 20,
-                            left: 20,
-                            bottom: 20,
-                          ),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Row(
-                                children: [
-                                  Icon(
-                                    Icons.info_outline,
-                                    color: AppColors.goldenOrangeColor,
-                                  ),
-                                  const SizedBox(width: 8),
-                                  Text(
-                                    "Information",
-                                    style: GoogleFonts.poppins(
-                                      fontWeight: FontWeight.w700,
-                                      fontSize: 16,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              const SizedBox(height: 30),
-                              buildForm(),
-                            ],
-                          ),
+                SingleChildScrollView(
+                  physics: BouncingScrollPhysics(),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.only(
+                          top: 20,
+                          right: 20,
+                          left: 20,
+                          bottom: 20,
                         ),
-                      ],
-                    ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
+                                Icon(
+                                  Icons.info_outline,
+                                  color: AppColors.goldenOrangeColor,
+                                ),
+                                const SizedBox(width: 8),
+                                Text(
+                                  "Information",
+                                  style: GoogleFonts.poppins(
+                                    fontWeight: FontWeight.w700,
+                                    fontSize: 16,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 30),
+                            buildForm(),
+                          ],
+                        ),
+                      ),
+                    ],
                   ),
-            ],
+                ),
+                if (rentalVM.scanLoading && selectedImage != null)
+                  ReceiptScanOverlay(
+                    image: selectedImage!,
+                    title:
+                        AppLocalizations.of(
+                          context,
+                        )!.translate("scanningReceiptText") ??
+                        'Scanning receipt',
+                    subtitle:
+                        AppLocalizations.of(
+                          context,
+                        )!.translate("extractingEntryFieldsText") ??
+                        'Reading date, amount and category',
+                  ),
+              ],
+            ),
           ),
         );
       },
@@ -367,6 +442,7 @@ class _AddEntryScreenState extends State<AddEntryScreen> {
 
         /// Type
         GenericDropdown<String>(
+          key: ValueKey('entry_type_$selectedType'),
           label: AppLocalizations.of(context)!.translate("type") ?? '',
           hint: AppLocalizations.of(context)!.translate("chooseTypeText") ?? '',
           value: selectedType,
@@ -409,6 +485,7 @@ class _AddEntryScreenState extends State<AddEntryScreen> {
         ),
         const SizedBox(height: 6),
         IncrementDecrementFieldDouble(
+          key: ValueKey('entry_amount_$personalUsePercentage'),
           labelText: "0.00",
           initialValue: personalUsePercentage,
           onChanged: (value) {
@@ -448,6 +525,7 @@ class _AddEntryScreenState extends State<AddEntryScreen> {
           )
         else
           GenericDropdown<String>(
+            key: ValueKey('expense_type_${selectedExpenseType ?? 'none'}'),
             label: AppLocalizations.of(context)!.translate("expenseType") ?? '',
             hint: "Choose Expense Type",
             value: selectedExpenseType,
@@ -542,150 +620,157 @@ class _AddEntryScreenState extends State<AddEntryScreen> {
 
         /// File Upload (only for Expense)
         if (!isIncome)
-          Consumer<AuthViewModel>(
-            builder: (context, authProvider, child) {
-              return Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(20),
-                decoration: BoxDecoration(
-                  border: Border.all(
-                    color: AppColors.goldenOrangeColor,
-                    style: BorderStyle.solid,
-                    width: 1.5,
-                  ),
-                  borderRadius: BorderRadius.circular(12),
-                  color: Colors.orange.shade50,
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              border: Border.all(
+                color: AppColors.goldenOrangeColor,
+                style: BorderStyle.solid,
+                width: 1.5,
+              ),
+              borderRadius: BorderRadius.circular(12),
+              color: Colors.orange.shade50,
+            ),
+            child: Column(
+              children: [
+                const Icon(
+                  Icons.document_scanner_outlined,
+                  size: 50,
+                  color: Colors.orange,
                 ),
-                child: Column(
-                  children: [
-                    const Icon(
-                      Icons.cloud_upload_outlined,
-                      size: 50,
-                      color: Colors.orange,
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
+                const SizedBox(height: 8),
+                Text(
+                  AppLocalizations.of(
+                        context,
+                      )!.translate("scanReceiptHintText") ??
                       AppLocalizations.of(
-                            context,
-                          )!.translate("uploadFileText") ??
-                          '',
-                      textAlign: TextAlign.center,
-                      style: GoogleFonts.poppins(
-                        textStyle: TextStyle(
-                          fontWeight: FontWeight.w700,
-                          fontSize: 15,
-                          color: AppColors.pureGrayColor,
-                        ),
-                      ),
+                        context,
+                      )!.translate("uploadFileText") ??
+                      '',
+                  textAlign: TextAlign.center,
+                  style: GoogleFonts.poppins(
+                    textStyle: TextStyle(
+                      fontWeight: FontWeight.w700,
+                      fontSize: 15,
+                      color: AppColors.pureGrayColor,
                     ),
-                    const SizedBox(height: 12),
-                    ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.goldenOrangeColor,
-                      ),
-                      onPressed: () async {
-                        showModalBottomSheet(
-                          context: context,
-                          shape: const RoundedRectangleBorder(
-                            borderRadius: BorderRadius.vertical(
-                              top: Radius.circular(16),
-                            ),
-                          ),
-                          builder: (context) {
-                            return Padding(
-                              padding: const EdgeInsets.all(20),
-                              child: Wrap(
-                                children: [
-                                  ListTile(
-                                    leading: const Icon(
-                                      Icons.photo_library,
-                                      color: Colors.orange,
-                                    ),
-                                    title: Text(
-                                      AppLocalizations.of(
-                                            context,
-                                          )!.translate("galleryText") ??
-                                          '',
-                                    ),
-                                    onTap: () async {
-                                      Navigator.pop(context);
-                                      final picked =
-                                          await authProvider
-                                              .pickImageFromGallery();
-                                      setState(() {
-                                        selectedImage = picked;
-                                      });
-                                    },
-                                  ),
-                                  ListTile(
-                                    leading: const Icon(
-                                      Icons.camera_alt,
-                                      color: Colors.orange,
-                                    ),
-                                    title: Text(
-                                      AppLocalizations.of(
-                                            context,
-                                          )!.translate("cameraText") ??
-                                          '',
-                                    ),
-                                    onTap: () async {
-                                      Navigator.pop(context);
-                                      if (!await ensureCameraPermission(
-                                        context,
-                                      )) {
-                                        return;
-                                      }
-                                      final picked =
-                                          await authProvider
-                                              .pickSingleImageFromCamera();
-                                      setState(() {
-                                        selectedImage = picked;
-                                      });
-                                    },
-                                  ),
-                                ],
+                  ),
+                ),
+                const SizedBox(height: 12),
+                ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.goldenOrangeColor,
+                  ),
+                  onPressed:
+                      rentalVM.scanLoading
+                          ? null
+                          : () async {
+                            showModalBottomSheet(
+                              context: context,
+                              shape: const RoundedRectangleBorder(
+                                borderRadius: BorderRadius.vertical(
+                                  top: Radius.circular(16),
+                                ),
                               ),
+                              builder: (context) {
+                                return Padding(
+                                  padding: const EdgeInsets.all(20),
+                                  child: Wrap(
+                                    children: [
+                                      ListTile(
+                                        leading: const Icon(
+                                          Icons.photo_library,
+                                          color: Colors.orange,
+                                        ),
+                                        title: Text(
+                                          AppLocalizations.of(
+                                                context,
+                                              )!.translate("galleryText") ??
+                                              '',
+                                        ),
+                                        onTap: () async {
+                                          Navigator.pop(context);
+                                          await _pickFromGallery();
+                                        },
+                                      ),
+                                      ListTile(
+                                        leading: const Icon(
+                                          Icons.camera_alt,
+                                          color: Colors.orange,
+                                        ),
+                                        title: Text(
+                                          AppLocalizations.of(
+                                                context,
+                                              )!.translate("cameraText") ??
+                                              '',
+                                        ),
+                                        onTap: () async {
+                                          Navigator.pop(context);
+                                          await _pickFromCamera();
+                                        },
+                                      ),
+                                      ListTile(
+                                        leading: const Icon(
+                                          Icons.picture_as_pdf,
+                                          color: Colors.orange,
+                                        ),
+                                        title: Text(
+                                          AppLocalizations.of(
+                                                context,
+                                              )!.translate("scanWithPdfText") ??
+                                              'Scan with PDF',
+                                        ),
+                                        onTap: () async {
+                                          Navigator.pop(context);
+                                          await _pickFromPdf();
+                                        },
+                                      ),
+                                    ],
+                                  ),
+                                );
+                              },
                             );
                           },
-                        );
-                      },
-                      child: Text(
-                        AppLocalizations.of(
-                              context,
-                            )!.translate("chooseFileText") ??
-                            '',
-                      ),
-                    ),
-                    if (selectedImage != null)
-                      Padding(
-                        padding: const EdgeInsets.only(top: 8),
-                        child: Row(
-                          children: [
-                            Image.file(
+                  child: Text(
+                    AppLocalizations.of(context)!.translate("chooseFileText") ??
+                        '',
+                  ),
+                ),
+                if (selectedImage != null)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 8),
+                    child: Row(
+                      children: [
+                        _isPdfFile(selectedImage!)
+                            ? const Icon(
+                              Icons.picture_as_pdf,
+                              size: 50,
+                              color: Colors.orange,
+                            )
+                            : Image.file(
                               selectedImage!,
                               width: 50,
                               height: 50,
                               fit: BoxFit.cover,
                             ),
-                            const SizedBox(width: 10),
-                            Expanded(
-                              child: Text(
-                                selectedImage!.path.split('/').last,
-                                style: const TextStyle(
-                                  color: Colors.black87,
-                                  fontSize: 13,
-                                  fontStyle: FontStyle.italic,
-                                ),
-                                overflow: TextOverflow.ellipsis,
-                              ),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: Text(
+                            selectedImage!.path.split('/').last,
+                            style: const TextStyle(
+                              color: Colors.black87,
+                              fontSize: 13,
+                              fontStyle: FontStyle.italic,
                             ),
-                          ],
+                            overflow: TextOverflow.ellipsis,
+                          ),
                         ),
-                      ),
-                  ],
-                ),
-              );
-            },
+                      ],
+                    ),
+                  ),
+              ],
+            ),
           ),
 
         const SizedBox(height: 8),
@@ -719,55 +804,66 @@ class _AddEntryScreenState extends State<AddEntryScreen> {
               const SizedBox(width: 10),
               MaterialButton(
                 height: 40,
+                minWidth: 88,
                 color: AppColors.goldenOrangeColor,
                 elevation: 0,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(8),
                 ),
-                onPressed: () {
-                  if (selectedDate == null) {
-                    Utils.toastMessage("Please select a date");
-                    return;
-                  }
-                  if (isIncome && selectedIncomeTypeId == null) {
-                    Utils.toastMessage("Please choose an income type");
-                    return;
-                  }
-                  if (!isIncome && selectedExpenseType == null) {
-                    Utils.toastMessage("Please choose an expense type");
-                    return;
-                  }
+                onPressed:
+                    rentalVM.scanLoading || rentalVM.otherLoading
+                        ? null
+                        : () {
+                          if (selectedDate == null) {
+                            Utils.toastMessage("Please select a date");
+                            return;
+                          }
+                          if (isIncome && selectedIncomeTypeId == null) {
+                            Utils.toastMessage("Please choose an income type");
+                            return;
+                          }
+                          if (!isIncome && selectedExpenseType == null) {
+                            Utils.toastMessage("Please choose an expense type");
+                            return;
+                          }
 
-                  if (isIncome) {
-                    final Map<String, dynamic> incomeData = {
-                      'date': DateFormat('yyyy-MM-dd').format(selectedDate!),
-                      'type': apiType,
-                      'income_type_id': selectedIncomeTypeId,
-                      'amount': personalUsePercentage,
-                      'client_plans_id': widget.planId,
-                    };
-                    rentalVM.createEntriesApi(context, incomeData);
-                  } else {
-                    final Map<String, dynamic> expenseData = {
-                      'date': DateFormat('yyyy-MM-dd').format(selectedDate!),
-                      'type': apiType,
-                      'expense_type': selectedExpenseType,
-                      'other_expense_name':
-                          enterOtherExpenseNameController.text.toString(),
-                      'only_for_rental':
-                          showOnlyForRentalDropdown ? onlyForRentalType : null,
-                      'amount': personalUsePercentage,
-                      'client_plans_id': widget.planId,
-                    };
-                    rentalVM.createEntriesProofApi(
-                      context,
-                      expenseData,
-                      selectedImage,
-                    );
-                  }
-                },
+                          if (isIncome) {
+                            final Map<String, dynamic> incomeData = {
+                              'date': DateFormat(
+                                'yyyy-MM-dd',
+                              ).format(selectedDate!),
+                              'type': apiType,
+                              'income_type_id': selectedIncomeTypeId,
+                              'amount': personalUsePercentage,
+                              'client_plans_id': widget.planId,
+                            };
+                            rentalVM.createEntriesApi(context, incomeData);
+                          } else {
+                            final Map<String, dynamic> expenseData = {
+                              'date': DateFormat(
+                                'yyyy-MM-dd',
+                              ).format(selectedDate!),
+                              'type': apiType,
+                              'expense_type': selectedExpenseType,
+                              'other_expense_name':
+                                  enterOtherExpenseNameController.text
+                                      .toString(),
+                              'only_for_rental':
+                                  showOnlyForRentalDropdown
+                                      ? onlyForRentalType
+                                      : null,
+                              'amount': personalUsePercentage,
+                              'client_plans_id': widget.planId,
+                            };
+                            rentalVM.createEntriesProofApi(
+                              context,
+                              expenseData,
+                              selectedImage,
+                            );
+                          }
+                        },
                 child:
-                    rentalVM.isLoading
+                    rentalVM.otherLoading
                         ? Center(
                           child: SizedBox(
                             height: 25,

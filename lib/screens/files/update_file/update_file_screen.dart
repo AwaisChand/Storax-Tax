@@ -165,7 +165,7 @@ class _UpdateFileScreenState extends State<UpdateFileScreen> {
   Future<void> _openCropThenAdd(File image) async {
     if (!mounted) return;
     final result = await CropDocumentDialog.open(
-      context,
+                  context,
       imageFile: image,
       fileName: path.basename(image.path),
     );
@@ -230,7 +230,7 @@ class _UpdateFileScreenState extends State<UpdateFileScreen> {
                   Navigator.pop(sheetContext);
                   await _startSmartCameraCapture();
                 },
-              ),
+                  ),
             ],
           ),
         );
@@ -315,7 +315,7 @@ class _UpdateFileScreenState extends State<UpdateFileScreen> {
 
   void _applyScanData(Map<String, dynamic>? data) {
     if (data == null) return;
-    setState(() {
+                      setState(() {
       final name = data['file_name']?.toString();
       if (name != null && name.isNotEmpty) {
         fileNameController.text = name;
@@ -325,7 +325,7 @@ class _UpdateFileScreenState extends State<UpdateFileScreen> {
         selectedCategory = category;
       }
       if (data['date'] != null) {
-        selectedDate =
+                            selectedDate =
             DateTime.tryParse(data['date'].toString()) ?? selectedDate;
       }
       final yearFromData = int.tryParse(data['year']?.toString() ?? '');
@@ -422,45 +422,45 @@ class _UpdateFileScreenState extends State<UpdateFileScreen> {
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(6),
-      child: Container(
+                    child: Container(
         height: 44,
-        decoration: BoxDecoration(
+                      decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.circular(6),
+                        borderRadius: BorderRadius.circular(6),
           border: Border.all(color: _borderGrey),
-        ),
+                      ),
         clipBehavior: Clip.antiAlias,
-        child: Row(
-          children: [
-            Container(
+                      child: Row(
+                        children: [
+                          Container(
               height: double.infinity,
-              padding: const EdgeInsets.symmetric(horizontal: 14),
+                            padding: const EdgeInsets.symmetric(horizontal: 14),
               decoration: const BoxDecoration(
                 color: _chooserFill,
                 border: Border(right: BorderSide(color: _borderGrey)),
               ),
               alignment: Alignment.center,
-              child: Text(
+                              child: Text(
                 actionLabel,
                 style: GoogleFonts.poppins(
                   fontSize: 13,
-                  fontWeight: FontWeight.w500,
+                                  fontWeight: FontWeight.w500,
                   color: const Color(0xFF444444),
-                ),
-              ),
-            ),
+                                ),
+                              ),
+                            ),
             const SizedBox(width: 12),
-            Expanded(
-              child: Text(
+                          Expanded(
+                              child: Text(
                 chosenLabel,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: GoogleFonts.poppins(fontSize: 13, color: _mutedText),
-              ),
-            ),
-          ],
-        ),
-      ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
     );
   }
 
@@ -502,7 +502,7 @@ class _UpdateFileScreenState extends State<UpdateFileScreen> {
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
+                      children: [
         Text(
           _t('uploadReceiptText'),
           style: const TextStyle(
@@ -527,10 +527,10 @@ class _UpdateFileScreenState extends State<UpdateFileScreen> {
                 fontSize: 12,
                 height: 1.4,
                 color: _hintText,
-              ),
-            ),
-          ],
-        ),
+                            ),
+                          ),
+                      ],
+                    ),
         _receiptList(),
       ],
     );
@@ -575,7 +575,7 @@ class _UpdateFileScreenState extends State<UpdateFileScreen> {
               ),
             ),
             const SizedBox(height: 10),
-            Text(
+        Text(
               _t('dropFilesHintText'),
               textAlign: TextAlign.center,
               style: GoogleFonts.poppins(
@@ -654,8 +654,8 @@ class _UpdateFileScreenState extends State<UpdateFileScreen> {
                   .where((e) => e.backendValue != null)
                   .map(
                     (cat) => DropdownMenuItem<String>(
-                      value: cat.backendValue,
-                      child: Text(cat.getDisplayLabel(isFrench)),
+                  value: cat.backendValue,
+                  child: Text(cat.getDisplayLabel(isFrench)),
                     ),
                   )
                   .toList(),
@@ -724,8 +724,8 @@ class _UpdateFileScreenState extends State<UpdateFileScreen> {
                 child: Text(
                   _t('cancelText'),
                   style: GoogleFonts.poppins(
-                    fontSize: 15,
-                    fontWeight: FontWeight.w400,
+                      fontSize: 15,
+                      fontWeight: FontWeight.w400,
                   ),
                 ),
               ),
@@ -742,18 +742,18 @@ class _UpdateFileScreenState extends State<UpdateFileScreen> {
                 child:
                     provider.isLoading
                         ? SizedBox(
-                          height: 25,
-                          width: 25,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            color: AppColors.blackColor,
+                            height: 25,
+                            width: 25,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: AppColors.blackColor,
                           ),
                         )
                         : Text(
                           _t('updateText'),
                           style: GoogleFonts.poppins(
-                            fontSize: 15,
-                            fontWeight: FontWeight.w400,
+                              fontSize: 15,
+                              fontWeight: FontWeight.w400,
                           ),
                         ),
               ),

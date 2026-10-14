@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image/image.dart' as img;
@@ -133,19 +134,54 @@ class AuthViewModel extends ChangeNotifier {
     return null;
   }
 
+  static const MethodChannel _pdfPickerChannel = MethodChannel(
+    'storatax/pdf_picker',
+  );
+
   Future<File?> pickPdfFile() async {
     try {
-      FilePickerResult? result = await FilePicker.pickFiles(
+      if (Platform.isAndroid) {
+        final path = await _pdfPickerChannel.invokeMethod<String>('pickPdf');
+        if (path == null || path.isEmpty) return null;
+        final file = File(path);
+        if (await file.exists()) return file;
+        return null;
+      }
+
+      final FilePickerResult? result = await FilePicker.pickFiles(
         type: FileType.custom,
         allowedExtensions: ['pdf'],
+        withData: true,
       );
-
-      if (result != null && result.files.single.path != null) {
-        final file = File(result.files.single.path!);
-        return file;
-      }
+      if (result == null || result.files.isEmpty) return null;
+      return _persistPickedPdf(result.files.single);
     } catch (e) {
       debugPrint("Error picking PDF: $e");
+    }
+    return null;
+  }
+
+  Future<File?> _persistPickedPdf(PlatformFile picked) async {
+    final dir = await getTemporaryDirectory();
+    final rawName =
+        picked.name.trim().isEmpty ? 'receipt.pdf' : picked.name.trim();
+    final name =
+        rawName.toLowerCase().endsWith('.pdf') ? rawName : '$rawName.pdf';
+    final out = File(
+      '${dir.path}/picked_pdf_${DateTime.now().millisecondsSinceEpoch}_$name',
+    );
+
+    if (picked.bytes != null && picked.bytes!.isNotEmpty) {
+      await out.writeAsBytes(picked.bytes!, flush: true);
+      return out;
+    }
+
+    final path = picked.path;
+    if (path != null && path.isNotEmpty) {
+      final source = File(path);
+      if (await source.exists()) {
+        return source.copy(out.path);
+      }
     }
     return null;
   }

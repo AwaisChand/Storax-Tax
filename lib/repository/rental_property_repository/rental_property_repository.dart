@@ -299,6 +299,25 @@ class RentalPropertyRepository {
     }
   }
 
+  Future<dynamic> scanRegularEntryRepo({required File proof}) async {
+    try {
+      final upload = await normalizeScanUploadToJpegIfNeeded(
+        proof,
+        logFlow: 'RegularEntryScan',
+      );
+      final response = await baseApiServices.multipartPostRequest(
+        AppUrl.regularEntriesScanEndPoint,
+        files: {'proof': upload},
+      );
+      debugPrint("Raw API response JSON: $response");
+      debugPrint("Api url: ${AppUrl.regularEntriesScanEndPoint}");
+      return response;
+    } catch (e) {
+      debugPrint(e.toString());
+      rethrow;
+    }
+  }
+
   ///Forward Multiple Entries
 
   Future<dynamic> forwardMultipleEntriesRepo({
@@ -538,8 +557,7 @@ class RentalPropertyRepository {
         'language': language,
         if (fromDate != null)
           'from_date': DateFormat('yyyy-MM-dd').format(fromDate),
-        if (toDate != null)
-          'to_date': DateFormat('yyyy-MM-dd').format(toDate),
+        if (toDate != null) 'to_date': DateFormat('yyyy-MM-dd').format(toDate),
         if (month != null) 'month': DateFormat('MMMM').format(month),
         if (incomeTypeId != null) 'income_type_id': incomeTypeId.toString(),
         if (expenseType != null) 'expense_type': expenseType,

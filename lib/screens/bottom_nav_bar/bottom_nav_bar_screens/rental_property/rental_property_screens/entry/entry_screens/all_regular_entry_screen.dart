@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
+import 'package:storatax/models/rental_property_models/get_all_regular_entries_model/get_all_regular_entries_model.dart';
 import 'package:storatax/screens/bottom_nav_bar/bottom_nav_bar_screens/rental_property/rental_property_screens/entry/entry_screens/update_entry_screen.dart';
 import 'package:storatax/screens/bottom_nav_bar/bottom_nav_bar_screens/rental_property/rental_property_screens/entry/widget/filter_entries_widget.dart';
 import 'package:storatax/screens/bottom_nav_bar/bottom_nav_bar_screens/rental_property/rental_property_screens/rental_property_tab_screen/rental_property_tab_screen.dart';
@@ -270,18 +271,17 @@ class _AllRegularEntryScreenState extends State<AllRegularEntryScreen> {
                                                                         .black,
                                                               ),
                                                             ),
-                                                            allRegulaEntriesData
-                                                                            .proof !=
-                                                                        null &&
-                                                                    allRegulaEntriesData
-                                                                        .proof!
-                                                                        .isNotEmpty
+                                                            _proofViewUrl(
+                                                                      allRegulaEntriesData,
+                                                                    ) !=
+                                                                    null
                                                                 ? MaterialButton(
                                                                   onPressed: () async {
-                                                                    // Updated URL to directly point to S3
                                                                     final proofUrl =
                                                                         Uri.parse(
-                                                                          "https://storatax.s3.amazonaws.com/${allRegulaEntriesData.proof}",
+                                                                          _proofViewUrl(
+                                                                            allRegulaEntriesData,
+                                                                          )!,
                                                                         );
 
                                                                     if (await canLaunchUrl(
@@ -483,6 +483,12 @@ class _AllRegularEntryScreenState extends State<AllRegularEntryScreen> {
         ],
       ),
     );
+  }
+
+  String? _proofViewUrl(AllRegularEntriesData entry) {
+    final url = entry.proofUrl?.trim();
+    if (url != null && url.isNotEmpty) return url;
+    return null;
   }
 
   Widget _rowWidget(String label, String? value) {

@@ -12,7 +12,18 @@ class Utils {
   static bool isYearly = false;
   static String? selectedMode;
 
+  static String? _lastToastMessage;
+  static DateTime? _lastToastAt;
+
   static void toastMessage(String message) {
+    final now = DateTime.now();
+    if (_lastToastMessage == message &&
+        _lastToastAt != null &&
+        now.difference(_lastToastAt!) < const Duration(seconds: 2)) {
+      return;
+    }
+    _lastToastMessage = message;
+    _lastToastAt = now;
     Fluttertoast.showToast(
       msg: message,
       textColor: AppColors.whiteColor,

@@ -85,6 +85,17 @@
             <action android:name="android.intent.action.VIEW" />
             <data android:scheme="https" />
         </intent>
+        <intent>
+            <action android:name="android.intent.action.GET_CONTENT" />
+            <data android:mimeType="*/*" />
+        </intent>
+        <intent>
+            <action android:name="android.intent.action.OPEN_DOCUMENT" />
+            <data android:mimeType="*/*" />
+        </intent>
+        <package android:name="cn.wps.moffice_eng" />
+        <package android:name="cn.wps.moffice" />
+        <package android:name="cn.wps.moffice_i18n" />
     </queries>
     <!-- Required for text processing plugin -->
     <queries>

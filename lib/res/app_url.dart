@@ -148,6 +148,7 @@ class AppUrl {
   static var propertyOwnerEndPoint = '${baseUrl}api/property-owner';
   static var incomeTypesEndPoint = '${baseUrl}api/income-types';
   static var entriesEndPoint = '${baseUrl}api/regular-entries';
+  static var regularEntriesScanEndPoint = '${baseUrl}api/regular-entries/scan';
   static var expenseUpdateEndPoint = '${baseUrl}api/regular-entries-update';
   static var forwardMultipleEntriesEndPoint =
       '${baseUrl}api/regular-entries/forward';

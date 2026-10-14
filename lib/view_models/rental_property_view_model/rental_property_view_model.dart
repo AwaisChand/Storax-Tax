@@ -12,6 +12,7 @@ import 'package:storatax/models/get_rental_property_plan_model/get_rental_proper
 import 'package:storatax/models/get_reports_model/get_reports_model.dart';
 import 'package:storatax/models/rental_property_models/database_entry_model/database_entry_model.dart';
 import 'package:storatax/models/rental_property_models/get_all_regular_entries_model/get_all_regular_entries_model.dart';
+import 'package:storatax/models/rental_property_models/regular_entry_scan_model/regular_entry_scan_model.dart';
 import 'package:storatax/models/rental_property_models/get_income_types_model/get_income_types_model.dart';
 import 'package:storatax/models/rental_property_models/property_owner_model/property_owner_model.dart';
 import 'package:storatax/screens/bottom_nav_bar/bottom_nav_bar_screens/rental_property/rental_property_screens/entry/entry_screens/all_regular_entry_screen.dart';
@@ -46,6 +47,9 @@ class RentalPropertyViewModel extends ChangeNotifier {
   bool _otherLoading = false;
   bool get otherLoading => _otherLoading;
 
+  bool _scanLoading = false;
+  bool get scanLoading => _scanLoading;
+
   bool _incomeTypesLoading = false;
   bool get incomeTypesLoading => _incomeTypesLoading;
 
@@ -62,6 +66,11 @@ class RentalPropertyViewModel extends ChangeNotifier {
 
   set otherLoad(bool setLoading) {
     _otherLoading = setLoading;
+    notifyListeners();
+  }
+
+  set scanLoad(bool setLoading) {
+    _scanLoading = setLoading;
     notifyListeners();
   }
 
@@ -340,11 +349,8 @@ class RentalPropertyViewModel extends ChangeNotifier {
       // Always overwrite entry, even if status == 0 (not found)
       _incomeTypes[planId] = response;
 
-      if (response.status == 1) {
+      if (response.status == 1 && response.data != null) {
         _data = response.data!;
-        Utils.toastMessage(response.success ?? "Success");
-      } else {
-        Utils.toastMessage(response.success ?? "Income Types not found");
       }
 
       if (kDebugMode) {
@@ -502,11 +508,6 @@ class RentalPropertyViewModel extends ChangeNotifier {
 
       _getAllRegularEntries[planId] = response;
 
-      // ✅ Show human-readable message
-      if (response.success != null && response.success!.isNotEmpty) {
-        Utils.toastMessage(response.success!);
-      }
-
       if (response.status == 1 && response.data != null) {
         _allEntries = response.data!;
       } else if (response.status != 1) {
@@ -531,26 +532,23 @@ class RentalPropertyViewModel extends ChangeNotifier {
   ///Create Entries Api
 
   Future<void> createEntriesApi(BuildContext context, dynamic data) async {
+    if (_otherLoading) return;
     otherLoad = true;
-    notifyListeners();
 
     try {
       debugPrint("create income types data: $data");
 
       final response = await rentalPropertyRepository.createEntriesRepo(data);
       final planId = data['client_plans_id'] as int;
+      Utils.toastMessage(Utils.apiMessage(response["success"]));
 
-      if (response["status"].toString() == "1") {
-        Utils.toastMessage(response["success"]);
-
+      if (response["status"].toString() == "1" && context.mounted) {
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(
             builder: (context) => AllRegularEntryScreen(planId: planId),
           ),
         );
-      } else {
-        Utils.toastMessage(response["success"]);
       }
 
       if (kDebugMode) {
@@ -561,7 +559,6 @@ class RentalPropertyViewModel extends ChangeNotifier {
       Utils.toastMessage("Error: ${e.toString()}");
     } finally {
       otherLoad = false;
-      notifyListeners();
     }
   }
 
@@ -570,6 +567,7 @@ class RentalPropertyViewModel extends ChangeNotifier {
     Map<String, dynamic> fields,
     File? avatarFile,
   ) async {
+    if (_otherLoading) return;
     otherLoad = true;
     try {
       debugPrint("Update Profile fields: $fields");
@@ -581,28 +579,14 @@ class RentalPropertyViewModel extends ChangeNotifier {
         avatarFile: avatarFile,
       );
 
-      if (response["status"].toString() == "1") {
-        Utils.toastMessage(response["success"]);
+      Utils.toastMessage(Utils.apiMessage(response["success"]));
+      if (response["status"].toString() == "1" && context.mounted) {
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(
             builder: (context) => AllRegularEntryScreen(planId: planId),
           ),
         );
-      }
-      final success = response["success"];
-      if (success is String) {
-        Utils.toastMessage(success);
-      } else if (success is Map<String, dynamic>) {
-        final firstKey = success.keys.first;
-        final firstError = success[firstKey];
-        final message =
-            (firstError is List && firstError.isNotEmpty)
-                ? firstError.first.toString()
-                : "Something went wrong";
-        Utils.toastMessage(message);
-      } else {
-        Utils.toastMessage("Unexpected error format.");
       }
 
       if (kDebugMode) {
@@ -613,6 +597,31 @@ class RentalPropertyViewModel extends ChangeNotifier {
       Utils.toastMessage("Error: ${e.toString()}");
     } finally {
       otherLoad = false;
+    }
+  }
+
+  Future<RegularEntryScanData?> scanRegularEntryApi(File proof) async {
+    scanLoad = true;
+    try {
+      final response = await rentalPropertyRepository.scanRegularEntryRepo(
+        proof: proof,
+      );
+      if (response is! Map) {
+        Utils.toastMessage('Unable to scan receipt');
+        return null;
+      }
+      final model = RegularEntryScanModel.fromJson(response);
+      if (model.isSuccess) {
+        return model.data;
+      }
+      Utils.toastMessage(Utils.apiMessage(model.message ?? response));
+      return null;
+    } catch (e, stackTrace) {
+      debugPrint('scan regular entry error: $e $stackTrace');
+      Utils.toastMessage(e.toString());
+      return null;
+    } finally {
+      scanLoad = false;
     }
   }
 

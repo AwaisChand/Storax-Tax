@@ -53,30 +53,32 @@ class AllRegularEntriesData {
   int? incomeTypeId;
   String? amount;
   String? proof;
+  String? proofUrl;
   String? onlyForRental;
   String? createdAt;
   String? updatedAt;
   String? incomeTypeName;
   String? expenseTypeFr;
 
-  AllRegularEntriesData(
-      {this.id,
-        this.clientPlansId,
-        this.userId,
-        this.date,
-        this.month,
-        this.type,
-        this.expenseType,
-        this.otherExpenseName,
-        this.incomeTypeId,
-        this.amount,
-        this.proof,
-        this.onlyForRental,
-        this.createdAt,
-        this.updatedAt,
-        this.incomeTypeName,
-        this.expenseTypeFr
-      });
+  AllRegularEntriesData({
+    this.id,
+    this.clientPlansId,
+    this.userId,
+    this.date,
+    this.month,
+    this.type,
+    this.expenseType,
+    this.otherExpenseName,
+    this.incomeTypeId,
+    this.amount,
+    this.proof,
+    this.proofUrl,
+    this.onlyForRental,
+    this.createdAt,
+    this.updatedAt,
+    this.incomeTypeName,
+    this.expenseTypeFr,
+  });
 
   AllRegularEntriesData.fromJson(Map<String, dynamic> json) {
     id = json['id'];
@@ -90,6 +92,7 @@ class AllRegularEntriesData {
     incomeTypeId = json['income_type_id'];
     amount = json['amount'];
     proof = json['proof'];
+    proofUrl = json['proof_url'];
     onlyForRental = json['only_for_rental'];
     createdAt = json['created_at'];
     updatedAt = json['updated_at'];
@@ -110,6 +113,7 @@ class AllRegularEntriesData {
     data['income_type_id'] = incomeTypeId;
     data['amount'] = amount;
     data['proof'] = proof;
+    data['proof_url'] = proofUrl;
     data['only_for_rental'] = onlyForRental;
     data['created_at'] = createdAt;
     data['updated_at'] = updatedAt;

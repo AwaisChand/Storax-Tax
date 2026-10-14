@@ -101,6 +101,11 @@ Future<File> normalizeScanUploadToJpegIfNeeded(
     return source;
   }
 
+  if (lower.endsWith('.pdf')) {
+    _scanUploadLog(logFlow, 'PDF upload, skip JPEG normalize');
+    return source;
+  }
+
   Future<File?> tryCompressAndGetFile(String targetPath) async {
     try {
       final out = await FlutterImageCompress.compressAndGetFile(

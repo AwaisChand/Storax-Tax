@@ -210,7 +210,7 @@ class _CreateTaxManagerScreenState extends State<CreateTaxManagerScreen> {
   Future<void> _openCropThenAdd(File image, {ScannedReceipt? replace}) async {
     if (!mounted) return;
     final result = await CropDocumentDialog.open(
-      context,
+                  context,
       imageFile: image,
       fileName: path.basename(image.path),
     );
@@ -285,7 +285,7 @@ class _CreateTaxManagerScreenState extends State<CreateTaxManagerScreen> {
                   Navigator.pop(sheetContext);
                   await _startSmartCameraCapture();
                 },
-              ),
+                  ),
             ],
           ),
         );
@@ -761,14 +761,14 @@ class _CreateTaxManagerScreenState extends State<CreateTaxManagerScreen> {
                   borderRadius: BorderRadius.circular(6),
                 ),
               ),
-              child: Text(
+                        child: Text(
                 _t('addMoreFilesText'),
                 style: GoogleFonts.poppins(
                   fontSize: 14,
                   fontWeight: FontWeight.w600,
-                ),
-              ),
-            ),
+                          ),
+                        ),
+                      ),
             const SizedBox(height: 10),
             Text(
               _t('dropFilesHintText'),
@@ -911,8 +911,8 @@ class _CreateTaxManagerScreenState extends State<CreateTaxManagerScreen> {
                 child: Text(
                   _t('cancelText'),
                   style: GoogleFonts.poppins(
-                    fontSize: 15,
-                    fontWeight: FontWeight.w400,
+                      fontSize: 15,
+                      fontWeight: FontWeight.w400,
                   ),
                 ),
               ),
@@ -932,18 +932,18 @@ class _CreateTaxManagerScreenState extends State<CreateTaxManagerScreen> {
                 child:
                     provider.isLoading
                         ? SizedBox(
-                          height: 25,
-                          width: 25,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            color: AppColors.blackColor,
+                            height: 25,
+                            width: 25,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: AppColors.blackColor,
                           ),
                         )
                         : Text(
                           _t('saveText'),
                           style: GoogleFonts.poppins(
-                            fontSize: 15,
-                            fontWeight: FontWeight.w400,
+                              fontSize: 15,
+                              fontWeight: FontWeight.w400,
                           ),
                         ),
               ),
