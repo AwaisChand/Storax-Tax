@@ -15,17 +15,50 @@ class Utils {
   static String? _lastToastMessage;
   static DateTime? _lastToastAt;
 
+  static const String noInternetMessage =
+      'No internet connection. Please check your network and try again.';
+
+  static bool isNetworkError(dynamic error) {
+    final text = error?.toString().toLowerCase() ?? '';
+    if (text.isEmpty) return false;
+    return text.contains('socketexception') ||
+        text.contains('clientexception') ||
+        text.contains('handshakeexception') ||
+        text.contains('timeoutexception') ||
+        text.contains('failed host lookup') ||
+        text.contains('network is unreachable') ||
+        text.contains('connection timed out') ||
+        text.contains('connection reset') ||
+        text.contains('connection abort') ||
+        text.contains('connection closed') ||
+        text.contains('no internet') ||
+        text.contains('software caused connection abort') ||
+        text.contains('failed to fetch') ||
+        text.contains('xmlhttprequest');
+  }
+
+  static String friendlyError(
+    dynamic error, {
+    String fallback = 'Something went wrong',
+  }) {
+    if (isNetworkError(error)) return noInternetMessage;
+    final raw = error?.toString().trim() ?? '';
+    if (raw.isEmpty) return fallback;
+    return raw;
+  }
+
   static void toastMessage(String message) {
+    final display = friendlyError(message);
     final now = DateTime.now();
-    if (_lastToastMessage == message &&
+    if (_lastToastMessage == display &&
         _lastToastAt != null &&
         now.difference(_lastToastAt!) < const Duration(seconds: 2)) {
       return;
     }
-    _lastToastMessage = message;
+    _lastToastMessage = display;
     _lastToastAt = now;
     Fluttertoast.showToast(
-      msg: message,
+      msg: display,
       textColor: AppColors.whiteColor,
       backgroundColor: AppColors.blackColor,
     );

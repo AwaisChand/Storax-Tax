@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/cupertino.dart';
@@ -531,6 +532,18 @@ class NetworkApiService extends BaseApiServices {
           'message': response.body,
         };
       }
+    } on SocketException {
+      throw FetchDataException(
+        'No internet connection. Please check your network and try again.',
+      );
+    } on TimeoutException {
+      throw FetchDataException(
+        'No internet connection. Please check your network and try again.',
+      );
+    } on http.ClientException {
+      throw FetchDataException(
+        'No internet connection. Please check your network and try again.',
+      );
     } catch (e, st) {
       debugPrint(
         'Multipart request error: $e',

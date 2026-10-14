@@ -1,10 +1,12 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:cunning_document_scanner/cunning_document_scanner.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:google_mlkit_document_scanner/google_mlkit_document_scanner.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image/image.dart' as img;
@@ -226,6 +228,59 @@ class AuthViewModel extends ChangeNotifier {
     } catch (e) {
       debugPrint("Error picking image: $e");
     }
+  }
+
+  Future<File?> scanReceiptWithCamera() async {
+    try {
+      if (Platform.isAndroid) {
+        final scanner = DocumentScanner(
+          options: DocumentScannerOptions(
+            documentFormats: {DocumentFormat.jpeg},
+            mode: ScannerMode.full,
+            isGalleryImport: false,
+            pageLimit: 1,
+          ),
+        );
+        final result = await scanner.scanDocument();
+        await scanner.close();
+        if (result.images != null && result.images!.isNotEmpty) {
+          return _waitForScannedFile(File(result.images!.first));
+        }
+        return null;
+      }
+
+      if (Platform.isIOS) {
+        final pictures = await CunningDocumentScanner.getPictures(
+          noOfPages: 1,
+          isGalleryImportAllowed: false,
+        );
+        if (pictures == null || pictures.isEmpty) return null;
+        var cleanedPath = pictures.first;
+        if (cleanedPath.startsWith('file://')) {
+          cleanedPath = cleanedPath.replaceFirst('file://', '');
+        }
+        return _waitForScannedFile(File(Uri.decodeFull(cleanedPath)));
+      }
+    } catch (e) {
+      debugPrint('scanReceiptWithCamera error: $e');
+      if (!e.toString().toLowerCase().contains('cancel')) {
+        Utils.toastMessage('Could not launch camera');
+      }
+    }
+    return null;
+  }
+
+  Future<File?> _waitForScannedFile(File file) async {
+    var retry = 0;
+    while (!await file.exists() && retry < 5) {
+      await Future.delayed(const Duration(milliseconds: 200));
+      retry++;
+    }
+    if (!await file.exists()) {
+      Utils.toastMessage('Scanned file not found.');
+      return null;
+    }
+    return file;
   }
 
   Future pickSingleImageFromCamera() async {

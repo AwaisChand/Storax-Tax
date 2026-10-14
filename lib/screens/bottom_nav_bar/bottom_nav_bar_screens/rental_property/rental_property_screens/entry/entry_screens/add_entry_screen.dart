@@ -187,8 +187,7 @@ class _AddEntryScreenState extends State<AddEntryScreen> {
   Future<void> _pickFromCamera() async {
     if (!await ensureCameraPermission(context)) return;
     if (!mounted) return;
-    final picked =
-        await context.read<AuthViewModel>().pickSingleImageFromCamera();
+    final picked = await context.read<AuthViewModel>().scanReceiptWithCamera();
     if (!mounted || picked == null) return;
     await _scanReceipt(picked);
   }
@@ -205,7 +204,15 @@ class _AddEntryScreenState extends State<AddEntryScreen> {
     });
     final rentalVM = context.read<RentalPropertyViewModel>();
     final data = await rentalVM.scanRegularEntryApi(file);
-    if (!mounted || data == null) return;
+    if (!mounted) return;
+    if (data == null) {
+      if (rentalVM.lastProofUploadFailed) {
+        setState(() {
+          selectedImage = null;
+        });
+      }
+      return;
+    }
     _applyScanResult(data);
   }
 
@@ -651,8 +658,8 @@ class _AddEntryScreenState extends State<AddEntryScreen> {
                   textAlign: TextAlign.center,
                   style: GoogleFonts.poppins(
                     textStyle: TextStyle(
-                      fontWeight: FontWeight.w700,
-                      fontSize: 15,
+                      fontWeight: FontWeight.w500,
+                      fontSize: 12,
                       color: AppColors.pureGrayColor,
                     ),
                   ),
@@ -661,6 +668,8 @@ class _AddEntryScreenState extends State<AddEntryScreen> {
                 ElevatedButton(
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.goldenOrangeColor,
+                    foregroundColor: AppColors.whiteColor,
+                    textStyle: GoogleFonts.poppins(fontWeight: FontWeight.w700),
                   ),
                   onPressed:
                       rentalVM.scanLoading
@@ -735,6 +744,10 @@ class _AddEntryScreenState extends State<AddEntryScreen> {
                   child: Text(
                     AppLocalizations.of(context)!.translate("chooseFileText") ??
                         '',
+                    style: GoogleFonts.poppins(
+                      color: AppColors.whiteColor,
+                      fontWeight: FontWeight.w700,
+                    ),
                   ),
                 ),
                 if (selectedImage != null)
@@ -855,11 +868,19 @@ class _AddEntryScreenState extends State<AddEntryScreen> {
                               'amount': personalUsePercentage,
                               'client_plans_id': widget.planId,
                             };
-                            rentalVM.createEntriesProofApi(
-                              context,
-                              expenseData,
-                              selectedImage,
-                            );
+                            rentalVM
+                                .createEntriesProofApi(
+                                  context,
+                                  expenseData,
+                                  selectedImage,
+                                )
+                                .then((clearProof) {
+                                  if (clearProof && mounted) {
+                                    setState(() {
+                                      selectedImage = null;
+                                    });
+                                  }
+                                });
                           }
                         },
                 child:

@@ -50,6 +50,9 @@ class RentalPropertyViewModel extends ChangeNotifier {
   bool _scanLoading = false;
   bool get scanLoading => _scanLoading;
 
+  bool _lastProofUploadFailed = false;
+  bool get lastProofUploadFailed => _lastProofUploadFailed;
+
   bool _incomeTypesLoading = false;
   bool get incomeTypesLoading => _incomeTypesLoading;
 
@@ -562,13 +565,14 @@ class RentalPropertyViewModel extends ChangeNotifier {
     }
   }
 
-  Future<void> createEntriesProofApi(
+  Future<bool> createEntriesProofApi(
     BuildContext context,
     Map<String, dynamic> fields,
     File? avatarFile,
   ) async {
-    if (_otherLoading) return;
+    if (_otherLoading) return false;
     otherLoad = true;
+    _lastProofUploadFailed = false;
     try {
       debugPrint("Update Profile fields: $fields");
       debugPrint("Avatar file: ${avatarFile?.path}");
@@ -579,29 +583,45 @@ class RentalPropertyViewModel extends ChangeNotifier {
         avatarFile: avatarFile,
       );
 
-      Utils.toastMessage(Utils.apiMessage(response["success"]));
-      if (response["status"].toString() == "1" && context.mounted) {
+      final message = Utils.apiMessage(response["success"]);
+      Utils.toastMessage(message);
+      final created = response["status"].toString() == "1";
+      if (created && context.mounted) {
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(
             builder: (context) => AllRegularEntryScreen(planId: planId),
           ),
         );
+        return false;
       }
 
       if (kDebugMode) {
         debugPrint("Add Entry API Response: $response");
       }
+      _lastProofUploadFailed = _isProofUploadFailure(message);
+      return _lastProofUploadFailed;
     } catch (e, stackTrace) {
       debugPrint("Add Entry error: $e $stackTrace");
       Utils.toastMessage("Error: ${e.toString()}");
+      _lastProofUploadFailed = _isProofUploadFailure(e.toString());
+      return _lastProofUploadFailed;
     } finally {
       otherLoad = false;
     }
   }
 
+  bool _isProofUploadFailure(String message) {
+    final normalized = message.toLowerCase();
+    return normalized.contains('proof') &&
+        (normalized.contains('fail') ||
+            normalized.contains('upload') ||
+            normalized.contains('unable'));
+  }
+
   Future<RegularEntryScanData?> scanRegularEntryApi(File proof) async {
     scanLoad = true;
+    _lastProofUploadFailed = false;
     try {
       final response = await rentalPropertyRepository.scanRegularEntryRepo(
         proof: proof,
@@ -614,11 +634,14 @@ class RentalPropertyViewModel extends ChangeNotifier {
       if (model.isSuccess) {
         return model.data;
       }
-      Utils.toastMessage(Utils.apiMessage(model.message ?? response));
+      final message = Utils.apiMessage(model.message ?? response);
+      Utils.toastMessage(message);
+      _lastProofUploadFailed = _isProofUploadFailure(message);
       return null;
     } catch (e, stackTrace) {
       debugPrint('scan regular entry error: $e $stackTrace');
       Utils.toastMessage(e.toString());
+      _lastProofUploadFailed = _isProofUploadFailure(e.toString());
       return null;
     } finally {
       scanLoad = false;
