@@ -280,7 +280,11 @@ class AuthViewModel extends ChangeNotifier {
       Utils.toastMessage('Scanned file not found.');
       return null;
     }
-    return file;
+    final dir = await getTemporaryDirectory();
+    final dest = File(
+      '${dir.path}/receipt_cam_${DateTime.now().millisecondsSinceEpoch}.jpg',
+    );
+    return file.copy(dest.path);
   }
 
   Future pickSingleImageFromCamera() async {

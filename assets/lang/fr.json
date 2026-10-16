@@ -111,6 +111,7 @@
   "descNewReceiptText": "Remplissez les informations pour ajouter un nouveau reçu.",
   "uploadFileText": "Téléverser le fichier",
   "scanReceiptHintText": "Numérisez un reçu locatif depuis la galerie, l’appareil photo ou un PDF. La date, le montant et le type de dépense se remplissent automatiquement.",
+  "scanWithAiText": "Numériser avec l’IA",
   "scanningReceiptText": "Numérisation du reçu",
   "extractingEntryFieldsText": "Lecture de la date, du montant et de la catégorie",
   "chooseFileText": "Choisir un fichier",

@@ -112,6 +112,7 @@
   "descNewReceiptText": "Fill in the details to add a new receipt.",
   "uploadFileText": "Upload file",
   "scanReceiptHintText": "Scan a rental receipt from gallery, camera, or PDF. Date, amount and expense type fill in automatically.",
+  "scanWithAiText": "Scan with AI",
   "scanningReceiptText": "Scanning receipt",
   "extractingEntryFieldsText": "Reading date, amount and category",
   "chooseFileText": "Choose file",

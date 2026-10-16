@@ -150,6 +150,8 @@ class _AddEntryScreenState extends State<AddEntryScreen> {
   }
 
   File? selectedImage;
+  bool scanWithAi = false;
+  String? _scannedProofPath;
   DateTime? selectedDate;
   String selectedType = typeExpense;
   String? selectedExpenseType;
@@ -181,7 +183,7 @@ class _AddEntryScreenState extends State<AddEntryScreen> {
   Future<void> _pickFromGallery() async {
     final picked = await context.read<AuthViewModel>().pickImageFromGallery();
     if (!mounted || picked == null) return;
-    await _scanReceipt(picked);
+    await _handlePickedProof(picked);
   }
 
   Future<void> _pickFromCamera() async {
@@ -189,16 +191,38 @@ class _AddEntryScreenState extends State<AddEntryScreen> {
     if (!mounted) return;
     final picked = await context.read<AuthViewModel>().scanReceiptWithCamera();
     if (!mounted || picked == null) return;
-    await _scanReceipt(picked);
+    await _handlePickedProof(picked);
   }
 
   Future<void> _pickFromPdf() async {
     final picked = await context.read<AuthViewModel>().pickPdfFile();
     if (!mounted || picked == null) return;
-    await _scanReceipt(picked);
+    await _handlePickedProof(picked);
+  }
+
+  Future<void> _handlePickedProof(File file) async {
+    _scannedProofPath = null;
+    if (!scanWithAi) {
+      setState(() {
+        selectedImage = file;
+      });
+      return;
+    }
+    await _scanReceipt(file);
+  }
+
+  Future<void> _setScanWithAi(bool enabled) async {
+    if (scanWithAi == enabled) return;
+    setState(() {
+      scanWithAi = enabled;
+    });
+    if (!enabled || selectedImage == null) return;
+    if (_scannedProofPath == selectedImage!.path) return;
+    await _scanReceipt(selectedImage!);
   }
 
   Future<void> _scanReceipt(File file) async {
+    _scannedProofPath = file.path;
     setState(() {
       selectedImage = file;
     });
@@ -626,7 +650,7 @@ class _AddEntryScreenState extends State<AddEntryScreen> {
         const SizedBox(height: 20),
 
         /// File Upload (only for Expense)
-        if (!isIncome)
+        if (!isIncome) ...[
           Container(
             width: double.infinity,
             padding: const EdgeInsets.all(20),
@@ -785,6 +809,50 @@ class _AddEntryScreenState extends State<AddEntryScreen> {
               ],
             ),
           ),
+          const SizedBox(height: 8),
+          Row(
+            children: [
+              Checkbox(
+                value: scanWithAi,
+                onChanged:
+                    rentalVM.scanLoading
+                        ? null
+                        : (value) {
+                          _setScanWithAi(value ?? false);
+                        },
+                checkColor: AppColors.whiteColor,
+                fillColor: WidgetStateProperty.resolveWith((states) {
+                  if (states.contains(WidgetState.selected)) {
+                    return AppColors.goldenOrangeColor;
+                  }
+                  return AppColors.whiteColor;
+                }),
+                side: BorderSide(
+                  color: AppColors.goldenOrangeColor,
+                  width: 1.5,
+                ),
+              ),
+              Expanded(
+                child: GestureDetector(
+                  onTap:
+                      rentalVM.scanLoading
+                          ? null
+                          : () {
+                            _setScanWithAi(!scanWithAi);
+                          },
+                  child: Text(
+                    AppLocalizations.of(context)!.translate("scanWithAiText") ??
+                        'Scan with AI',
+                    style: GoogleFonts.poppins(
+                      fontWeight: FontWeight.w500,
+                      fontSize: 14,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ],
 
         const SizedBox(height: 8),
 
