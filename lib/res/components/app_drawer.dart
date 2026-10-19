@@ -6,6 +6,7 @@ import 'package:storatax/screens/bottom_nav_bar/bottom_nav_bar.dart';
 import 'package:storatax/utils/app_colors.dart';
 import 'package:storatax/utils/utils.dart';
 import 'package:storatax/view_models/auth_view_model/auth_view_model.dart';
+import 'package:storatax/view_models/instructions_view_model/instructions_view_model.dart';
 import 'package:storatax/view_models/pricing_plans_view_model/pricing_plans_view_model.dart';
 import 'package:go_router/go_router.dart';
 
@@ -137,90 +138,9 @@ class AppDrawer extends StatelessWidget {
             },
           ),
 
-          /// --- NEWLY ADDED: INSTRUCTIONS COLLAPSIBLE DROPDOWN ---
           /// Instructions
           if (authProvider.user?.role != 'team')
-            Theme(
-              data: Theme.of(
-                context,
-              ).copyWith(dividerColor: Colors.transparent),
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20),
-                child: ExpansionTile(
-                  tilePadding: const EdgeInsets.symmetric(horizontal: 12),
-                  leading: Icon(
-                    Icons.assignment_outlined,
-                    color: AppColors.blackColor,
-                  ),
-                  title: Text(
-                    "Instructions",
-                    style: GoogleFonts.poppins(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w500,
-                      color: Colors.grey.shade700,
-                    ),
-                  ),
-                  iconColor: Colors.blue,
-                  collapsedIconColor: Colors.blue,
-                  childrenPadding: const EdgeInsets.only(left: 24),
-                  children: [
-                    _buildSubMenuBulletItem(
-                      context,
-                      title:
-                          AppLocalizations.of(
-                            context,
-                          )!.translate("gasReceiptManagerText") ??
-                          '',
-                      onTap: () {
-                        context.pushNamed("inst-gas-receipt");
-                      },
-                    ),
-                    _buildSubMenuBulletItem(
-                      context,
-                      title:
-                          AppLocalizations.of(context)!.translate("uberText") ??
-                          '',
-                      onTap: () {
-                        context.pushNamed("uber");
-                      },
-                    ),
-                    _buildSubMenuBulletItem(
-                      context,
-                      title:
-                          AppLocalizations.of(
-                            context,
-                          )!.translate("taxManText") ??
-                          '',
-                      onTap: () {
-                        context.pushNamed("tax-manager");
-                      },
-                    ),
-                    _buildSubMenuBulletItem(
-                      context,
-                      title:
-                          AppLocalizations.of(
-                            context,
-                          )!.translate("kmTrackingText") ??
-                          '',
-                      onTap: () {
-                        context.pushNamed("inst-km-tracking");
-                      },
-                    ),
-                    _buildSubMenuBulletItem(
-                      context,
-                      title:
-                          AppLocalizations.of(
-                            context,
-                          )!.translate("rentalText") ??
-                          '',
-                      onTap: () {
-                        context.pushNamed("rental");
-                      },
-                    ),
-                  ],
-                ),
-              ),
-            ),
+            const _InstructionsExpansionTile(),
           if (authProvider.user?.regCountry.trim().toLowerCase() != 'us')
             _buildDrawerItem(
               context,
@@ -289,7 +209,160 @@ class AppDrawer extends StatelessWidget {
   }
 
   /// Helper widget to build the sub-items with custom bullet points matching the image
-  Widget _buildSubMenuBulletItem(
+}
+
+class _InstructionNavItem {
+  const _InstructionNavItem({
+    required this.slug,
+    required this.en,
+    required this.fr,
+  });
+
+  final String slug;
+  final String en;
+  final String fr;
+}
+
+const _fallbackInstructionMenu = [
+  _InstructionNavItem(
+    slug: 'gas-receipts',
+    en: 'Gas Receipts Manager',
+    fr: "Gestionnaire de reçus d'essence",
+  ),
+  _InstructionNavItem(
+    slug: 'uber-gst-qst',
+    en: 'UBER GST/QST',
+    fr: 'UBER TPS/TVQ',
+  ),
+  _InstructionNavItem(
+    slug: 'tax-manager',
+    en: 'Tax Manager',
+    fr: "Gestionnaire d'impôts",
+  ),
+  _InstructionNavItem(
+    slug: 'km-tracking',
+    en: 'KM Tracking',
+    fr: 'Suivi du kilométrage',
+  ),
+  _InstructionNavItem(
+    slug: 'rental-property',
+    en: 'Rental Property Manager',
+    fr: 'Gestionnaire de propriété locative',
+  ),
+  _InstructionNavItem(
+    slug: 'team-management',
+    en: 'Team Management',
+    fr: "Gestion d'équipe",
+  ),
+  _InstructionNavItem(
+    slug: 'viewers-management',
+    en: 'Viewers Management',
+    fr: 'Gestion des utilisateurs en lecture seule',
+  ),
+  _InstructionNavItem(
+    slug: 'support-tickets',
+    en: 'Support Tickets',
+    fr: 'Billets de support',
+  ),
+  _InstructionNavItem(slug: 'plans', en: 'Plans', fr: 'Forfaits'),
+  _InstructionNavItem(
+    slug: 'personal-information',
+    en: 'Personal Information',
+    fr: 'Renseignements personnels',
+  ),
+];
+
+class _InstructionsExpansionTile extends StatefulWidget {
+  const _InstructionsExpansionTile();
+
+  @override
+  State<_InstructionsExpansionTile> createState() =>
+      _InstructionsExpansionTileState();
+}
+
+class _InstructionsExpansionTileState
+    extends State<_InstructionsExpansionTile> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      context.read<InstructionsViewModel>().ensureInstructionsLoaded(context);
+    });
+  }
+
+  void _openInstruction(String slug) {
+    Scaffold.of(context).closeDrawer();
+    context.pushNamed('instruction-detail', pathParameters: {'slug': slug});
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final locale = Localizations.localeOf(context).languageCode;
+    final instructions = context.watch<InstructionsViewModel>().instructions;
+
+    final children =
+        instructions.isNotEmpty
+            ? instructions
+                .where((item) => (item.slug ?? '').isNotEmpty)
+                .map((item) {
+                  final slug = item.slug!;
+                  final title = item.localizedNavLabel(locale);
+                  return _instructionBullet(
+                    context,
+                    title: title.isNotEmpty ? title : slug,
+                    onTap: () => _openInstruction(slug),
+                  );
+                })
+                .toList()
+            : _fallbackInstructionMenu
+                .map(
+                  (item) => _instructionBullet(
+                    context,
+                    title: locale == 'fr' ? item.fr : item.en,
+                    onTap: () => _openInstruction(item.slug),
+                  ),
+                )
+                .toList();
+
+    return Theme(
+      data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 20),
+        child: ExpansionTile(
+          tilePadding: const EdgeInsets.symmetric(horizontal: 12),
+          leading: Icon(
+            Icons.assignment_outlined,
+            color: AppColors.blackColor,
+          ),
+          title: Text(
+            AppLocalizations.of(context)!.translate("instructionsMenuText") ??
+                'Instructions',
+            style: GoogleFonts.poppins(
+              fontSize: 13,
+              fontWeight: FontWeight.w500,
+              color: Colors.grey.shade700,
+            ),
+          ),
+          iconColor: Colors.blue,
+          collapsedIconColor: Colors.blue,
+          childrenPadding: const EdgeInsets.only(left: 24),
+          children: children,
+        ),
+      ),
+    );
+  }
+
+  Widget _instructionBullet(
+    BuildContext context, {
+    required String title,
+    required VoidCallback onTap,
+  }) {
+    return _buildSubMenuBulletItem(context, title: title, onTap: onTap);
+  }
+}
+
+Widget _buildSubMenuBulletItem(
     BuildContext context, {
     required String title,
     required VoidCallback onTap,
@@ -312,7 +385,6 @@ class AppDrawer extends StatelessWidget {
       ),
       onTap: onTap,
     );
-  }
 }
 
 void _showUpgradeDialog(BuildContext context) {

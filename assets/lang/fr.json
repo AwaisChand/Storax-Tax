@@ -339,6 +339,7 @@
   "date": "Date",
   "type": "Type",
   "expenseType": "Types de dépenses",
+  "chooseExpenseType": "Choisir le Type de dépense",
 
 
   "expense_advertising": "Publicité",
@@ -551,6 +552,7 @@
   "feature9": "Application mobile",
   "feature10": "Autre",
 
+  "instructionsMenuText": "Instructions",
   "gasReceiptManagerText": "Gestionnaire de reçus d'essence",
   "uberText": "UBER TPS/TVQ",
   "taxManText": "Gestionnaire d'impôts",

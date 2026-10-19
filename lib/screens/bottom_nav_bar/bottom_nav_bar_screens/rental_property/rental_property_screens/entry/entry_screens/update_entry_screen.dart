@@ -511,7 +511,9 @@ class _UpdateEntryScreenState extends State<UpdateEntryScreen> {
         else
           GenericDropdown<String>(
             label: AppLocalizations.of(context)!.translate("expenseType") ?? '',
-            hint: "Choose Expense Type",
+            hint:
+                AppLocalizations.of(context)!.translate("chooseExpenseType") ??
+                'Choose Expense Type',
             value: selectedExpenseType,
             items:
                 expenseList.map((e) {

@@ -34,9 +34,12 @@ class InstructionData {
   String? slug;
   String? type;
   String? pdfUrl;
+  String? legacyPdfUrlString;
   LegacyPdfUrl? legacyPdfUrl;
   TitleModel? title;
   TitleModel? navLabel;
+  TitleModel? subtitle;
+  TitleModel? footer;
   StepsModel? steps;
   SectionsModel? sections;
 
@@ -44,9 +47,12 @@ class InstructionData {
     this.slug,
     this.type,
     this.pdfUrl,
+    this.legacyPdfUrlString,
     this.legacyPdfUrl,
     this.title,
     this.navLabel,
+    this.subtitle,
+    this.footer,
     this.steps,
     this.sections,
   });
@@ -55,19 +61,27 @@ class InstructionData {
     slug = json['slug'];
     type = json['type'];
     pdfUrl = json['pdf_url'];
-    if (json['legacy_pdf_url'] is Map<String, dynamic>) {
-      legacyPdfUrl = LegacyPdfUrl.fromJson(json['legacy_pdf_url']);
+    final legacy = json['legacy_pdf_url'];
+    if (legacy is String && legacy.trim().isNotEmpty) {
+      legacyPdfUrlString = legacy;
+    } else if (legacy is Map<String, dynamic>) {
+      legacyPdfUrl = LegacyPdfUrl.fromJson(legacy);
     }
     title = json['title'] != null ? TitleModel.fromJson(json['title']) : null;
     navLabel =
         json['nav_label'] != null
             ? TitleModel.fromJson(json['nav_label'])
             : null;
-    steps = json['steps'] != null ? StepsModel.fromJson(json['steps']) : null;
-    sections =
-        json['sections'] != null
-            ? SectionsModel.fromJson(json['sections'])
-            : null;
+    subtitle =
+        json['subtitle'] != null ? TitleModel.fromJson(json['subtitle']) : null;
+    footer =
+        json['footer'] != null ? TitleModel.fromJson(json['footer']) : null;
+    if (json['steps'] is Map<String, dynamic>) {
+      steps = StepsModel.fromJson(json['steps']);
+    }
+    if (json['sections'] is Map<String, dynamic>) {
+      sections = SectionsModel.fromJson(json['sections']);
+    }
   }
 
   Map<String, dynamic> toJson() {
@@ -75,9 +89,11 @@ class InstructionData {
     json['slug'] = slug;
     json['type'] = type;
     json['pdf_url'] = pdfUrl;
-    json['legacy_pdf_url'] = legacyPdfUrl?.toJson();
+    json['legacy_pdf_url'] = legacyPdfUrlString ?? legacyPdfUrl?.toJson();
     if (title != null) json['title'] = title!.toJson();
     if (navLabel != null) json['nav_label'] = navLabel!.toJson();
+    if (subtitle != null) json['subtitle'] = subtitle!.toJson();
+    if (footer != null) json['footer'] = footer!.toJson();
     if (steps != null) json['steps'] = steps!.toJson();
     if (sections != null) json['sections'] = sections!.toJson();
     return json;
@@ -88,8 +104,24 @@ class InstructionData {
 
   String localizedNavLabel(String locale) =>
       locale == 'fr'
-          ? (navLabel?.fr ?? navLabel?.en ?? '')
-          : (navLabel?.en ?? '');
+          ? (navLabel?.fr ?? navLabel?.en ?? localizedTitle(locale))
+          : (navLabel?.en ?? localizedTitle(locale));
+
+  String localizedSubtitle(String locale) =>
+      locale == 'fr'
+          ? (subtitle?.fr ?? subtitle?.en ?? '')
+          : (subtitle?.en ?? '');
+
+  String localizedFooter(String locale) =>
+      locale == 'fr' ? (footer?.fr ?? footer?.en ?? '') : (footer?.en ?? '');
+
+  List<StepItem> localizedSteps(String locale) =>
+      locale == 'fr' ? (steps?.fr ?? steps?.en ?? []) : (steps?.en ?? []);
+
+  List<SectionItem> localizedSections(String locale) =>
+      locale == 'fr'
+          ? (sections?.fr ?? sections?.en ?? [])
+          : (sections?.en ?? []);
 }
 
 class LegacyPdfUrl {

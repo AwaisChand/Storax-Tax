@@ -558,7 +558,9 @@ class _AddEntryScreenState extends State<AddEntryScreen> {
           GenericDropdown<String>(
             key: ValueKey('expense_type_${selectedExpenseType ?? 'none'}'),
             label: AppLocalizations.of(context)!.translate("expenseType") ?? '',
-            hint: "Choose Expense Type",
+            hint:
+                AppLocalizations.of(context)!.translate("chooseExpenseType") ??
+                'Choose Expense Type',
             value: selectedExpenseType,
             items:
                 expenseList

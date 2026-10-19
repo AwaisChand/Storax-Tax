@@ -345,6 +345,7 @@
   "date": "Date",
   "type": "Type",
   "expenseType": "Expense Types",
+  "chooseExpenseType": "Choose Expense Type",
 
 
   "expense_advertising": "Advertising",
@@ -546,6 +547,7 @@
   "feature10": "Other",
 
 
+  "instructionsMenuText": "Instructions",
   "gasReceiptManagerText": "Gas Receipts Manager",
   "uberText": "UBER GST/QST",
   "taxManText": "Tax Manager",

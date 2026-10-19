@@ -11,6 +11,9 @@ class InstructionsViewModel extends ChangeNotifier {
   bool _isLoading = false;
   bool get isLoading => _isLoading;
 
+  bool _hasFetched = false;
+  bool get hasFetched => _hasFetched;
+
   set loading(bool setLoading) {
     _isLoading = setLoading;
     notifyListeners();
@@ -19,10 +22,22 @@ class InstructionsViewModel extends ChangeNotifier {
   List<InstructionData> _instructions = [];
   List<InstructionData> get instructions => _instructions;
 
+  InstructionData? bySlug(String slug) {
+    for (final item in _instructions) {
+      if (item.slug == slug) return item;
+    }
+    return null;
+  }
 
-  /// Get Instructions Api
+  Future<void> ensureInstructionsLoaded(BuildContext context) async {
+    if (_hasFetched || _isLoading) return;
+    await getInstructionsApi(context, showSuccessToast: false);
+  }
 
-  Future<void> getInstructionsApi(BuildContext context) async {
+  Future<void> getInstructionsApi(
+    BuildContext context, {
+    bool showSuccessToast = true,
+  }) async {
     loading = true;
     try {
       final response = await instructionsRepository.instructionsRepo();
@@ -30,7 +45,8 @@ class InstructionsViewModel extends ChangeNotifier {
       if (response.status == 1) {
         _instructions = response.data ?? [];
       }
-      if (context.mounted) {
+      _hasFetched = true;
+      if (showSuccessToast && context.mounted) {
         Utils.toastMessage(_localizedSuccess(context, response));
       }
 
@@ -39,7 +55,7 @@ class InstructionsViewModel extends ChangeNotifier {
       }
     } catch (e, stackTrace) {
       debugPrint("Get All Instructions data error: $e $stackTrace");
-      Utils.toastMessage("Error: ${e.toString()}");
+      Utils.toastMessage(Utils.friendlyError(e));
     } finally {
       loading = false;
     }

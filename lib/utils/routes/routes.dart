@@ -28,6 +28,7 @@ import 'package:storatax/screens/support_tickets/create_ticket/create_ticket_scr
 import 'package:storatax/screens/support_tickets/support_tickets_list_screen/support_tickets_list_screen.dart';
 
 import '../../screens/bottom_nav_bar/bottom_nav_bar_screens/rental_property/rental_property_screens/entry/entry_screens/all_regular_entry_screen.dart';
+import '../../screens/instructions/instructions_screens/instruction_detail_screen.dart';
 import '../../screens/instructions/instructions_screens/km_tracking_screen.dart';
 import '../../screens/instructions/instructions_screens/tax_manager_screen.dart';
 
@@ -224,19 +225,27 @@ class AppRouter {
         builder: (context, state) => CreateTicketScreen(),
       ),
       GoRoute(
+        path: '/instruction/:slug',
+        name: 'instruction-detail',
+        builder:
+            (context, state) => InstructionDetailScreen(
+              slug: state.pathParameters['slug'] ?? '',
+            ),
+      ),
+      GoRoute(
         path: '/inst-gas-receipt',
         name: 'inst-gas-receipt',
-        builder: (context, state) => GasReceiptManagerScreen(),
+        builder: (context, state) => const GasReceiptManagerScreen(),
       ),
       GoRoute(
         path: '/uber',
         name: 'uber',
-        builder: (context, state) => UberScreen(),
+        builder: (context, state) => const UberScreen(),
       ),
       GoRoute(
         path: '/tax-manager',
         name: 'tax-manager',
-        builder: (context, state) => TaxManagerScreen(),
+        builder: (context, state) => const TaxManagerScreen(),
       ),
       GoRoute(
         path: '/inst-km-tracking',
@@ -246,7 +255,7 @@ class AppRouter {
       GoRoute(
         path: '/rental',
         name: 'rental',
-        builder: (context, state) => RentalPropertyManagerScreen(),
+        builder: (context, state) => const RentalPropertyManagerScreen(),
       ),
     ],
     errorBuilder:
