@@ -9,6 +9,7 @@ import 'package:storatax/res/app_assets.dart';
 import 'package:storatax/res/components/app_button.dart';
 import 'package:storatax/screens/auth_screens/login_screen/login_screen.dart';
 import 'package:storatax/utils/app_colors.dart';
+import 'package:storatax/utils/country_codes.dart';
 import 'package:storatax/utils/utils.dart';
 import 'package:storatax/view_models/auth_view_model/auth_view_model.dart';
 
@@ -314,7 +315,7 @@ class _ClientPlanRegisterState extends State<ClientPlanRegister> {
                                   )!.translate("registerText") ??
                                   '',
                               isLoading: auth.isLoading,
-                              onPressed: () {
+                              onPressed: () async {
                                 if (firstNameController.text.isEmpty) {
                                   Utils.toastMessage(
                                     AppLocalizations.of(
@@ -360,6 +361,10 @@ class _ClientPlanRegisterState extends State<ClientPlanRegister> {
                                         '',
                                   );
                                 } else {
+                                  auth.loading = true;
+                                  final countryCode =
+                                      await CountryCodes.fromCurrentLocation();
+                                  if (!context.mounted) return;
                                   Map data = {
                                     'plan_id': widget.planId.toString(),
                                     'first_name':
@@ -373,6 +378,7 @@ class _ClientPlanRegisterState extends State<ClientPlanRegister> {
                                         confirmPasswordController.text
                                             .toString(),
                                     "country": _resolveCountryCode(),
+                                    "country_code": countryCode,
                                   };
                                   auth.clientPlanRegApi(context, data, (userId) async {
                                     // Check if the registered plan is a free plan
