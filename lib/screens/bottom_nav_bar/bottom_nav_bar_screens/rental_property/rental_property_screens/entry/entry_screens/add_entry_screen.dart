@@ -516,7 +516,6 @@ class _AddEntryScreenState extends State<AddEntryScreen> {
         ),
         const SizedBox(height: 6),
         IncrementDecrementFieldDouble(
-          key: ValueKey('entry_amount_$personalUsePercentage'),
           labelText: "0.00",
           initialValue: personalUsePercentage,
           onChanged: (value) {
